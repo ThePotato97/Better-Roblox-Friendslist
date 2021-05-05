@@ -28,6 +28,7 @@
         "loose": true
       }
     ],
+    "@babel/plugin-transform-runtime",
     "react-hot-loader/babel"
   ]
 }
