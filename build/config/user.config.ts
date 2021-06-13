@@ -32,8 +32,8 @@ export const userConfig: UserConfig = {
         port: 3000,
         hmrPath: '/__webpack_hmr',
         crxPath: '/__auto_reload_crx',
-        crxContentScriptsChunks: [],
-        crxBackgroundScriptsChunks: [],
+        crxContentScriptsChunks: ['content'],
+        crxBackgroundScriptsChunks: ['background'],
     },
     bundleAnalyzer: {
         enabled: false,

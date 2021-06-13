@@ -16,7 +16,9 @@ const isDevMode = process.env.NODE_ENV === 'development';
 export const baseConfig: webpack.Configuration = {
     mode: isDevMode ? 'development' : 'production',
     entry: {
-        index: [path.resolve(userConfig.projectRoot, 'src/scripts/index.jsx')],
+        options: [path.resolve(userConfig.projectRoot, 'src/pages/options.jsx')],
+        content: [path.resolve(userConfig.projectRoot, 'src/pages/content.ts')],
+        background: [path.resolve(userConfig.projectRoot, 'src/pages/background.ts')],
     },
     output: {
         path: path.resolve(userConfig.projectRoot, 'dist'),
@@ -95,10 +97,10 @@ export const baseConfig: webpack.Configuration = {
             clear: true,
         }),
         new HtmlWebpackPlugin({
-            filename: 'index.html',
-            template: path.resolve(userConfig.projectRoot, 'src/templates/index.ejs'),
+            filename: 'options.html',
+            template: path.resolve(userConfig.projectRoot, 'src/templates/default.ejs'),
             minify: !isDevMode,
-            chunks: ['index'],
+            chunks: ['options'],
         }),
         new CopyWebpackPlugin({
             patterns: [
