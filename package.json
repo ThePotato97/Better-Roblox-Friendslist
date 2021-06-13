@@ -5,6 +5,7 @@
   "author": "tomzhu1024",
   "license": "MIT",
   "repository": "https://github.com/tomzhu1024/webpack-boilerplate",
+  "private": true,
   "scripts": {
     "prepare": "npx husky install",
     "start": "npx cross-env NODE_ENV=development TS_NODE_PROJECT=server/tsconfig.json npx ts-node server/start.ts",
