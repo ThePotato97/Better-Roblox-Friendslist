@@ -49,8 +49,5 @@
       "rules": {
       }
     }
-  ],
-  "ignorePatterns": [
-    "build/**/*"
   ]
 }

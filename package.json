@@ -10,12 +10,12 @@
     "prepare": "npx husky install",
     "start": "npx cross-env NODE_ENV=development TS_NODE_PROJECT=build/tsconfig.json npx ts-node build/scripts/start.ts",
     "build": "npx cross-env NODE_ENV=production TS_NODE_PROJECT=build/tsconfig.json npx ts-node build/scripts/build.ts",
-    "eslint": "npx eslint src/**/*.{js,jsx,ts,tsx}",
-    "eslint-fix": "npx eslint --fix src/**/*.{js,jsx,ts,tsx}",
-    "stylelint": "npx stylelint src/**/*.{css,sass,scss,less}",
-    "stylelint-fix": "npx stylelint --fix src/**/*.{css,sass,scss,less}",
-    "prettier-check": "npx prettier --check src/**/*.{js,jsx,ts,tsx}",
-    "prettier-write": "npx prettier --write src/**/*.{js,jsx,ts,tsx}"
+    "eslint": "npx eslint ./**/*.{js,jsx,ts,tsx}",
+    "eslint-fix": "npx eslint --fix ./**/*.{js,jsx,ts,tsx}",
+    "stylelint": "npx stylelint ./**/*.{css,sass,scss,less}",
+    "stylelint-fix": "npx stylelint --fix ./**/*.{css,sass,scss,less}",
+    "prettier-check": "npx prettier --check ./**/*.{js,jsx,ts,tsx}",
+    "prettier-write": "npx prettier --write ./**/*.{js,jsx,ts,tsx}"
   },
   "devDependencies": {
     "@babel/core": "^7.13.16",

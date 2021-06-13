@@ -2,3 +2,5 @@
 /node_modules
 /.awcache
 /dist
+/.husky
+/build
