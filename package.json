@@ -8,8 +8,8 @@
   "private": true,
   "scripts": {
     "prepare": "npx husky install",
-    "start": "npx cross-env NODE_ENV=development TS_NODE_PROJECT=server/tsconfig.json npx ts-node server/start.ts",
-    "build": "npx cross-env NODE_ENV=production TS_NODE_PROJECT=server/tsconfig.json npx ts-node server/build.ts",
+    "start": "npx cross-env NODE_ENV=development TS_NODE_PROJECT=build/tsconfig.json npx ts-node build/scripts/start.ts",
+    "build": "npx cross-env NODE_ENV=production TS_NODE_PROJECT=build/tsconfig.json npx ts-node build/scripts/build.ts",
     "eslint": "npx eslint src/**/*.{js,jsx,ts,tsx}",
     "eslint-fix": "npx eslint --fix src/**/*.{js,jsx,ts,tsx}",
     "stylelint": "npx stylelint src/**/*.{css,sass,scss,less}",
