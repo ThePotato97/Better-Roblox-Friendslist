@@ -34,7 +34,7 @@ import SseStream from 'ssestream';
             );
         } else {
             entryValue.unshift(
-                `webpack-hot-middleware/client?path=${userConfig.devServer.hmrPath}&timeout=10000&overlay=true&reload=true`,
+                `webpack-hot-middleware/client?path=http://${userConfig.devServer.host}:${portToUse}${userConfig.devServer.hmrPath}&timeout=10000&overlay=true&reload=true`,
                 'react-hot-loader/patch'
             );
         }
