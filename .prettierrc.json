@@ -7,7 +7,7 @@
   "jsxBracketSameLine": false,
   "overrides": [
     {
-      "files": ["*.js","*.jsx","*.ts","*.tsx","*.html","*.ejs"],
+      "files": ["*.html","*.ejs"],
       "options": {
         "tabWidth": 4
       }
