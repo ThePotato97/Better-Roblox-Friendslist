@@ -1,6 +1,6 @@
 export function showImageInConsole(url: any, size = 100) {
   const image = new Image();
-  image.onload = function () {
+  image.onload = function (this: HTMLImageElement) {
     const style = [
       'font-size: 1px;',
       'padding: ' + (this.height / 100) * size + 'px ' + (this.width / 100) * size + 'px;',

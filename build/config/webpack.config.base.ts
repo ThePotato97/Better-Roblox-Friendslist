@@ -10,6 +10,8 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import ProgressBarWebpackPlugin from 'progress-bar-webpack-plugin';
 
+const WebpackBar = require('webpackbar');
+
 const isDevMode = process.env.NODE_ENV === 'development';
 
 export const baseConfig: webpack.Configuration = {
@@ -71,23 +73,33 @@ export const baseConfig: webpack.Configuration = {
               },
             ],
             '@babel/plugin-transform-runtime',
-            require.resolve('react-refresh/babel'),
+            ...(isDevMode ? [require.resolve('react-refresh/babel')] : []),
           ],
         },
       },
       {
         test: /\.css$/i,
-        use: [isDevMode ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader'],
+        use: [
+          isDevMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+        ],
       },
       {
         test: /\.s[ac]ss$/i,
-        use: [isDevMode ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+        use: [
+          isDevMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+          'sass-loader',
+        ],
       },
       {
         test: /\.less$/i,
         use: [
           isDevMode ? 'style-loader' : MiniCssExtractPlugin.loader,
           'css-loader',
+          'postcss-loader',
           {
             loader: 'less-loader',
             options: { lessOptions: { javascriptEnabled: true } },
@@ -114,16 +126,7 @@ export const baseConfig: webpack.Configuration = {
     ...(isDevMode ? [] : [new MiniCssExtractPlugin()]),
     new AntdDayjsWebpackPlugin(),
     new LodashWebpackPlugin(),
-    new ProgressBarWebpackPlugin({
-      total: 25,
-      complete: chalk.bgHex(userConfig.colors.yellow)(' '),
-      incomplete: chalk.bgHex(userConfig.colors.white)(' '),
-      format: `${chalk.hex(userConfig.colors.blue)('* Webpack ')}:bar${chalk.hex(userConfig.colors.blue)(
-        ' :msg (:percent)',
-      )}`,
-      summary: false,
-      clear: true,
-    }),
+    new WebpackBar(),
     new HtmlWebpackPlugin({
       filename: 'options.html',
       template: path.resolve(userConfig.projectRoot, 'src/templates/default.ejs'),

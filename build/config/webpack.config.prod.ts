@@ -8,16 +8,12 @@ export const prodConfig: webpack.Configuration = merge(baseConfig, {
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.[jt]sx?$/,
         enforce: 'pre',
         exclude: /node_modules/,
         use: [
           {
             loader: 'webpack-strip-block',
-            options: {
-              start: 'development-only-start',
-              end: 'development-only-end',
-            },
           },
         ],
       },

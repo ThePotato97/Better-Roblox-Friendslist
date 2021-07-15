@@ -15,8 +15,8 @@ export const devConfig: Configuration = merge<Configuration>(baseConfig, {
     writeToDisk: true,
   },
   plugins: [
-    new ReactRefreshPlugin(),
     new webpack.HotModuleReplacementPlugin(),
+    new ReactRefreshPlugin(),
   ],
   resolve: {
     alias: {

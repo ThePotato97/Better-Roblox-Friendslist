@@ -28,12 +28,12 @@ import SseStream from 'ssestream';
     .reduce((pre, cur) => pre.concat(cur));
   for (const [entryName, entryValue] of Object.entries(devConfig.entry as { [index: string]: string[] })) {
     if (userConfig.devServer.crxContentScriptsChunks.includes(entryName)) {
-      entryValue.unshift(path.resolve(userConfig.projectRoot, 'build/chrome/content-scripts-client'));
+      entryValue.unshift(path.resolve(userConfig.projectRoot, 'build/utils/content-scripts-client'));
     } else if (userConfig.devServer.crxBackgroundChunks.includes(entryName)) {
       entryValue.unshift(
         path.resolve(
           userConfig.projectRoot,
-          `build/chrome/background-client?path=http://${userConfig.devServer.host}:${portToUse}${userConfig.devServer.crxPath}`,
+          `build/utils/background-client?path=http://${userConfig.devServer.host}:${portToUse}${userConfig.devServer.crxPath}`,
         ),
       );
     } else {
@@ -118,8 +118,8 @@ import SseStream from 'ssestream';
     });
     next();
   });
-
   const server = app.listen(portToUse, userConfig.devServer.host);
+
   ['SIGINT', 'SIGTERM'].forEach((signal) => {
     process.on(signal, () => {
       server.close();
