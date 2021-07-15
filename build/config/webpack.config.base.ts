@@ -8,7 +8,6 @@ import AntdDayjsWebpackPlugin from 'antd-dayjs-webpack-plugin';
 import LodashWebpackPlugin from 'lodash-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import ProgressBarWebpackPlugin from 'progress-bar-webpack-plugin';
 
 const WebpackBar = require('webpackbar');
 
