@@ -1,4 +1,4 @@
-<img src="public/icon.png" style="zoom:25%;" />
+<img src="public/icon.png" width="128px" />
 
 # Webpack Boilerplate
 
