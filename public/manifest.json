@@ -3,6 +3,11 @@
   "description": "a good starting point for using webpack to build stuffs, including Chrome extensions",
   "version": "0.0.1",
   "manifest_version": 3,
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "action": {},
   "background": {
     "service_worker": "background.bundle.js"
@@ -13,12 +18,12 @@
         "<all_urls>"
       ],
       "js": [
-        "content-script.bundle.js"
+        "contentScript.bundle.js"
       ]
     }
   ],
   "options_page": "options.html",
   "chrome_url_overrides": {
-    "newtab": "newtab.html"
+    "newtab": "newTab.html"
   }
 }
