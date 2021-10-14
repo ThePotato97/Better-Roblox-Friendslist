@@ -10,10 +10,11 @@ A good starting point for using webpack to build stuffs.
 - React 17
 - TypeScript support
 - Less support
+- Chrome extension support (comes with a manifest v3 template)
 - Lint codes with [ESLint](https://www.npmjs.com/package/eslint) + [stylelint](https://www.npmjs.com/package/stylelint) + [Prettier](https://www.npmjs.com/package/prettier)
 - Lint commit messages with [commitlint](https://www.npmjs.com/package/@commitlint/cli)
 - Automated pre-commit code check with [husky](https://www.npmjs.com/package/husky) + [lint-staged](https://www.npmjs.com/package/lint-staged)
-- Chrome extension support (comes with a manifest v3 template)
+- Monorepo support with [Yarn workspaces](https://classic.yarnpkg.com/lang/en/docs/workspaces/) and [Lerna](https://www.npmjs.com/package/lerna)
 
 ## How to Use
 
