@@ -19,7 +19,6 @@ const isDevelopment = env.NODE_ENV !== 'production';
 const isAnalyzer = env.ANALYZER === 'true';
 
 let config = {
-  mode: isDevelopment ? 'development' : 'production',
   entry: {
     background: path.resolve(__dirname, 'src/pages/Background/index.ts'),
     contentScript: path.resolve(__dirname, 'src/pages/ContentScript/index.ts'),
@@ -107,6 +106,7 @@ let config = {
 
 if (isDevelopment) {
   config = merge(config, {
+    mode: 'development',
     stats: false,
     devtool: 'inline-cheap-module-source-map',
     plugins: [
@@ -118,7 +118,6 @@ if (isDevelopment) {
           sockPort: env.PORT,
         },
       }),
-      new MiniCssExtractPlugin(),
     ],
     resolve: {
       alias: {
@@ -128,11 +127,9 @@ if (isDevelopment) {
   });
 } else {
   config = merge(config, {
-    stats: true,
+    mode: 'production',
     plugins: [
-      new WebpackBarPlugin({
-        profile: true,
-      }),
+      new WebpackBarPlugin(),
       new MiniCssExtractPlugin(),
       ...(isAnalyzer ? [
         new BundleAnalyzerPlugin({

@@ -11,5 +11,8 @@ compiler.run((err, stats) => {
   if (err) {
     throw err;
   }
-  console.log(stats.toString());
+  console.log(stats.toString({
+    chunks: false,
+    colors: true,
+  }));
 })
