@@ -1,0 +1,6 @@
+/.husky
+/.idea
+/dist
+/node_modules
+/utils
+/*.config.js

@@ -2,11 +2,15 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Logo } from '@/components/Logo';
 import style from '@/style/default.module.less';
+import { myFunction, MyComponent } from 'sample-sub-package';
+import 'sample-sub-package/dist/index.css';
 
-const App: React.FC = () => (
+const App = () => (
   <div className={style.container}>
     <Logo />
     <h1>This is the Options page.</h1>
+    <MyComponent />
+    <p>{myFunction(1, 1).toString()}</p>
   </div>
 );
 
