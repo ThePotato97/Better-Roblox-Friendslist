@@ -28,40 +28,40 @@ A good starting point for using webpack to build stuffs.
 ```shell
 # Install dependencies
 yarn install
-    
+
 # Start Dev Server
 yarn run start
-    
+
 # Start building
 yarn run build
-    
+
 # Start building with bundle analyzer
 yarn run build:analyzer
-    
+
 # Run type check
 yarn run type-check
-    
+
 # Lint all files
 yarn run lint
-    
+
 # Lint all files and try to fix issues
 yarn run lint:fix
-    
+
 # Lint script files
 yarn run eslint
-    
+
 # Lint script and try to fix issues
 yarn run eslint:fix
-    
+
 # Lint style files
 yarn run stylelint
-    
+
 # Lint style files and try to fix issues
 yarn run stylelint:fix
-    
+
 # Run prettier
 yarn run prettier
-    
+
 # Run prettier and try to fix issues
 yarn run prettier:fix
 ```
@@ -91,4 +91,3 @@ Therefore, currently the boilerplate simply provides a configuration field `boil
 ## Credits
 
 - [lxieyang/chrome-extension-boilerplate-react](https://github.com/lxieyang/chrome-extension-boilerplate-react)
-
