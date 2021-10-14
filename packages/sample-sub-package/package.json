@@ -1,6 +1,6 @@
 {
   "name": "sample-sub-package",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "a good starting point for using webpack to build npm packages",
   "author": "tomzhu1024",
   "license": "MIT",
