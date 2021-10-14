@@ -14,7 +14,7 @@ A good starting point for using webpack to build stuffs.
 - Lint codes with [ESLint](https://www.npmjs.com/package/eslint) + [stylelint](https://www.npmjs.com/package/stylelint) + [Prettier](https://www.npmjs.com/package/prettier)
 - Lint commit messages with [commitlint](https://www.npmjs.com/package/@commitlint/cli)
 - Automated pre-commit code check with [husky](https://www.npmjs.com/package/husky) + [lint-staged](https://www.npmjs.com/package/lint-staged)
-- Monorepo support with [Yarn workspaces](https://classic.yarnpkg.com/lang/en/docs/workspaces/) and [Lerna](https://www.npmjs.com/package/lerna)
+- [Monorepos](https://github.com/babel/babel/blob/master/doc/design/monorepo.md) support with [Yarn workspaces](https://classic.yarnpkg.com/lang/en/docs/workspaces/) and [Lerna](https://www.npmjs.com/package/lerna)
 
 ## How to Use
 
@@ -38,6 +38,12 @@ yarn run build
 
 # Start building with bundle analyzer
 yarn run build:analyzer
+
+# Start building after building all packages
+yarn run build-all
+
+# Start building after building all packages with bundle analyzer
+yarn run build-all:analyzer
 
 # Run type check
 yarn run type-check
@@ -88,6 +94,10 @@ In Chrome extension development, some entries **does not** support [HMR (Hot Mod
 One possible solution to achieve a similar effect is to inject clients in the Background script and the Content Scripts and set-up a customized middleware in the Dev Server. The client in the Background script establishes a long connection with the Dev Server. When the Dev Server announces a code change in the Background scripts, the client in the Background scripts **reload** the entire extension with `chrome.runtime.reload()`; when the Dev Server announces a code change in the Content Scripts, the client in the Background script communicate with the client in the Content Scripts with `chrome.runtime.sendMessage()`, and the client in the Content Scripts **refresh** the page. This *auto-reload-and-refresh* approach makes the new changes in the code to be applied immediately and eliminates some tiny troubles. However, unlike HMR, which can preserve **state** of the code, this approach will inevitably lose all **state** of the code, which can be unwanted in some cases.
 
 Therefore, currently the boilerplate simply provides a configuration field `boilerplateConfig.notHotReload` to exclude some entries from HMR (located in `webpack.config.js`), in order to enable more flexible manual *reload/refresh* management.
+
+### Lerna
+
+This boilerplate comes with [Lerna](https://www.npmjs.com/package/lerna), please check its [documentation](https://github.com/lerna/lerna) for more detailed usage.
 
 ## Credits
 
