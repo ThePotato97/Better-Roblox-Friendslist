@@ -3,8 +3,6 @@ import * as ReactDOM from 'react-dom';
 import { Logo } from '@/components/Logo';
 import style from '@/style/default.module.less';
 
-const a: number = 'hello world';
-
 const App: React.FC = () => (
   <div className={style.container}>
     <Logo />
