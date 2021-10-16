@@ -10,6 +10,7 @@ A good starting point for using webpack to build stuffs.
 - React 17
 - TypeScript support
 - Less support
+- Commonly-used packages such as Ant Design, Lodash, jQuery
 - Chrome extension support (comes with a manifest v3 template)
 - Lint codes with [ESLint](https://www.npmjs.com/package/eslint) + [stylelint](https://www.npmjs.com/package/stylelint) + [Prettier](https://www.npmjs.com/package/prettier)
 - Lint commit messages with [commitlint](https://www.npmjs.com/package/@commitlint/cli)
