@@ -8,6 +8,7 @@ const LodashWebpackPlugin = require('lodash-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const WebpackBarPlugin = require('webpackbar');
 const FriendlyErrorsWebpackPlugin = require('@soda/friendly-errors-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -32,6 +33,8 @@ let config = {
   },
   boilerplateConfig: {
     notHotReload: ['background', 'contentScript'],
+    backgroundScripts: ['background'],
+    contentScrips: ['contentScript'],
   },
   module: {
     rules: [
@@ -113,10 +116,7 @@ if (isDevelopment) {
       new FriendlyErrorsWebpackPlugin(),
       new HotModuleReplacementPlugin(),
       new ReactRefreshPlugin({
-        overlay: {
-          sockHost: env.HOST,
-          sockPort: env.PORT,
-        },
+        overlay: false,
       }),
     ],
     resolve: {
