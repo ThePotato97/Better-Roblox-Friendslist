@@ -1,7 +1,7 @@
 {
   "name": "webpack-boilterplate",
   "version": "0.0.1",
-  "description": "a good starting point for using webpack to build stuffs",
+  "description": "A good starting point for using webpack to build stuffs.",
   "author": "tomzhu1024",
   "license": "MIT",
   "repository": "https://github.com/tomzhu1024/webpack-boilerplate",
