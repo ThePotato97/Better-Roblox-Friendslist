@@ -14,11 +14,11 @@ A good starting point for using webpack to build stuffs.
 
 <img src="docs/errorOverlay.gif" style="zoom:80%;" />
 
-- Auto-reload for Background scripts in Chrome Extension development
+- Auto-Reload for Background scripts in Chrome Extension development
 
 <img src="docs/autoReload.gif" style="zoom:80%;" />
 
-- Auto-refresh for Content Scripts in Chrome Extension development
+- Auto-Refresh for Content Scripts in Chrome Extension development
 
 <img src="docs/autoRefresh.gif" style="zoom:80%;" />
 
