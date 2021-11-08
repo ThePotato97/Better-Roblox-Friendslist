@@ -76,6 +76,14 @@ let config = {
     new CleanWebpackPlugin(),
     new AntdDayjsWebpackPlugin(),
     new LodashWebpackPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'public'),
+          to: path.resolve(__dirname, 'build'),
+        },
+      ],
+    }),
     new HtmlWebpackPlugin({
       filename: 'options.html',
       template: path.resolve(__dirname, 'src/templates/default.ejs'),
@@ -87,15 +95,6 @@ let config = {
       template: path.resolve(__dirname, 'src/templates/default.ejs'),
       minify: !isDevelopment,
       chunks: ['newTab'],
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'public'),
-          to: path.resolve(__dirname, 'build'),
-        },
-      ],
-
     }),
   ],
   resolve: {
