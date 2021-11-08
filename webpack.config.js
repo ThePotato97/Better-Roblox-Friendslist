@@ -58,7 +58,7 @@ let config = {
         ],
       },
       {
-        test: /\.(png|jpe?g|gif|woff2?)$/i,
+        test: /\.(png|jpe?g|gif)$/i,
         use: [
           {
             loader: 'url-loader',
