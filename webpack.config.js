@@ -2,7 +2,6 @@ const path = require('path');
 const { merge } = require('webpack-merge');
 const { HotModuleReplacementPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const LodashWebpackPlugin = require('lodash-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -44,12 +43,12 @@ let config = {
       },
       {
         test: /\.css$/i,
-        use: [isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader'],
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.less$/i,
         use: [
-          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
+          'style-loader',
           'css-loader',
           {
             loader: 'less-loader',
@@ -126,9 +125,26 @@ if (isDevelopment) {
 } else {
   config = merge(config, {
     mode: 'production',
+    module: {
+      rules: [
+        {
+          test: /\.[jt]sx?$/i,
+          enforce: 'pre',
+          exclude: /node_modules/,
+          use: [
+            {
+              loader: 'webpack-strip-block',
+              options: {
+                start: 'debug:start',
+                end: 'debug:end',
+              },
+            },
+          ],
+        },
+      ],
+    },
     plugins: [
       new WebpackBarPlugin(),
-      new MiniCssExtractPlugin(),
       ...(isAnalyzer ? [
         new BundleAnalyzerPlugin({
           analyzerMode: 'server',

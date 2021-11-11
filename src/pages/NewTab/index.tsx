@@ -12,6 +12,8 @@ const App: React.FC = () => (
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* @ts-ignore */
+/* debug:start */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 if (module.hot) module.hot.accept();
+/* debug:end */
