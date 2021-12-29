@@ -8,15 +8,19 @@ export class JoinButton extends Component {
   }
 
   handleJoinGame() {
+    const isFireFox = typeof cloneInto !== undefined;
     if (this.props.purchaseRequired) {
       window.location = `https://www.roblox.com/games/${placeId}`;
     }
-    const content = {
+    let content = {
       action: "joinGame",
       placeId: this.props.placeId,
       gameId: this.props.gameId,
       userId: this.props.userId,
     };
+    if (isFireFox) {
+      content = cloneInto(content, document.defaultView);
+    }
     const event = new CustomEvent("RecieveContent", { detail: content });
     window.dispatchEvent(event);
   }
