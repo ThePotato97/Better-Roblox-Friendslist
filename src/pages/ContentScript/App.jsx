@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { FriendsList } from "./FriendsList";
+import { Collapse } from '@mui/material';
 import "./friendsnew.scss";
 
 const PresenceTypes = {
@@ -129,7 +130,9 @@ export class App extends Component {
         <button type="button" className="friendsButton" onClick={this.handleToggleFriendsList}>
           <div>Friends List</div>
         </button>
-        {this.state.showFriendsList ? <FriendsList groups={this.state.groups} /> : null}
+        <Collapse unmountOnExit in={this.state.showFriendsList} dimension="height">
+          <FriendsList groups={this.state.groups} />
+        </Collapse>
       </div>
     );
   }

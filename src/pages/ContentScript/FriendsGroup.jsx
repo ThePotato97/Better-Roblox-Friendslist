@@ -15,7 +15,7 @@ export class FriendsGroup extends Component {
     }));
   }
   render() {
-    const { groupName, groupContents, extraClasses, icon, disableAvatarGameIcons } = this.props;
+    const { groupName, groupContents, extraClasses, icon, disableAvatarGameIcons, gameGroups, placeId } = this.props;
     return (
       <div className={`DropTarget friendGroup ${extraClasses ? extraClasses : ""}`}>
         <div className="groupHeaderContainer Panel Focusable" onClick={this.handleToggleGroup}>
@@ -56,10 +56,14 @@ export class FriendsGroup extends Component {
                 />
               </svg>
             </div>
-            {icon ? <img className="groupIcon" src={icon} alt="" /> : null}
+            {icon 
+              ? <a href={`/games/${placeId}`}> <img className="groupIcon" src={icon} alt="" /> </a>
+              : null}
             {groupName}
             {!this.state.showGroup && groupContents && groupContents.length > 0 ? (
-              <span className="groupCount">{groupContents.length}</span>
+              
+              <span className="groupCount">{groupContents && groupContents.length}</span>
+              
             ) : null}
           </div>
         </div>
@@ -70,6 +74,7 @@ export class FriendsGroup extends Component {
                 key={friend.id}
                 friendInfo={friend}
                 disableAvatarGameIcons={disableAvatarGameIcons}
+                gameGroups={gameGroups}
               />
             ))}
           </div>

@@ -21,8 +21,10 @@ export class FriendsList extends Component {
                   groupName={group.name}
                   icon={group.icon}
                   groupContents={group.friends}
+                  placeId={group.placeId}
                   defaultGroupState
                   disableAvatarGameIcons
+                  gameGroups
                   extraClasses="gameGroup"
                 />
               ))}
