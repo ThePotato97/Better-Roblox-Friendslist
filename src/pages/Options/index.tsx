@@ -13,7 +13,6 @@ const App = () => (
 ReactDOM.render(<App />, document.getElementById('root'));
 
 /* debug:start */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 if (module.hot) module.hot.accept();
 /* debug:end */

@@ -1,0 +1,65 @@
+.friendsMain {
+  width: 400px;
+  height: 800px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.chat-container {
+  display: none;
+}
+
+.friendsButton {
+  display: block;
+  width: 100%;
+  padding: 14px 28px;
+  border: none;
+  background-color: rgb(39, 39, 39);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+}
+
+.noselect {
+  user-select: none;
+}
+
+.people-list-container {
+  display: none;
+}
+
+.friendsContainer {
+  position: fixed;
+  z-index: 9999;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  min-height: 25px;
+  max-height: 100vh;
+  background-color: #2c2c2c;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.joinButtonContainer {
+  padding: 0 5px 0 5px;
+}
+
+.joinButton {
+  align-self: center;
+  padding: 3px 12px;
+  border-radius: 5px;
+  color: white;
+
+  &.studio {
+    border-color: #e65f16;
+    background-color: #f56618;
+  }
+
+  &.ingame {
+    border-color: #82ad4e;
+    background-color: #91c257;
+  }
+}

@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "eslint:fix",
+			"problemMatcher": [
+				"$eslint-compact"
+			],
+			"label": "npm: eslint:fix",
+			"detail": "yarn eslint --fix src/**/*.{js,jsx,ts,tsx}"
+		},
+		{
+			"type": "npm",
+			"script": "build",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build",
+			"detail": "pnpm run build"
+		}
+	]
+}
