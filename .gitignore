@@ -14,3 +14,4 @@ yarn-error.log*
 # JetBrain IDE
 .idea
 package.json
+web-ext-artifacts

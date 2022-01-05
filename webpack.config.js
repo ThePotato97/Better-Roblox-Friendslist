@@ -29,7 +29,6 @@ let config = {
     entry: {
         background: path.resolve(__dirname, 'src/pages/Background/index.js'),
         contentScript: path.resolve(__dirname, 'src/pages/ContentScript/index.js'),
-        options: path.resolve(__dirname, 'src/pages/Options/index.tsx'),
         WindowCommunication: path.resolve(__dirname, 'src/pages/WindowCommunication/inject.js'),
     },
     output: {
