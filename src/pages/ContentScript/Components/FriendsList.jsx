@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import "./friendslist.scss";
 
 {
   /*             {groups.gameGroups
@@ -55,7 +56,6 @@ export class FriendsList extends Component {
     this.props = props;
   }
   render() {
-    const { groups, presences, placeDetails } = this.props;
     return (
       <div className="friendsMain">
         <div className="friendlistListContainer">

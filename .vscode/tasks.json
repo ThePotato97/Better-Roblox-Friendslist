@@ -17,6 +17,13 @@
 			"problemMatcher": [],
 			"label": "npm: build",
 			"detail": "pnpm run build"
+		},
+		{
+			"type": "npm",
+			"script": "start",
+			"problemMatcher": [],
+			"label": "npm: start",
+			"detail": "npx node utils/start.js"
 		}
 	]
 }

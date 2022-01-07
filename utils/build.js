@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'production';
 const webpack = require('webpack');
 const config = require('../webpack.config');
 
-delete config.boilerplateConfig;
+delete config.friendsListConfig;
 
 const compiler = webpack(config);
 compiler.run((err, stats) => {
@@ -17,4 +17,4 @@ compiler.run((err, stats) => {
     colors: true,
   }));
   compiler.close(() => {});
-})
+});

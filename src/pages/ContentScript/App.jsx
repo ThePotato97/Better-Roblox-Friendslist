@@ -1,105 +1,156 @@
 import React, { Component } from "react";
-import { FriendsList } from "./FriendsList";
-import { Collapse } from '@mui/material';
-import "./friendsnew.scss";
+import { FriendsList, FriendsListItem, FriendsGroup } from "./Components";
+import { Collapse } from "@mui/material";
+import "./friendsmain.scss";
+import "./friends.scss";
 
 const PresenceTypes = {
   0: {
-    status: 'offline',
+    status: "offline",
   },
   1: {
-    status: 'online',
+    status: "online",
   },
   2: {
-    status: 'ingame',
+    status: "ingame",
   },
   3: {
-    status: 'studio',
+    status: "studio",
   },
 };
 
-const getGroups = function (friends) {
+const getGroups = (groups) => {
+  const { presence, friends } = groups;
   let tempGroups = {
-    online: [],
-    offline: [],
-    ingame: [],
-    studio: [],
-    gameGroups: [],
+    ingame: {
+      name: "In Game",
+      friends: [],
+      defaultGroupState: true,
+      extraClasses: "gameGroup OtherGamesGroup",
+    },
+    studio: {
+      name: "In Studio",
+      friends: [],
+      defaultGroupState: true,
+      extraClasses: "gameGroup OtherGamesGroup",
+    },
+    online: {
+      name: "Online",
+      friends: [],
+      defaultGroupState: true,
+      extraClasses: "onlineFriends",
+    },
+    offline: {
+      name: "Offline",
+      friends: [],
+      defaultGroupState: false,
+      extraClasses: "offlineFriends",
+    },
   };
-
+  let extraGroups = {};
   if (friends) {
-    const groups = friends.gameGroups;
-    const allFriends = friends.friends;
+    const duplicates = friends.reduce((frGroups, friend) => {
+      const item = presence[friend.id];
+      const placeId = item.rootPlaceId || item.placeId;
+      if (null === placeId || "offline" === PresenceTypes[item.userPresenceType]) {
+        return frGroups;
+      }
+      const group = frGroups[placeId] || [];
+      group.push(friend);
+      frGroups[placeId] = group;
+      return frGroups;
+    }, {});
 
+    let tempDuplicates = [];
+    for (const [placeId, item] of Object.entries(duplicates)) item.length > 1 && tempDuplicates.push(placeId);
 
-    groups.forEach((group) => {
-      tempGroups.gameGroups.push(group);
+    tempDuplicates.forEach((id) => {
+      const t = {
+        placeId: id,
+        friends: [],
+        gameGroups: !0,
+        disableAvatarGameIcons: !0,
+        defaultGroupState: !0,
+        extraClasses: "gameGroup",
+      };
+      extraGroups[id] = t;
     });
-    for (let i = 0; i < allFriends.length; i++) {
-      let gameGroup = false;
-      const placeId = (allFriends[i] && allFriends[i].rootPlaceId) || allFriends[i].placeId;
-      if (tempGroups.gameGroups.length > 0) {
-        for (let j = 0; j < tempGroups.gameGroups.length; j++) {
-          if (placeId === tempGroups.gameGroups[j].placeId) {
-            tempGroups.gameGroups[j].friends.push(allFriends[i]);
-            gameGroup = true;
-            break;
-          }
-        }
-        if (gameGroup) {
-          continue;
-        }
-      }
-      const userPresenceType = PresenceTypes[allFriends[i].userPresenceType].status;
-      tempGroups[userPresenceType].push(allFriends[i]);
-    }
 
-    for (let i = 0; i < tempGroups.gameGroups.length; i++) {
-      const groups = tempGroups.gameGroups[i].friends.reduce((groups, item) => {
-        const group = (groups[item.gameId] || []);
-        group.push(item);
-        groups[item.gameId] = group;
-        return groups;
+    friends.forEach((friend) => {
+      const userPresence = presence[friend.id];
+      const presenceType = PresenceTypes[userPresence.userPresenceType].status;
+      const placeId = userPresence.rootPlaceId || userPresence.placeId;
+      if (extraGroups[placeId]) {
+        extraGroups[placeId].friends.push(friend);
+      } else {
+        tempGroups[presenceType].friends.push(friend);
+      }
+    });
+    for (const [, value] of Object.entries(extraGroups)) {
+      const duplicateGameIds = value.friends.reduce((frGroups, friend) => {
+        const gameId = presence[friend.id].gameId;
+        const group = frGroups[gameId] || [];
+        group.push(friend);
+        frGroups[gameId] = group;
+        return frGroups;
       }, {});
+
       let tempFriends = [];
-      for (const [key, value] of Object.entries(groups)) {
-        const length = value.length;
+      for (const [, gameIdGroup] of Object.entries(duplicateGameIds)) {
+        const length = gameIdGroup.length;
         if (length > 1) {
-          for (let i = 0; i < value.length; i++) {
-            if (i === 0) {
-              value[i].groupPosition = "firstInGroup";
-            } else if (i === length-1) {
-              value[i].groupPosition = "lastInGroup";
-            } else {
-              value[i].groupPosition = "inGroup";
+          gameIdGroup.forEach((gameIdGroup, index) => {
+            {
+              gameIdGroup.groupPosition = 0 === index ? "firstInGroup" : index === length - 1 ? "lastInGroup" : "inGroup";
+              gameIdGroup.isInGroup = true;
             }
-            value[i].isInGroup = true;
-          }
+          });
         }
-
-        tempFriends.push(...value.flat());
+        tempFriends.push(...gameIdGroup.flat());
       }
-      tempGroups.gameGroups[i].friends = tempFriends;
+      value.friends = tempFriends;
     }
-  }
 
-  tempGroups.offline.sort((a, b) => {
-    return new Date(b.lastOnline) - new Date(a.lastOnline);
-  });
-  return tempGroups;
+    tempGroups.offline.friends.sort((a, b) => {
+      const aDate = new Date(presence[a.id].lastOnline);
+      const bDate = new Date(presence[b.id].lastOnline);
+      return bDate - aDate;
+    });
+    const groupsMerged = Object.values(extraGroups).concat(Object.values(tempGroups));
+    return groupsMerged;
+  }
 };
 
 export class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      groups: {
-        online: [],
-        offline: [],
-        ingame: [],
-        studio: [],
-        gameGroups: [],
-      },
+      groups: [
+        {
+          name: "In Game",
+          friends: [],
+          defaultGroupState: !0,
+          extraClasses: "gameGroup OtherGamesGroup",
+        },
+        {
+          name: "In Studio",
+          friends: [],
+          defaultGroupState: !0,
+          extraClasses: "gameGroup OtherGamesGroup",
+        },
+        {
+          name: "Online",
+          friends: [],
+          defaultGroupState: !0,
+          extraClasses: "onlineFriends",
+        },
+        {
+          name: "Offline",
+          friends: [],
+          defaultGroupState: !1,
+          extraClasses: "offlineFriends",
+        },
+      ],
       showFriendsList: true,
     };
     this.handleToggleFriendsList = this.handleToggleFriendsList.bind(this);
@@ -108,15 +159,16 @@ export class App extends Component {
   componentDidMount() {
     let port = chrome.runtime.connect({ name: "update" });
     port.postMessage({ message: "request" });
-    port.onMessage.addListener(
-      (msg) => {
-        const groups = getGroups(msg);
-        console.log("GROUPS", groups);
-        this.setState(() => ({
-          groups: groups,
-        }));
-      }
-    );
+    port.onMessage.addListener((msg) => {
+
+      const groups = getGroups(msg);
+      console.log("GROUPS", groups);
+      this.setState(() => ({
+        groups: groups,
+        presence: msg.presence,
+        placeDetails: msg.placeDetails,
+      }));
+    });
   }
 
   handleToggleFriendsList() {
@@ -125,13 +177,46 @@ export class App extends Component {
     }));
   }
   render() {
+    const { groups = [], presence = {}, placeDetails = {} } = this.state;
     return (
       <div className="friendsContainer noselect">
         <button type="button" className="friendsButton" onClick={this.handleToggleFriendsList}>
           <div>Friends List</div>
         </button>
         <Collapse unmountOnExit in={this.state.showFriendsList} dimension="height">
-          <FriendsList groups={this.state.groups} />
+          <FriendsList>
+            {groups
+              && groups.map((group) => (
+                <FriendsGroup
+                  key={group.name || group.placeId}
+                  groupSize={group.friends.length}
+                  placeDetails={placeDetails[group.placeId] || {}}
+                  groupName={
+                    group.name || (group.placeId && placeDetails[group.placeId] && placeDetails[group.placeId].name)
+                  }
+                  placeId={group.placeId}
+                  defaultGroupState={group.defaultGroupState}
+                  extraClasses={group.extraClasses}
+                >
+                  {group.friends.map((friend) => (
+                    <FriendsListItem
+                      key={friend.id}
+                      friendInfo={friend}
+                      presence={presence[friend.id]}
+                      placeDetails={
+                        (presence[friend.id]
+                          && presence[friend.id].placeId
+                          && placeDetails[presence[friend.id].placeId])
+                        || {}
+                      }
+                      rootPlaceDetails={(presence[friend.id] && placeDetails[presence[friend.id].rootPlaceId]) || {}}
+                      disableAvatarGameIcons={group.disableAvatarGameIcons}
+                      gameGroups={group.gameGroups}
+                    />
+                  ))}
+                </FriendsGroup>
+              ))}
+          </FriendsList>
         </Collapse>
       </div>
     );

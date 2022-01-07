@@ -1,14 +1,13 @@
 {
   "name": "Better Roblox Friendslist",
   "description": "a better roblox friends list",
-  "version": "0.0.3",
+  "version": "0.1.2",
   "manifest_version": 2,
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "icons/Icon16x.png",
+    "48": "icons/Icon48x.png",
+    "128": "icons/Icon128x.png"
   },
-  "action": {},
   "background": {
     "scripts": [
       "background.bundle.js"
@@ -16,7 +15,7 @@
   },
   "web_accessible_resources": [
     "WindowCommunication.bundle.js",
-    "images/unknowngame.png"
+    "unknowngame.png"
   ],
   "content_scripts": [{
     "matches": [
@@ -28,7 +27,6 @@
     ]
   }],
   "permissions": [
-    "<all_urls>"
-  ],
-  "options_page": "options.html"
+    "*://*.roblox.com/*"
+  ]
 }

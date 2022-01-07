@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import DateSince from "../DateSince";
-import { JoinButton } from "./JoinButton";
 import { GamePopper } from "./GamePopper";
 import { Fade } from "@mui/material";
 import FriendsListItemMenu from "./FriendsListItemMenu";
@@ -23,15 +22,14 @@ const PresenceTypes = {
 export class FriendsListItem extends Component {
   constructor(props) {
     super(props);
-    this.toggleContextMenu = React.createRef();
     this.state = {};
   }
   render() {
-    const { friendInfo, disableAvatarGameIcons, gameGroups, presence, placeInfo, rootPlaceInfo } = this.props;
+    const { friendInfo, disableAvatarGameIcons, gameGroups, presence, placeDetails, rootPlaceDetails } = this.props;
     const { name, displayName, id: userId, isInGroup, groupPosition } = friendInfo;
-    const { userPresenceType, lastOnline, placeId, gameId } = presence;
-    const { icon: placeIcon, name: placeName, isPlayable, reasonProhibited, universeId } = placeInfo;
-    const { name: rootPlaceName, price: placePrice, description: rootPlaceDescription } = rootPlaceInfo;
+    const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } = presence;
+    const { icon: placeIcon, name: placeName, isPlayable, reasonProhibited, universeId } = placeDetails;
+    const { name: rootPlaceName, price: placePrice, description: rootPlaceDescription } = rootPlaceDetails;
 
     const currentStatus = PresenceTypes[userPresenceType].status;
     const purchaseRequired = reasonProhibited === "PurchaseRequired";
@@ -56,14 +54,6 @@ export class FriendsListItem extends Component {
 
     const lastOnlineString = DateSince(lastOnlineObject);
 
-    const LocationTypes = {
-      [0]: "Mobile",
-      [1]: "Mobile (Ingame)",
-      [2]: "Computer (Website)",
-    };
-
-    const currentPlaceName = rootPlaceName || placeName;
-
     const richPresenceEnabled
       = currentStatus === "ingame" && !gameGroups && rootPlaceName && rootPlaceName !== placeName;
 
@@ -75,7 +65,7 @@ export class FriendsListItem extends Component {
         placePrice={placePrice}
         purchaseRequired={purchaseRequired}
         isPlayEnabled={isPlayEnabled}
-        universeId={universeId}
+        rootPlaceId={rootPlaceId}
         ref={this.toggleContextMenu}
       >
         <Fade in>
@@ -90,9 +80,9 @@ export class FriendsListItem extends Component {
                   <GamePopper
                     placeIcon={placeIcon}
                     placeId={presence.rootPlaceId || placeId}
-                    description={rootPlaceDescription || placeInfo.description}
+                    description={rootPlaceDescription || placeDetails.description}
                     universeId={universeId}
-                    builder={rootPlaceInfo.builder}
+                    builder={rootPlaceDetails.builder}
                   />
                 </a>
               ) : (currentStatus === "ingame" || currentStatus === "studio") && !disableAvatarGameIcons ? (

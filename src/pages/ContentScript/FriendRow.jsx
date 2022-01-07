@@ -64,25 +64,7 @@ export class FriendRow extends Component {
 
     const lastOnlineString = DateSince(lastOnlineObject);
 
-    const LocationTypes = {
-      [0]: "Mobile",
-      [1]: "Mobile (Ingame)",
-      [2]: "Computer (Website)",
-    };
-
-    const currentPlaceName = rootPlaceName || placeName;
-
     const richPresenceEnabled = (currentStatus === "ingame" && !gameGroups) && rootPlaceName && rootPlaceName !== placeName;
-
-    const getJoinString = () => {
-      if (purchaseRequired) {
-        window.location = `https://www.roblox.com/games/${placeId}`;
-      } else if (placeId && gameId) {
-        window.Roblox.GameLauncher.joinGameInstance(`"${placeId}", "${gameId}"`);
-      } else if (placeId) {
-        window.Roblox.GameLauncher.joinGamePlace(`"${placeId}"`);
-      }
-    };
     return (
       <Fade in>
         <div className="friendCategoryContainer friend-anim-enter-done">

@@ -17,10 +17,10 @@ export class FriendsGroup extends Component {
     }));
   }
   render() {
-    const { groupSize, extraClasses, placeId, placeInfo, groupName } = this.props;
-    const { icon, universeId } = placeInfo;
+    const { groupSize, extraClasses, placeId, placeDetails, groupName } = this.props;
+    const { icon, universeId } = placeDetails;
     return (
-      <Fade in={groupSize > 0}>
+      <Fade unmountOnExit in={groupSize > 0}>
         <div className={`DropTarget friendGroup ${extraClasses ? extraClasses : ""}`}>
           <FriendsGroupMenu placeId={placeId}>
             <div className="groupHeaderContainer Panel Focusable" onClick={this.handleToggleGroup}>
@@ -66,10 +66,10 @@ export class FriendsGroup extends Component {
                     <GamePopper
                       placeIcon={icon}
                       placeId={placeId}
-                      description={placeInfo.description}
+                      description={placeDetails.description}
                       universeId={universeId}
                       isInGroup
-                      builder={placeInfo.builder}
+                      builder={placeDetails.builder}
                     />
                   </a>
                 ) : null}
