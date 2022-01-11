@@ -20,7 +20,7 @@
     "stylelint:fix": "npx stylelint --fix src/**/*.{css,less}",
     "prettier": "npx prettier --check src/**/*.{js,jsx,ts,tsx}",
     "prettier:fix": "npx prettier --write src/**/*.{js,jsx,ts,tsx}",
-    "webext:pack": "web-ext build --source-dir dist"
+    "webext:pack": "web-ext build --source-dir build"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",

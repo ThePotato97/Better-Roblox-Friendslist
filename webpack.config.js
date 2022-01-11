@@ -15,8 +15,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const WebpackBarPlugin = require('webpackbar');
 const FriendlyErrorsWebpackPlugin = require('@soda/friendly-errors-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const {
   BundleAnalyzerPlugin,
 } = require('webpack-bundle-analyzer');
@@ -102,13 +100,13 @@ let config = {
     new HtmlWebpackPlugin({
       filename: 'options.html',
       template: path.resolve(__dirname, 'src/templates/default.ejs'),
-      minify: !isDevelopment,
+      minify: false,
       chunks: ['options'],
     }),
     new HtmlWebpackPlugin({
       filename: 'newTab.html',
       template: path.resolve(__dirname, 'src/templates/default.ejs'),
-      minify: !isDevelopment,
+      minify: false,
       chunks: ['newTab'],
     }),
   ],
@@ -167,12 +165,7 @@ if (isDevelopment) {
       ] : []),
     ],
     optimization: {
-      minimizer: [
-        new TerserPlugin({
-          extractComments: false,
-        }),
-        new CssMinimizerPlugin(),
-      ],
+      minimize: false,
     },
     performance: {
       maxEntrypointSize: 4096000,
