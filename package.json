@@ -20,7 +20,7 @@
     "stylelint:fix": "npx stylelint --fix src/**/*.{css,less}",
     "prettier": "npx prettier --check src/**/*.{js,jsx,ts,tsx}",
     "prettier:fix": "npx prettier --write src/**/*.{js,jsx,ts,tsx}",
-    "sign": "web-ext sign --source-dir=build --api-key=user:14019604:348 --api-secret=df93b76bc8268638fede282a7207de7de650025a22ec5962607b60ff23617dc1"
+    "webext:pack": "web-ext build --source-dir dist"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
