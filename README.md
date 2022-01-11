@@ -3,7 +3,7 @@ align="center">
 <sub
 >
 <img  
-src="https://raw.githubusercontent.com/ThePotato97/Better-Roblox-Friendslist/master/public/icons/Icon48x.png" height="38" width="38">
+src="https://raw.githubusercontent.com/ThePotato97/Better-Roblox-Friendslist/master/public/icons/Icon48x.png?token=GHSAT0AAAAAABLUZILWRDTXUEHPR67NQQLOYO5GI7Q" height="38" width="38">
 </sub>
 Better Roblox Friendslist
 </h1>
