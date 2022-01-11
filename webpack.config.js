@@ -10,7 +10,6 @@ const {
 } = require('clean-webpack-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const LodashWebpackPlugin = require('lodash-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const WebpackBarPlugin = require('webpackbar');
@@ -96,18 +95,6 @@ let config = {
         from: path.resolve(__dirname, 'public'),
         to: path.resolve(__dirname, 'build'),
       }],
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'options.html',
-      template: path.resolve(__dirname, 'src/templates/default.ejs'),
-      minify: false,
-      chunks: ['options'],
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'newTab.html',
-      template: path.resolve(__dirname, 'src/templates/default.ejs'),
-      minify: false,
-      chunks: ['newTab'],
     }),
   ],
   resolve: {
