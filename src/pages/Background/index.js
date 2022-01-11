@@ -7,16 +7,20 @@ const getFriends = function (id) {
   if (friendsCache && friendsCache.length > 0) {
     return Promise.resolve(friendsCache);
   }
-  fetch(`https://friends.roblox.com/v1/users/${id}/friends?userSort=StatusFrequents`, {
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-    },
-    method: 'GET',
-  }).then((response) => {
-    response.json().then((data) => {
-      friendsCache = data.data;
-      resolve(data.data);
+  return new Promise((resolve, reject) => {
+    fetch(`https://friends.roblox.com/v1/users/${id}/friends?userSort=StatusFrequents`, {
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+      },
+      method: 'GET',
+    }).then((response) => {
+      response.json().then((data) => {
+        friendsCache = data.data;
+        resolve(data.data);
+      });
+    }).catch((err) => {
+      reject(err);
     });
   });
 };
@@ -168,7 +172,7 @@ const getPlaceIcons = function (ids) {
 };
 let userId;
 
-const getUserId = async function () {
+const getUserId = async () => {
   if (userId) {
     return Promise.resolve(userId);
   }
@@ -196,10 +200,10 @@ const getUserId = async function () {
 const getPlaceIds = function (friends) {
   return new Promise((resolve) => {
     friends.forEach(friend => {
-      if (friend.placeId) {
+      if (friend.placeId && !places[friend.placeId]) {
         places[friend.placeId] = {};
       }
-      if (friend.rootPlaceId) {
+      if (friend.rootPlaceId && !places[friend.rootPlaceId]) {
         places[friend.rootPlaceId] = {};
       }
     });
@@ -222,27 +226,38 @@ const getMissingValues = (array, targetKey) => {
 const getFriendInfo = async () => {
   const userId = await getUserId();
   const friends = await getFriends(userId);
+  if (friends?.length === 0) {
+    return Promise.resolve([]);
+  }
   const presence = await getPresence(friends);
   await getPlaceIds(presence);
   const placesInfoNeeded = await getMissingValues(places, 'name');
   const placeDetails = await multiGetPlaceDetails(placesInfoNeeded);
   const iconsNeeded = await getMissingValues(places, 'icon');
   const placeIcons = await getPlaceIcons(iconsNeeded);
-  const presenceIdKeys = presence.reduce((obj, item) => ({ ...obj, [item.userId]: item }), {});
+  
+  const presenceIdKeys = {};
+
+  for (let i = 0; i < presence.length; i++) {
+    presenceIdKeys[presence[i].userId] = presence[i];
+  }
 
   for await (const info of placeDetails) {
-    if (info.placeId) {
+    if (info.placeId && info.name !== undefined) {
       places[info.placeId].name = info.name;
-      places[info.placeId].price = info.name;
-      places[info.placeId].universeId = info.name;
+      places[info.placeId].price = info.price;
+      places[info.placeId].universeId = info.universeId;
       places[info.placeId].reasonProhibited = info.reasonProhibited;
       places[info.placeId].builder = info.builder;
       places[info.placeId].description = info.description;
       places[info.placeId].isPlayable = info.isPlayable;
     }
   }
-  for await (const icon of placeIcons) {
-    if (icon.targetId) {
+  for await (const icon of placeIcons.flat()) {
+    if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
+      if (icon.state === "Blocked") { 
+        console.log("Blocked", icon);
+      }
       places[icon.targetId].icon = icon.imageUrl;
     }
   }

@@ -1,7 +1,7 @@
 {
   "name": "Better Roblox Friendslist",
   "description": "a better roblox friends list",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "manifest_version": 2,
   "icons": {
     "16": "icons/Icon16x.png",
@@ -15,13 +15,15 @@
   },
   "web_accessible_resources": [
     "WindowCommunication.bundle.js",
-    "unknowngame.png"
+    "unknowngame.png",
+    "icons/Icon48x.png"
   ],
   "content_scripts": [{
     "matches": [
       "*://www.roblox.com/*",
       "*://web.roblox.com/*"
     ],
+    "run_at": "document_idle",
     "js": [
       "contentScript.bundle.js"
     ]

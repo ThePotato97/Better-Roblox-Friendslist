@@ -33,7 +33,9 @@
     "@commitlint/cli": "^12.1.4",
     "@hot-loader/react-dom": "^17.0.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",
+    "@popperjs/core": "^2.11.2",
     "@soda/friendly-errors-webpack-plugin": "^1.8.0",
+    "@szhsin/react-menu": "^2.3.1",
     "@types/chrome": "^0.0.146",
     "@types/jquery": "^3.5.6",
     "@types/lodash": "^4.14.171",
@@ -49,7 +51,6 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.13.3",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
-    "commitlint-config-gitmoji": "^2.2.5",
     "copy-webpack-plugin": "^9.0.1",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
@@ -81,6 +82,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-helmet": "^6.1.0",
+    "react-popper": "^2.2.5",
     "react-refresh": "^0.10.0",
     "react-router-dom": "^5.3.0",
     "sass": "^1.45.1",
@@ -103,6 +105,7 @@
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
+    "@fontsource/roboto": "^4.5.1",
     "@mui/material": "^5.2.6",
     "eslint-plugin-radar": "^0.2.1",
     "typeface-roboto": "^1.1.13"

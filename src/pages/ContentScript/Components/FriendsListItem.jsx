@@ -22,7 +22,7 @@ const PresenceTypes = {
 export class FriendsListItem extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.contextMenuRef = React.createRef();
   }
   render() {
     const { friendInfo, disableAvatarGameIcons, gameGroups, presence, placeDetails, rootPlaceDetails } = this.props;
@@ -33,6 +33,7 @@ export class FriendsListItem extends Component {
 
     const currentStatus = PresenceTypes[userPresenceType].status;
     const purchaseRequired = reasonProhibited === "PurchaseRequired";
+
     const getCurrentLocation = () => {
       return currentStatus === "offline"
         ? `Last online ${lastOnlineString}`
@@ -56,7 +57,7 @@ export class FriendsListItem extends Component {
 
     const richPresenceEnabled
       = currentStatus === "ingame" && !gameGroups && rootPlaceName && rootPlaceName !== placeName;
-
+      
     return (
       <FriendsListItemMenu
         userId={userId}
@@ -66,7 +67,7 @@ export class FriendsListItem extends Component {
         purchaseRequired={purchaseRequired}
         isPlayEnabled={isPlayEnabled}
         rootPlaceId={rootPlaceId}
-        ref={this.toggleContextMenu}
+        ref={this.contextMenuRef}
       >
         <Fade in>
           <div className="friendCategoryContainer friend-anim-enter-done">
@@ -82,7 +83,7 @@ export class FriendsListItem extends Component {
                     placeId={presence.rootPlaceId || placeId}
                     description={rootPlaceDescription || placeDetails.description}
                     universeId={universeId}
-                    builder={rootPlaceDetails.builder}
+                    builder={rootPlaceDetails.builder || placeDetails.builder}
                   />
                 </a>
               ) : (currentStatus === "ingame" || currentStatus === "studio") && !disableAvatarGameIcons ? (
@@ -141,8 +142,7 @@ export class FriendsListItem extends Component {
                     className="ContextMenuButton"
                     onClick={(e) => {
                       e.preventDefault();
-                      this.toggleContextMenu.current.setAnchorPoint({ x: e.clientX, y: e.clientY });
-                      this.toggleContextMenu.current.toggleMenu(true);
+                      this.contextMenuRef.current.handleToggleMenu(true, e.clientX, e.clientY);
                     }}
                   >
                     <svg

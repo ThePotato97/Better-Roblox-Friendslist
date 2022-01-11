@@ -13,10 +13,6 @@ const injectScript = function (file_path, tag) {
 const pmsgUrl = chrome.extension.getURL('WindowCommunication.bundle.js');
 injectScript(pmsgUrl, 'head');
 
-setTimeout(() => {
-  window.postMessage({ foo: 'bar', text: "Hello from content script!" }, "*");
-}, 50);
-// Get the element to prepend our app to. This could be any element on a specific website or even just `document.body`.
 const viewport = document.querySelector("html");
 
 // Create a div to render the <App /> component to.
@@ -26,7 +22,7 @@ app.id = 'root';
 
 if (viewport) viewport.prepend(app);
 
-// Render the <App /> component.
 ReactDOM.render(<App />, document.getElementById('root'));
 
 console.log(app);
+

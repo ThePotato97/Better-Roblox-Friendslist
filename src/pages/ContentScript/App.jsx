@@ -1,8 +1,12 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import { FriendsList, FriendsListItem, FriendsGroup } from "./Components";
-import { Collapse } from "@mui/material";
+import { Collapse, Slide } from "@mui/material";
 import "./friendsmain.scss";
 import "./friends.scss";
+import "./roboto.scss";
+
+const extensionIcon = chrome.runtime.getURL("icons/Icon48x.png");
 
 const PresenceTypes = {
   0: {
@@ -89,6 +93,9 @@ const getGroups = (groups) => {
     for (const [, value] of Object.entries(extraGroups)) {
       const duplicateGameIds = value.friends.reduce((frGroups, friend) => {
         const gameId = presence[friend.id].gameId;
+        if (null === gameId) {
+          return frGroups;
+        }
         const group = frGroups[gameId] || [];
         group.push(friend);
         frGroups[gameId] = group;
@@ -101,7 +108,8 @@ const getGroups = (groups) => {
         if (length > 1) {
           gameIdGroup.forEach((gameIdGroup, index) => {
             {
-              gameIdGroup.groupPosition = 0 === index ? "firstInGroup" : index === length - 1 ? "lastInGroup" : "inGroup";
+              gameIdGroup.groupPosition
+                = 0 === index ? "firstInGroup" : index === length - 1 ? "lastInGroup" : "inGroup";
               gameIdGroup.isInGroup = true;
             }
           });
@@ -151,16 +159,24 @@ export class App extends Component {
           extraClasses: "offlineFriends",
         },
       ],
-      showFriendsList: true,
+      showFriendsList: JSON.parse(sessionStorage.getItem("showFriendsList")),
+      showExtension: JSON.parse(sessionStorage.getItem("showFriendsExtension")),
     };
     this.handleToggleFriendsList = this.handleToggleFriendsList.bind(this);
+    this.handleToggleExtension = this.handleToggleExtension.bind(this);
   }
 
   componentDidMount() {
+    const friendsListElement = document.querySelector("#chat-container");
+    console.log("friendsListElement", friendsListElement);
+    if (friendsListElement) {
+      friendsListElement.style.display = this.state.showExtension ? "none" : "block";
+      console.log("Display", friendsListElement.style.display);
+    }
     let port = chrome.runtime.connect({ name: "update" });
     port.postMessage({ message: "request" });
     port.onMessage.addListener((msg) => {
-
+      console.log("Messasge from background", msg);
       const groups = getGroups(msg);
       console.log("GROUPS", groups);
       this.setState(() => ({
@@ -170,55 +186,94 @@ export class App extends Component {
       }));
     });
   }
-
+  
+  handleToggleExtension() {
+    const friendsListElement = document.querySelector("#chat-container");
+    this.setState((prevState) => ({
+      showExtension: !prevState.showExtension,
+    // eslint-disable-next-line no-sequences
+    })), sessionStorage.setItem("showFriendsExtension", !this.state.showExtension);
+    if (friendsListElement) {
+      friendsListElement.style.display = !this.state.showExtension ? "none" : "block";
+    }
+  }
   handleToggleFriendsList() {
     this.setState((prevState) => ({
       showFriendsList: !prevState.showFriendsList,
-    }));
+    // eslint-disable-next-line no-sequences
+    })), sessionStorage.setItem("showFriendsList", !this.state.showFriendsList);
   }
   render() {
     const { groups = [], presence = {}, placeDetails = {} } = this.state;
     return (
-      <div className="friendsContainer noselect">
-        <button type="button" className="friendsButton" onClick={this.handleToggleFriendsList}>
-          <div>Friends List</div>
-        </button>
-        <Collapse unmountOnExit in={this.state.showFriendsList} dimension="height">
-          <FriendsList>
-            {groups
-              && groups.map((group) => (
-                <FriendsGroup
-                  key={group.name || group.placeId}
-                  groupSize={group.friends.length}
-                  placeDetails={placeDetails[group.placeId] || {}}
-                  groupName={
-                    group.name || (group.placeId && placeDetails[group.placeId] && placeDetails[group.placeId].name)
-                  }
-                  placeId={group.placeId}
-                  defaultGroupState={group.defaultGroupState}
-                  extraClasses={group.extraClasses}
-                >
-                  {group.friends.map((friend) => (
-                    <FriendsListItem
-                      key={friend.id}
-                      friendInfo={friend}
-                      presence={presence[friend.id]}
-                      placeDetails={
-                        (presence[friend.id]
-                          && presence[friend.id].placeId
-                          && placeDetails[presence[friend.id].placeId])
-                        || {}
+      <>
+        <Slide in={this.state.showExtension} direction={"up"} appear>
+          <div className="friendsContainer noselect">
+            <button type="button" className="friendsButton" onClick={this.handleToggleFriendsList}>
+              <div>Friends List</div>
+            </button>
+            <Collapse unmountOnExit in={this.state.showFriendsList} dimension="height">
+              <FriendsList>
+                {groups
+                  && groups.map((group) => (
+                    <FriendsGroup
+                      key={group.name || group.placeId}
+                      groupSize={group.friends.length}
+                      placeDetails={placeDetails[group.placeId] || {}}
+                      groupName={
+                        group.name || (group.placeId && placeDetails[group.placeId] && placeDetails[group.placeId].name)
                       }
-                      rootPlaceDetails={(presence[friend.id] && placeDetails[presence[friend.id].rootPlaceId]) || {}}
-                      disableAvatarGameIcons={group.disableAvatarGameIcons}
-                      gameGroups={group.gameGroups}
-                    />
+                      placeId={group.placeId}
+                      defaultGroupState={group.defaultGroupState}
+                      extraClasses={group.extraClasses}
+                    >
+                      {group.friends.map((friend) => (
+                        <FriendsListItem
+                          key={friend.id}
+                          friendInfo={friend}
+                          presence={presence[friend.id]}
+                          placeDetails={
+                            (presence[friend.id]
+                              && presence[friend.id].placeId
+                              && placeDetails[presence[friend.id].placeId])
+                            || {}
+                          }
+                          rootPlaceDetails={
+                            (presence[friend.id] && placeDetails[presence[friend.id].rootPlaceId]) || {}
+                          }
+                          disableAvatarGameIcons={group.disableAvatarGameIcons}
+                          gameGroups={group.gameGroups}
+                        />
+                      ))}
+                    </FriendsGroup>
                   ))}
-                </FriendsGroup>
-              ))}
-          </FriendsList>
-        </Collapse>
-      </div>
+              </FriendsList>
+            </Collapse>
+          </div>
+        </Slide>
+        {document.querySelector("#navbar-stream") ? ReactDOM.createPortal(
+          <li id="navbar-settings" className="cursor-pointer navbar-icon-item">
+            <span id="settings-icon" className="nav-settings-icon rbx-menu-item" onClick={this.handleToggleExtension}>
+              <span
+                className="roblox-popover-close"
+                id="nav-settings"
+                style={{
+                  backgroundImage: `url(${extensionIcon})`,
+                  cursor: "pointer",
+                  filter: !this.state.showExtension && "grayscale(100%)",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "cover",
+                  width: "28px",
+                  height: "28px",
+                  display: "inline-block",
+                }}
+              />
+              <span className="notification-red notification nav-setting-highlight hidden">0</span>
+            </span>
+          </li>,
+          document.querySelector("#navbar-stream").parentElement
+        ) : null}
+      </>
     );
   }
 }

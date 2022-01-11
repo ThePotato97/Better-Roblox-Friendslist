@@ -1,25 +1,45 @@
-import React, { useState } from "react";
-import { ControlledMenu, MenuItem, useMenuState } from "@szhsin/react-menu";
+import React, { Component } from "react";
+import { ControlledMenu, MenuItem } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/core.css";
 import "./FriendsListItemMenu.scss";
 
+export default class FriendsListItemMenu extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorPoint: { x: 0, y: 0 },
+      menuProps: {
+        state: "closed",
+      },
+    };
+    this.handleToggleMenu = this.handleToggleMenu.bind(this);
+    this.handleOpenProfile = this.handleOpenProfile.bind(this);
+    this.handleJoinGame = this.handleJoinGame.bind(this);
+  }
 
+  handleToggleMenu(isOpen, x, y) {
+    const setStateTo = {
+      menuProps: {
+        state: (isOpen ? "open" : "closed"),
+      },
 
-export default function FriendsListItemMenu(props) {
-  const { toggleMenu, ...menuProps } = useMenuState();
-  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const {
-    purchaseRequired,
-    placePrice,
-    placeId,
-    userId,
-    gameId,
-    isPlayEnabled,
-    rootPlaceId,
-  } = props;
-  const placePriceDisplay = placePrice || 0;
+    };
+    if (x && y) {
+      setStateTo.anchorPoint = { x: x, y: y };
+    }
+    this.setState(() => ({
+      ...setStateTo,
+    }));
 
-  const handleJoinGame = () => {
+  }
+
+  handleOpenProfile() {
+    const { userId } = this.props;
+    window.location = `https://www.roblox.com/users/${userId}/profile`;
+  }
+
+  handleJoinGame() {
+    const { placeId, gameId, userId, rootPlaceId, purchaseRequired } = this.props;
     let isFirefox = typeof InstallTrigger !== "undefined";
     if (purchaseRequired) {
       window.location = `https://www.roblox.com/games/${placeId}`;
@@ -38,30 +58,39 @@ export default function FriendsListItemMenu(props) {
     }
     const event = new CustomEvent("RecieveContent", { detail: content });
     window.dispatchEvent(event);
-  };
-  const handleOpenProfile = () => {
-    window.location = `https://www.roblox.com/users/${userId}/profile`;
-  };
-  return (
-    <div
-      onContextMenu={(e) => {
-        e.preventDefault();
-        setAnchorPoint({ x: e.clientX, y: e.clientY });
-        toggleMenu(true);
-      }}
-    >
-      {props.children}
+  }
 
-      <ControlledMenu {...menuProps} anchorPoint={anchorPoint} onClose={() => toggleMenu(false)}>
-        <MenuItem onClick={handleOpenProfile}>View Profile</MenuItem>
-        {isPlayEnabled ? (
-          <MenuItem onClick={handleJoinGame}>
-            {purchaseRequired ? <span className="icon icon-robux-white-16x16" /> : null}
+  render() {
+    const {
+      purchaseRequired,
+      placePrice,
+      isPlayEnabled,
+    } = this.props;
+    const placePriceDisplay = placePrice || 0;
+    return (
+      <div
+        onContextMenu={(e) => {
+          e.preventDefault();
+          this.handleToggleMenu(true, e.clientX, e.clientY);
+        }}
+      >
+        {this.props.children}
 
-            {purchaseRequired ? placePriceDisplay : "Join"}
-          </MenuItem>
-        ) : null}
-      </ControlledMenu>
-    </div>
-  );
+        <ControlledMenu
+          {...this.state.menuProps}
+          anchorPoint={this.state.anchorPoint}
+          onClose={() => this.handleToggleMenu(false)}
+        >
+          <MenuItem onClick={this.handleOpenProfile}>View Profile</MenuItem>
+          {isPlayEnabled ? (
+            <MenuItem onClick={this.handleJoinGame}>
+              {purchaseRequired ? <span className="icon icon-robux-white-16x16" /> : null}
+
+              {purchaseRequired ? placePriceDisplay : "Join"}
+            </MenuItem>
+          ) : null}
+        </ControlledMenu>
+      </div>
+    );
+  }
 }
