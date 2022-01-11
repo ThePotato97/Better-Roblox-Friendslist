@@ -1,10 +1,10 @@
 {
-  "name": "webpack-boilterplate",
+  "name": "better-roblox-friendslist",
   "version": "0.0.1",
-  "description": "A good starting point for using webpack to build stuffs.",
-  "author": "tomzhu1024",
-  "license": "MIT",
-  "repository": "https://github.com/tomzhu1024/webpack-boilerplate",
+  "description": "A better friendslist for roblox",
+  "author": "ThePotato97/Better-Roblox-Friendslist",
+  "license": "ISC",
+  "repository": "",
   "private": true,
   "scripts": {
     "prepare": "npx husky install",
