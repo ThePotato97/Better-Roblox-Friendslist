@@ -130,11 +130,6 @@ if (isDevelopment) {
         overlay: false,
       }),
     ],
-    resolve: {
-      alias: {
-        'react-dom': '@hot-loader/react-dom',
-      },
-    },
   });
 } else {
   config = merge(config, {
