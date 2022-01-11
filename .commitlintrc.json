@@ -1,6 +1,5 @@
 {
   "extends": [
-    "gitmoji"
   ],
   "rules": {
     "type-empty": [1, "never"],

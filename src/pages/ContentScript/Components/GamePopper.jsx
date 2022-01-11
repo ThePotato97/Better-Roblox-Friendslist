@@ -21,7 +21,7 @@ const getPlacePlaying = (universeId) => {
   if (cacheConcurrent[universeId]) {
     return Promise.resolve(cacheConcurrent[universeId]);
   }
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then((response) => {
       response.json().then((data) => {
         const placeInfo = data.data && data.data[0];
@@ -65,13 +65,12 @@ const getPlaceVotes = (universeId) => {
 };
 
 export const GamePopper = (props) => {
-  const { placeId, universeId } = props;
+  const { universeId } = props;
   const [votes, setVotes] = useState("???");
   const [playing, setPlaying] = useState("???");
   const [showPopper, setPopperState] = useState(false);
   const [referenceElement, setReferenceElement] = useState(null);
   const [popperElement, setPopperElement] = useState(null);
-  const [arrowElement, setArrowElement] = useState(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: "left",
     modifiers: [
