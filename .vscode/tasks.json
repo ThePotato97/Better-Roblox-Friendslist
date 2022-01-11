@@ -24,6 +24,13 @@
 			"problemMatcher": [],
 			"label": "npm: start",
 			"detail": "npx node utils/start.js"
+		},
+		{
+			"type": "npm",
+			"script": "webext:pack",
+			"problemMatcher": [],
+			"label": "npm: webext:pack",
+			"detail": "web-ext build --source-dir build"
 		}
 	]
 }
