@@ -12,3 +12,7 @@ jobs:
       - uses: borales/actions-yarn@v2.3.0
         with:
           cmd: build # will run `yarn build` command
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build # or path/to/artifact
