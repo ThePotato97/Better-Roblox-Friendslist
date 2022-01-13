@@ -1,5 +1,12 @@
 {
     "standard.enable": false,
     "compile-hero.disable-compile-files-on-did-save-code": true,
-    "deepscan.enable": true
+    "deepscan.enable": true,
+    "stylelint.packageManager": "yarn",
+    "stylelint.validate": [
+        "css",
+        "less",
+        "postcss",
+        "scss"
+    ]
 }

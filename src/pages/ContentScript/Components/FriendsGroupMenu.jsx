@@ -13,7 +13,7 @@ const intToString = (value) => {
 };
 
 const getPlacePlaying = (universeId) => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then((response) => {
       response.json().then((data) => {
         const placeInfo = data.data && data.data[0];
