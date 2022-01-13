@@ -4,7 +4,6 @@ import { FriendsList, FriendsListItem, FriendsGroup } from "./Components";
 import { Collapse, Slide } from "@mui/material";
 import "./friendsmain.scss";
 import "./friends.scss";
-import "./roboto.scss";
 
 const extensionIcon = chrome.runtime.getURL("icons/Icon48x.png");
 
@@ -132,6 +131,8 @@ const getGroups = (groups) => {
 export class App extends Component {
   constructor(props) {
     super(props);
+    const showFriendsList = JSON.parse(sessionStorage.getItem("showFriendsList"));
+    const showFriendsExtension = JSON.parse(localStorage.getItem("showFriendsExtension"));
     this.state = {
       groups: [
         {
@@ -159,8 +160,8 @@ export class App extends Component {
           extraClasses: "offlineFriends",
         },
       ],
-      showFriendsList: JSON.parse(sessionStorage.getItem("showFriendsList")),
-      showExtension: JSON.parse(sessionStorage.getItem("showFriendsExtension")),
+      showFriendsList: showFriendsList ?? true,
+      showExtension: showFriendsExtension ?? true,
     };
     this.handleToggleFriendsList = this.handleToggleFriendsList.bind(this);
     this.handleToggleExtension = this.handleToggleExtension.bind(this);
@@ -192,7 +193,7 @@ export class App extends Component {
     this.setState((prevState) => ({
       showExtension: !prevState.showExtension,
     // eslint-disable-next-line no-sequences
-    })), sessionStorage.setItem("showFriendsExtension", !this.state.showExtension);
+    })), localStorage.setItem("showFriendsExtension", !this.state.showExtension);
     if (friendsListElement) {
       friendsListElement.style.display = !this.state.showExtension ? "none" : "block";
     }
