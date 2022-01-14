@@ -132,7 +132,7 @@ export class App extends Component {
   constructor(props) {
     super(props);
     const showFriendsList = JSON.parse(sessionStorage.getItem("showFriendsList"));
-    const showFriendsExtension = JSON.parse(localStorage.getItem("showFriendsExtension"));
+    const showFriendsExtension = JSON.parse(sessionStorage.getItem("showFriendsExtension"));
     this.state = {
       groups: [
         {
@@ -193,7 +193,7 @@ export class App extends Component {
     this.setState((prevState) => ({
       showExtension: !prevState.showExtension,
     // eslint-disable-next-line no-sequences
-    })), localStorage.setItem("showFriendsExtension", !this.state.showExtension);
+    })), sessionStorage.setItem("showFriendsExtension", !this.state.showExtension);
     if (friendsListElement) {
       friendsListElement.style.display = !this.state.showExtension ? "none" : "block";
     }
