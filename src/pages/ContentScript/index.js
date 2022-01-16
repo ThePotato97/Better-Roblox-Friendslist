@@ -10,6 +10,16 @@ const injectScript = function (file_path, tag) {
   node.appendChild(script);
 };
 
+if (window.location.pathname === "/home") {
+  const style = document.createElement('style');
+  style.innerHTML = `
+  .people-list-container {
+    display: none;
+  }
+  `;
+  document.head.appendChild(style);
+}
+
 const pmsgUrl = chrome.extension.getURL('WindowCommunication.bundle.js');
 injectScript(pmsgUrl, 'head');
 
