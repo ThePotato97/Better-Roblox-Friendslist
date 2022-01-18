@@ -49,25 +49,27 @@ const getPlaceVotes = (universeId) => {
 };
 
 export default function FriendsGroupMenu(props) {
-  const { toggleMenu, ...menuProps } = useMenuState();
-  const [votes, setVotes] = useState([]);
-  const [playing, setPlaying] = useState([]);
-  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const { placeId, universeId = 1359573625 } = props;
-
-  useEffect(() => {
-    getPlaceVotes(universeId).then((votes) => {
-      setVotes(votes);
-    });
-    getPlacePlaying(universeId).then((visits) => {
-      setPlaying(visits);
-    });
-  });
-
-  const handleViewPlace = () => {
-    window.location = `/games/${placeId}`;
-  };
+  const { placeId, universeId } = props;
   if (placeId) {
+    const { toggleMenu, ...menuProps } = useMenuState();
+    const [votes, setVotes] = useState([]);
+    const [playing, setPlaying] = useState([]);
+    const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+      if (menuProps.state === "open" && universeId) {
+        getPlaceVotes(universeId).then((votes) => {
+          setVotes(votes);
+        });
+        getPlacePlaying(universeId).then((visits) => {
+          setPlaying(visits);
+        });
+      }
+    });
+
+    const handleViewPlace = () => {
+      window.location = `/games/${placeId}`;
+    };
     return (
       <div
         onContextMenu={(e) => {
@@ -82,7 +84,8 @@ export default function FriendsGroupMenu(props) {
           <div>
             <div
               style={{
-                height: "120px", width: "205px",
+                height: "120px",
+                width: "205px",
                 backgroundImage: `linear-gradient(transparent, black), url('https://www.roblox.com/asset-thumbnail/image?assetId=${placeId}&width=256&height=144&format=png')`,
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
