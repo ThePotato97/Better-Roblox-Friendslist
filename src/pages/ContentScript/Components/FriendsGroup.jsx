@@ -12,8 +12,12 @@ export class FriendsGroup extends Component {
   }
 
   handleToggleGroup() {
+    const groupStates = JSON.parse(localStorage.getItem("groupStates"));
+    groupStates[this.props.indexName] = !this.state.showGroup;
+    localStorage.setItem("showFriendsList", JSON.stringify(groupStates));
     this.setState((prevState) => ({
       showGroup: !prevState.showGroup,
+    // eslint-disable-next-line no-sequences
     }));
   }
   render() {

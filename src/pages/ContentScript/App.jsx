@@ -133,30 +133,35 @@ export class App extends Component {
     super(props);
     const showFriendsList = JSON.parse(sessionStorage.getItem("showFriendsList"));
     const showFriendsExtension = JSON.parse(sessionStorage.getItem("showFriendsExtension"));
+    const groupStates = JSON.parse(localStorage.getItem("groupStates"));
     this.state = {
       groups: [
         {
           name: "In Game",
+          indexName: "ingame",
           friends: [],
-          defaultGroupState: !0,
+          defaultGroupState: groupStates?.ingame ?? true,
           extraClasses: "gameGroup OtherGamesGroup",
         },
         {
           name: "In Studio",
+          indexName: "studio",
           friends: [],
-          defaultGroupState: !0,
+          defaultGroupState: groupStates?.studio ?? true,
           extraClasses: "gameGroup OtherGamesGroup",
         },
         {
           name: "Online",
+          indexName: "online",
           friends: [],
-          defaultGroupState: !0,
+          defaultGroupState: groupStates?.online ?? true,
           extraClasses: "onlineFriends",
         },
         {
           name: "Offline",
+          indexName: "offline",
           friends: [],
-          defaultGroupState: !1,
+          defaultGroupState: groupStates?.offline ?? true,
           extraClasses: "offlineFriends",
         },
       ],
@@ -219,6 +224,7 @@ export class App extends Component {
                   && groups.map((group) => (
                     <FriendsGroup
                       key={group.name || group.placeId}
+                      indexName={group.indexName}
                       groupSize={group.friends.length}
                       placeDetails={placeDetails[group.placeId] || {}}
                       groupName={
