@@ -12,7 +12,8 @@ export class FriendsGroup extends Component {
   }
 
   handleToggleGroup() {
-    const groupStates = JSON.parse(localStorage.getItem("groupStates"));
+    const groupStates = JSON.parse(localStorage.getItem("groupStates")) || {};
+
     groupStates[this.props.indexName] = !this.state.showGroup;
     localStorage.setItem("showFriendsList", JSON.stringify(groupStates));
     this.setState((prevState) => ({
