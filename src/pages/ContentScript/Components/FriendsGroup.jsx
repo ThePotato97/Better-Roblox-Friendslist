@@ -12,13 +12,14 @@ export class FriendsGroup extends Component {
   }
 
   handleToggleGroup() {
-    const groupStates = JSON.parse(localStorage.getItem("groupStates")) || {};
-
-    groupStates[this.props.indexName] = !this.state.showGroup;
-    localStorage.setItem("showFriendsList", JSON.stringify(groupStates));
+    console.log(this.props.indexName);
+    if (this.props.indexName) {
+      const groupStates = JSON.parse(localStorage.getItem("groupStates")) || {};
+      groupStates[this.props.indexName] = !this.state.showGroup;
+      localStorage.setItem("groupStates", JSON.stringify(groupStates));
+    }
     this.setState((prevState) => ({
       showGroup: !prevState.showGroup,
-    // eslint-disable-next-line no-sequences
     }));
   }
   render() {

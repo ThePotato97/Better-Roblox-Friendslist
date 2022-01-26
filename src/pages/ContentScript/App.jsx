@@ -23,30 +23,35 @@ const PresenceTypes = {
 };
 
 const getGroups = (groups) => {
+  const groupStates = JSON.parse(localStorage.getItem("groupStates"));
   const { presence, friends } = groups;
   let tempGroups = {
     ingame: {
       name: "In Game",
+      indexName: "ingame",
       friends: [],
-      defaultGroupState: true,
+      defaultGroupState: groupStates?.ingame ?? true,
       extraClasses: "gameGroup OtherGamesGroup",
     },
     studio: {
       name: "In Studio",
+      indexName: "studio",
       friends: [],
-      defaultGroupState: true,
+      defaultGroupState: groupStates?.studio ?? true,
       extraClasses: "gameGroup OtherGamesGroup",
     },
     online: {
       name: "Online",
+      indexName: "online",
       friends: [],
-      defaultGroupState: true,
+      defaultGroupState: groupStates?.online ?? true,
       extraClasses: "onlineFriends",
     },
     offline: {
       name: "Offline",
+      indexName: "offline",
       friends: [],
-      defaultGroupState: false,
+      defaultGroupState: groupStates?.offline ?? true,
       extraClasses: "offlineFriends",
     },
   };
