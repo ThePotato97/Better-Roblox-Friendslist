@@ -22,10 +22,6 @@
   user-select: none;
 }
 
-.people-list-container {
-  display: none;
-}
-
 .friendsContainer {
   position: fixed;
   z-index: 9999;
@@ -39,10 +35,9 @@
   border-top-right-radius: 5px;
 }
 
-.friendsContainer * {
+.friendsContainer div {
   font-family: "Roboto", sans-serif;
   font-weight: normal;
-  line-height: normal;
 }
 
 .personastatusicons_Joinable {
