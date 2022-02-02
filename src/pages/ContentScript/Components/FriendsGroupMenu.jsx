@@ -37,7 +37,6 @@ const getPlaceVotes = (universeId) => {
             const { upVotes, downVotes } = placeVotes;
             const totalVotes = upVotes + downVotes;
             const percentage = Math.round((upVotes / totalVotes) * 100);
-            console.log("Percentage", percentage);
             resolve(percentage);
           }
         })

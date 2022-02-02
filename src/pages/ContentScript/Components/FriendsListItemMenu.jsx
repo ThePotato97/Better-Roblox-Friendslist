@@ -45,7 +45,6 @@ export default class FriendsListItemMenu extends Component {
       window.location = `https://www.roblox.com/games/${placeId}`;
       return;
     }
-    console.log("Purchase Required", purchaseRequired);
     let content = {
       action: "joinGame",
       rootPlaceId: rootPlaceId,
