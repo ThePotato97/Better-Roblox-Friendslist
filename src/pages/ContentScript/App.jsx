@@ -179,17 +179,13 @@ export class App extends Component {
 
   componentDidMount() {
     const friendsListElement = document.querySelector("#chat-container");
-    console.log("friendsListElement", friendsListElement);
     if (friendsListElement) {
       friendsListElement.style.display = this.state.showExtension ? "none" : "block";
-      console.log("Display", friendsListElement.style.display);
     }
     let port = chrome.runtime.connect({ name: "update" });
     port.postMessage({ message: "request" });
     port.onMessage.addListener((msg) => {
-      console.log("Messasge from background", msg);
       const groups = getGroups(msg);
-      console.log("GROUPS", groups);
       this.setState(() => ({
         groups: groups,
         presence: msg.presence,
