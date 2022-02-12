@@ -3,6 +3,16 @@ import { ControlledMenu, MenuItem } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/core.css";
 import "./FriendsListItemMenu.scss";
 
+const joinGame = (content) => {
+  const isFirefox = typeof InstallTrigger !== "undefined";
+  console.log("Content", content);
+  if (isFirefox) {
+    content = cloneInto(content, document.defaultView);
+  }
+  const event = new CustomEvent("RecieveContent", { detail: content });
+  window.dispatchEvent(event);
+};
+
 export default class FriendsListItemMenu extends Component {
   constructor(props) {
     super(props);
@@ -14,15 +24,15 @@ export default class FriendsListItemMenu extends Component {
     };
     this.handleToggleMenu = this.handleToggleMenu.bind(this);
     this.handleOpenProfile = this.handleOpenProfile.bind(this);
+    this.handleJoinFriend = this.handleJoinFriend.bind(this);
     this.handleJoinGame = this.handleJoinGame.bind(this);
   }
 
   handleToggleMenu(isOpen, x, y) {
     const setStateTo = {
       menuProps: {
-        state: (isOpen ? "open" : "closed"),
+        state: isOpen ? "open" : "closed",
       },
-
     };
     if (x && y) {
       setStateTo.anchorPoint = { x: x, y: y };
@@ -30,7 +40,6 @@ export default class FriendsListItemMenu extends Component {
     this.setState(() => ({
       ...setStateTo,
     }));
-
   }
 
   handleOpenProfile() {
@@ -38,9 +47,8 @@ export default class FriendsListItemMenu extends Component {
     window.location = `https://www.roblox.com/users/${userId}/profile`;
   }
 
-  handleJoinGame() {
+  handleJoinFriend() {
     const { placeId, gameId, userId, rootPlaceId, purchaseRequired } = this.props;
-    let isFirefox = typeof InstallTrigger !== "undefined";
     if (purchaseRequired) {
       window.location = `https://www.roblox.com/games/${placeId}`;
       return;
@@ -52,19 +60,25 @@ export default class FriendsListItemMenu extends Component {
       gameId: gameId,
       userId: userId,
     };
-    if (isFirefox) {
-      content = cloneInto(content, document.defaultView);
-    }
-    const event = new CustomEvent("RecieveContent", { detail: content });
-    window.dispatchEvent(event);
+
+    joinGame(content);
   }
 
+  handleJoinGame() {
+    const { placeId, rootPlaceId, purchaseRequired } = this.props;
+    if (purchaseRequired) {
+      window.location = `https://www.roblox.com/games/${placeId}`;
+      return;
+    }
+    let content = {
+      action: "joinGame",
+      rootPlaceId: rootPlaceId,
+      placeId: placeId,
+    };
+    joinGame(content);
+  }
   render() {
-    const {
-      purchaseRequired,
-      placePrice,
-      isPlayEnabled,
-    } = this.props;
+    const { purchaseRequired, placePrice, isPlayEnabled } = this.props;
     const placePriceDisplay = placePrice || 0;
     return (
       <div
@@ -82,11 +96,17 @@ export default class FriendsListItemMenu extends Component {
         >
           <MenuItem onClick={this.handleOpenProfile}>View Profile</MenuItem>
           {isPlayEnabled ? (
-            <MenuItem onClick={this.handleJoinGame}>
-              {purchaseRequired ? <span className="icon icon-robux-white-16x16" /> : null}
-
-              {purchaseRequired ? placePriceDisplay : "Join"}
-            </MenuItem>
+            <>
+              <MenuItem onClick={this.handleJoinFriend}>
+                {purchaseRequired ? <span className="icon icon-robux-white-16x16" /> : null}
+                {purchaseRequired ? placePriceDisplay : "Join Friend"}
+              </MenuItem>
+              {purchaseRequired ? undefined : (
+                <MenuItem onClick={this.handleJoinGame}>
+                  {"Join Game"}
+                </MenuItem>
+              )}
+            </>
           ) : null}
         </ControlledMenu>
       </div>
