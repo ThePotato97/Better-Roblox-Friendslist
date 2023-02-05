@@ -1,12 +1,9 @@
 let friendsList = [];
-let friendsCache;
+let thumbnailCache = new Map();
 
 let places = {};
 
 const getFriends = function (id) {
-  if (friendsCache && friendsCache.length > 0) {
-    return Promise.resolve(friendsCache);
-  }
   return new Promise((resolve, reject) => {
     fetch(`https://friends.roblox.com/v1/users/${id}/friends?userSort=StatusFrequents`, {
       credentials: 'include',
@@ -16,7 +13,6 @@ const getFriends = function (id) {
       method: 'GET',
     }).then((response) => {
       response.json().then((data) => {
-        friendsCache = data.data;
         resolve(data.data);
       });
     }).catch((err) => {
@@ -57,7 +53,7 @@ const sliceIntoChunks = function (arr, chunkSize) {
 };
 
 const getAllThumbnails = function (data) {
-  const chunks = sliceIntoChunks(data, 1);
+  const chunks = sliceIntoChunks(data, 60);
   return Promise.all(
     chunks.map((chunk) => {
       return getThumbnails(chunk);
@@ -69,8 +65,8 @@ let multiGetPlaceDetailsCache = {};
 const multiGetPlaceDetails = function (ids) {
   let cache = [];
   let idsToResolve = [];
-  for (let i = 0; i < ids.length; i++) {
-    let id = ids[i];
+  for (const element of ids) {
+    let id = element;
     if (multiGetPlaceDetailsCache[id]) {
       cache.push(multiGetPlaceDetailsCache[id]);
     } else {
@@ -89,8 +85,8 @@ const multiGetPlaceDetails = function (ids) {
       method: 'GET',
     }).then((response) => {
       response.json().then((data) => {
-        for (let i = 0; i < data.length; i++) {
-          multiGetPlaceDetailsCache[data[i].placeId] = data[i];
+        for (const element of data) {
+          multiGetPlaceDetailsCache[element.placeId] = element;
         }
         if (cache.length > 0) {
           data.push(cache);
@@ -103,13 +99,13 @@ const multiGetPlaceDetails = function (ids) {
 
 
 
-const getPresence = function (friends) {
+const getPresence = function (friends, url) {
   const ids = friends.map((friend) => friend.id);
   const request = JSON.stringify({
     userIds: ids,
   });
   return new Promise((resolve, reject) => {
-    fetch(`https://presence.roblox.com/v1/presence/users/`, {
+    fetch(url, {
       credentials: 'include',
       headers: {
         Accept: 'application/json',
@@ -119,36 +115,35 @@ const getPresence = function (friends) {
       method: 'POST',
     }).then((response) => {
       response.json().then((data) => {
-        resolve(data.userPresences);
+        resolve(data);
       }).catch((err) => {
         reject(err);
       });
     });
   });
 };
-let iconCache = {};
 
-const getPlaceIcons = function (ids) {
+const fetchThumbnails = function (ids, thumbnailType, size) {
   return new Promise((resolve) => {
     let request = [];
     let cache = [];
 
     ids.forEach((id) => {
-      const cached = iconCache[id];
+      const cached = thumbnailCache.get(id);
       if (cached) {
         cache.push({
           targetId: id,
-          type: 'PlaceIcon',
+          type: thumbnailType,
           imageUrl: cached,
         });
       } else {
         request.push({
-          format: 'jpeg',
+          format: 'png',
           requestId: `${id}:GameIcon:150x150:jpeg:regular`,
           targetId: id,
-          size: '150x150',
+          size: size,
           token: '',
-          type: 'PlaceIcon',
+          type: thumbnailType,
         });
       }
     });
@@ -156,8 +151,8 @@ const getPlaceIcons = function (ids) {
       getAllThumbnails(request).then((data) => {
         data = data.flat();
         if (data) {
-          for (let i = 0; i < data.length; i++) {
-            iconCache[data[i].targetId] = data[i].imageUrl;
+          for (const element of data) {
+            thumbnailCache.set(element.targetId, element.imageUrl);
           }
           if (cache.length > 0) {
             data.push(cache);
@@ -170,6 +165,7 @@ const getPlaceIcons = function (ids) {
     }
   });
 };
+
 let userId;
 
 const getUserId = async () => {
@@ -211,6 +207,7 @@ const getPlaceIds = function (friends) {
   });
 };
 
+
 const getMissingValues = (array, targetKey) => {
   return new Promise((resolve) => {
     let missing = [];
@@ -229,17 +226,30 @@ const getFriendInfo = async () => {
   if (friends?.length === 0) {
     return Promise.resolve([]);
   }
-  const presence = await getPresence(friends);
-  await getPlaceIds(presence);
+  const presence = await getPresence(friends, "https://presence.roblox.com/v1/presence/users");
+  const lastOnline = await getPresence(friends, "https://presence.roblox.com/v1/presence/last-online");
+  await getPlaceIds(presence.userPresences);
   const placesInfoNeeded = await getMissingValues(places, 'name');
   const placeDetails = await multiGetPlaceDetails(placesInfoNeeded);
   const iconsNeeded = await getMissingValues(places, 'icon');
-  const placeIcons = await getPlaceIcons(iconsNeeded);
-  
+  const placeIcons = await fetchThumbnails(iconsNeeded, 'PlaceIcon', "150x150");
+  const friendIcons = await fetchThumbnails(friends.map((friend) => friend.id), 'AvatarHeadShot', "150x150");
+  const thumbnailsNeeded = await getMissingValues(places, 'thumbnail');
+  const gameThumbnails = await fetchThumbnails(thumbnailsNeeded, 'GameThumbnail', "768x432");
+ 
+
+  const lastOnlineMap = new Map();
+  for (const element of lastOnline.lastOnlineTimestamps) {
+    lastOnlineMap.set(element.userId, element.lastOnline);
+  }
   const presenceIdKeys = {};
 
-  for (let i = 0; i < presence.length; i++) {
-    presenceIdKeys[presence[i].userId] = presence[i];
+  for (const element of presence.userPresences) {
+    presenceIdKeys[element.userId] = element;
+    const lastOnline = lastOnlineMap.get(element.userId);
+    if (lastOnline) {
+      presenceIdKeys[element.userId].lastOnline = lastOnlineMap.get(element.userId);
+    }
   }
 
   for await (const info of placeDetails) {
@@ -253,12 +263,34 @@ const getFriendInfo = async () => {
       places[info.placeId].isPlayable = info.isPlayable;
     }
   }
+  const friendIconMap = new Map();
+  for await (const icon of friendIcons.flat()) {
+    if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
+      if (icon.state === "Blocked") { 
+        console.log("Blocked", icon);
+      }
+      friendIconMap.set(icon.targetId, icon.imageUrl);
+    }
+  }
+  for (const friend of friends) {
+    if (friendIconMap.has(friend.id)) {
+      friend.avatar = friendIconMap.get(friend.id);
+    }
+  }
   for await (const icon of placeIcons.flat()) {
     if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
       if (icon.state === "Blocked") { 
         console.log("Blocked", icon);
       }
       places[icon.targetId].icon = icon.imageUrl;
+    }
+  }
+  for await (const icon of gameThumbnails.flat()) {
+    if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
+      if (icon.state === "Blocked") {
+        console.log("Blocked", icon);
+      }
+      places[icon.targetId].thumbnail = icon.imageUrl;
     }
   }
   return {

@@ -123,6 +123,17 @@ const getGroups = (groups) => {
       const bDate = new Date(presence[b.id].lastOnline);
       return bDate - aDate;
     });
+    // sort friends with joins off
+    tempGroups.ingame.friends.sort((a, b) => {
+      const aPlace = presence[a.id].placeId ?? 0;
+      const bPlace = presence[b.id].placeId ?? 0; 
+      if (!aPlace && !bPlace) return 0;
+      if (!aPlace) return 1;
+      if (!bPlace) return -1;
+      
+      return 0;
+    });
+
     const groupsMerged = Object.values(extraGroups).concat(Object.values(tempGroups));
     return groupsMerged;
   }

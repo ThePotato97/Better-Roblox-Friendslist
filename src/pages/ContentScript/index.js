@@ -10,7 +10,7 @@ const injectScript = function (file_path, tag) {
   node.appendChild(script);
 };
 
-const pmsgUrl = chrome.extension.getURL('WindowCommunication.bundle.js');
+const pmsgUrl = 'WindowCommunication.bundle.js';
 injectScript(pmsgUrl, 'head');
 
 const viewport = document.querySelector("html");

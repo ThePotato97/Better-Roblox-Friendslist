@@ -26,7 +26,7 @@ export class FriendsListItem extends Component {
   }
   render() {
     const { friendInfo, disableAvatarGameIcons, gameGroups, presence, placeDetails, rootPlaceDetails } = this.props;
-    const { name, displayName, id: userId, isInGroup, groupPosition } = friendInfo;
+    const { name, displayName, id: userId, isInGroup, groupPosition, avatar } = friendInfo;
     const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } = presence;
     const { icon: placeIcon, name: placeName, isPlayable, reasonProhibited, universeId } = placeDetails;
     const { name: rootPlaceName, price: placePrice, description: rootPlaceDescription } = rootPlaceDetails;
@@ -96,7 +96,7 @@ export class FriendsListItem extends Component {
                 <a href={`/users/${userId}/profile`}>
                   <img
                     className="steamavatar_avatar_f2laR avatar"
-                    src={`https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=50&height=50&format=png`}
+                    src={avatar}
                     alt=""
                     draggable="false"
                   />
