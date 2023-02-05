@@ -136,7 +136,7 @@ export const GamePopper = (props) => {
                   style={{
                     height: "217px",
                     width: "390px",
-                    backgroundImage: `linear-gradient(transparent, black), url('https://www.roblox.com/asset-thumbnail/image?assetId=${props.placeId}&width=768&height=432&format=png')`,
+                    backgroundImage: `linear-gradient(transparent, black), url('${props.placeThumbnail}')`,
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                   }}

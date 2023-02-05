@@ -24,7 +24,7 @@ export class FriendsGroup extends Component {
   }
   render() {
     const { groupSize, extraClasses, placeId, placeDetails, groupName } = this.props;
-    const { icon, universeId } = placeDetails;
+    const { icon, universeId, thumbnail, description, builder } = placeDetails;
     return (
       <Fade unmountOnExit in={groupSize > 0}>
         <div className={`DropTarget friendGroup ${extraClasses ? extraClasses : ""}`}>
@@ -71,11 +71,12 @@ export class FriendsGroup extends Component {
                   <a href={`/games/${placeId}`}>
                     <GamePopper
                       placeIcon={icon}
+                      placeThumbnail={thumbnail}
                       placeId={placeId}
-                      description={placeDetails.description}
+                      description={description}
                       universeId={universeId}
                       isInGroup
-                      builder={placeDetails.builder}
+                      builder={builder}
                     />
                   </a>
                 ) : null}
