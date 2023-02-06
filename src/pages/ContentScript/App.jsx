@@ -57,6 +57,16 @@ const getGroups = (groups) => {
   };
   let extraGroups = {};
   if (friends) {
+    // sort friends with joins off
+    friends.sort((a, b) => {
+      const aPlace = presence[a.id].placeId ?? 0;
+      const bPlace = presence[b.id].placeId ?? 0;
+      if (!aPlace && !bPlace) return 0;
+      if (!aPlace) return 1;
+      if (!bPlace) return -1;
+
+      return 0;
+    });
     const duplicates = friends.reduce((frGroups, friend) => {
       const item = presence[friend.id];
       const placeId = item.rootPlaceId || item.placeId;
@@ -83,7 +93,6 @@ const getGroups = (groups) => {
       };
       extraGroups[id] = t;
     });
-
     friends.forEach((friend) => {
       const userPresence = presence[friend.id];
       const presenceType = PresenceTypes[userPresence.userPresenceType].status;
@@ -127,16 +136,6 @@ const getGroups = (groups) => {
       const aDate = new Date(presence[a.id].lastOnline);
       const bDate = new Date(presence[b.id].lastOnline);
       return bDate - aDate;
-    });
-    // sort friends with joins off
-    tempGroups.ingame.friends.sort((a, b) => {
-      const aPlace = presence[a.id].placeId ?? 0;
-      const bPlace = presence[b.id].placeId ?? 0; 
-      if (!aPlace && !bPlace) return 0;
-      if (!aPlace) return 1;
-      if (!bPlace) return -1;
-      
-      return 0;
     });
 
     const groupsMerged = Object.values(extraGroups).concat(Object.values(tempGroups));
@@ -204,12 +203,12 @@ export class App extends Component {
       }));
     });
   }
-  
+
   handleToggleExtension() {
     const friendsListElement = document.querySelector("#chat-container");
     this.setState((prevState) => ({
       showExtension: !prevState.showExtension,
-    // eslint-disable-next-line no-sequences
+      // eslint-disable-next-line no-sequences
     })), sessionStorage.setItem("showFriendsExtension", !this.state.showExtension);
     if (friendsListElement) {
       friendsListElement.style.display = !this.state.showExtension ? "none" : "block";
@@ -218,7 +217,7 @@ export class App extends Component {
   handleToggleFriendsList() {
     this.setState((prevState) => ({
       showFriendsList: !prevState.showFriendsList,
-    // eslint-disable-next-line no-sequences
+      // eslint-disable-next-line no-sequences
     })), sessionStorage.setItem("showFriendsList", !this.state.showFriendsList);
   }
   render() {
