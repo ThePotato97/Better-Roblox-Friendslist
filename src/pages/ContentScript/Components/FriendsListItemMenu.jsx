@@ -5,7 +5,6 @@ import "./FriendsListItemMenu.scss";
 
 const joinGame = (content) => {
   const isFirefox = typeof InstallTrigger !== "undefined";
-  console.log("Content", content);
   if (isFirefox) {
     content = cloneInto(content, document.defaultView);
   }

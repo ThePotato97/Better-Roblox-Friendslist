@@ -346,10 +346,12 @@ let openPorts = (function () {
 
 getFriendInfo().then((friends) => {
   friendsList = friends;
-
+  openPorts.messageAll(friends);
 });
 
 setInterval(() => {
+  const ports = openPorts.getPorts();
+  if (!ports || Object.keys(ports).length === 0) return;
   getFriendInfo().then((friends) => {
     friendsList = friends;
     openPorts.messageAll(friends);
