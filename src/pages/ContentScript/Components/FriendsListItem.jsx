@@ -28,7 +28,7 @@ export class FriendsListItem extends Component {
     const { friendInfo, disableAvatarGameIcons, gameGroups, presence, placeDetails, rootPlaceDetails } = this.props;
     const { name, displayName, id: userId, isInGroup, groupPosition, avatar } = friendInfo;
     const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } = presence;
-    const { icon: placeIcon, name: placeName, isPlayable, reasonProhibited, universeId } = placeDetails;
+    const { icon: placeIcon, name: placeName, isPlayable, reasonProhibited, universeId, thumbnail } = placeDetails;
     const { name: rootPlaceName, price: placePrice, description: rootPlaceDescription } = rootPlaceDetails;
 
     const currentStatus = PresenceTypes[userPresenceType].status;
@@ -80,6 +80,7 @@ export class FriendsListItem extends Component {
                 <a href={`/games/${placeId}`}>
                   <GamePopper
                     placeIcon={placeIcon}
+                    placeThumbnail={thumbnail}
                     placeId={presence.rootPlaceId || placeId}
                     description={rootPlaceDescription || placeDetails.description}
                     universeId={universeId}
