@@ -20,7 +20,7 @@ if (window.location.pathname === "/home") {
   document.head.appendChild(style);
 }
 
-const pmsgUrl = 'WindowCommunication.bundle.js';
+const pmsgUrl = chrome.runtime.getURL('WindowCommunication.bundle.js');
 
 injectScript(pmsgUrl, 'head');
 
