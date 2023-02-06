@@ -9,7 +9,9 @@
     "128": "icons/Icon128x.png"
   },
   "background": {
-    "service_worker": "background.bundle.js"
+    "scripts": [
+      "background.bundle.js"
+    ]
   },
   "web_accessible_resources": [
     {
@@ -24,6 +26,11 @@
       ]
     }
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{8d00077d-e8c6-47cf-b711-23bc30b12840}"
+    }
+  },
   "content_scripts": [
     {
       "matches": [
