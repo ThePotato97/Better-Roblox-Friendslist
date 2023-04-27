@@ -46,16 +46,19 @@ export class FriendRow extends Component {
     const currentStatus = PresenceTypes[userPresenceType].status;
     const purchaseRequired = reasonProhibited === "PurchaseRequired";
     const getCurrentLocation = () => {
-      return currentStatus === "offline"
-        ? `Last online ${lastOnlineString}`
-        : currentStatus === "online"
-          ? `Online`
-          : currentStatus === "ingame"
-            ? gameGroups ? placeName || rootPlaceName : rootPlaceName || placeName || "In Game"
-            : currentStatus === "studio"
-              ? rootPlaceName || placeName || "In Studio"
-              : "Unknown";
+      if (currentStatus === "offline") {
+        return `Last online ${lastOnlineString}`;
+      } else if (currentStatus === "online") {
+        return "Online";
+      } else if (currentStatus === "ingame") {
+        return gameGroups ? placeName || rootPlaceName : rootPlaceName || placeName || "In Game";
+      } else if (currentStatus === "studio") {
+        return rootPlaceName || placeName || "In Studio";
+      } else {
+        return "Unknown";
+      }
     };
+
     const isPlayEnabled
       = (isPlayable && (currentStatus === "ingame" || currentStatus === "studio"))
       || (purchaseRequired && placeId && gameId);
@@ -96,13 +99,11 @@ export class FriendRow extends Component {
               </a>
             </div>
             <div
-              className={`labelHolder ${
-                !richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
+              className={`labelHolder ${!richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
               } ${currentStatus}`}
             >
               <div
-                className={`personanameandstatus_statusAndName_9U-hi ${
-                  richPresenceEnabled ? "personanameandstatus_threeLines_2pPym" : ""
+                className={`personanameandstatus_statusAndName_9U-hi ${richPresenceEnabled ? "personanameandstatus_threeLines_2pPym" : ""
                 }`}
               >
                 <div className="personanameandstatus_playerName_1uxaf">

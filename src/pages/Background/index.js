@@ -6,31 +6,33 @@ let places = {};
 const getFriends = function (id) {
   return new Promise((resolve, reject) => {
     fetch(`https://friends.roblox.com/v1/users/${id}/friends?userSort=StatusFrequents`, {
-      credentials: 'include',
+      credentials: "include",
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
       },
-      method: 'GET',
-    }).then((response) => {
-      response.json().then((data) => {
-        resolve(data.data);
+      method: "GET",
+    })
+      .then((response) => {
+        response.json().then((data) => {
+          resolve(data.data);
+        });
+      })
+      .catch((err) => {
+        reject(err);
       });
-    }).catch((err) => {
-      reject(err);
-    });
   });
 };
 
 const getThumbnails = function (data) {
   return new Promise((resolve) => {
-    fetch('https://thumbnails.roblox.com/v1/batch', {
-      credentials: 'include',
+    fetch("https://thumbnails.roblox.com/v1/batch", {
+      credentials: "include",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-      method: 'POST',
+      method: "POST",
     }).then((response) => {
       response.json().then((data) => {
         if (data.errors) {
@@ -77,12 +79,12 @@ const multiGetPlaceDetails = function (ids) {
     return Promise.resolve(cache);
   }
   return new Promise((resolve) => {
-    fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${idsToResolve.join('&placeIds=')}`, {
-      credentials: 'include',
+    fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${idsToResolve.join("&placeIds=")}`, {
+      credentials: "include",
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
       },
-      method: 'GET',
+      method: "GET",
     }).then((response) => {
       response.json().then((data) => {
         for (const element of data) {
@@ -97,8 +99,6 @@ const multiGetPlaceDetails = function (ids) {
   });
 };
 
-
-
 const getPresence = function (friends, url) {
   const ids = friends.map((friend) => friend.id);
   const request = JSON.stringify({
@@ -106,19 +106,22 @@ const getPresence = function (friends, url) {
   });
   return new Promise((resolve, reject) => {
     fetch(url, {
-      credentials: 'include',
+      credentials: "include",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       body: request,
-      method: 'POST',
+      method: "POST",
     }).then((response) => {
-      response.json().then((data) => {
-        resolve(data);
-      }).catch((err) => {
-        reject(err);
-      });
+      response
+        .json()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
     });
   });
 };
@@ -138,11 +141,11 @@ const fetchThumbnails = function (ids, thumbnailType, size) {
         });
       } else {
         request.push({
-          format: 'png',
+          format: "png",
           requestId: `${id}:GameIcon:150x150:jpeg:regular`,
           targetId: id,
           size: size,
-          token: '',
+          token: "",
           type: thumbnailType,
         });
       }
@@ -174,9 +177,9 @@ const getUserId = async () => {
   }
   try {
     return await new Promise((resolve, reject) => {
-      fetch('https://www.roblox.com/my/account/json', {
-        method: 'GET',
-        credentials: 'include',
+      fetch("https://www.roblox.com/my/account/json", {
+        method: "GET",
+        credentials: "include",
       }).then((response) => {
         try {
           response.json().then((data) => {
@@ -195,7 +198,7 @@ const getUserId = async () => {
 
 const getPlaceIds = function (friends) {
   return new Promise((resolve) => {
-    friends.forEach(friend => {
+    friends.forEach((friend) => {
       if (friend.placeId && !places[friend.placeId]) {
         places[friend.placeId] = {};
       }
@@ -206,7 +209,6 @@ const getPlaceIds = function (friends) {
     resolve(places);
   });
 };
-
 
 const getMissingValues = (array, targetKey) => {
   return new Promise((resolve) => {
@@ -229,14 +231,17 @@ const getFriendInfo = async () => {
   const presence = await getPresence(friends, "https://presence.roblox.com/v1/presence/users");
   const lastOnline = await getPresence(friends, "https://presence.roblox.com/v1/presence/last-online");
   await getPlaceIds(presence.userPresences);
-  const placesInfoNeeded = await getMissingValues(places, 'name');
+  const placesInfoNeeded = await getMissingValues(places, "name");
   const placeDetails = await multiGetPlaceDetails(placesInfoNeeded);
-  const iconsNeeded = await getMissingValues(places, 'icon');
-  const placeIcons = await fetchThumbnails(iconsNeeded, 'PlaceIcon', "150x150");
-  const friendIcons = await fetchThumbnails(friends.map((friend) => friend.id), 'AvatarHeadShot', "150x150");
-  const thumbnailsNeeded = await getMissingValues(places, 'thumbnail');
-  const gameThumbnails = await fetchThumbnails(thumbnailsNeeded, 'GameThumbnail', "768x432");
- 
+  const iconsNeeded = await getMissingValues(places, "icon");
+  const placeIcons = await fetchThumbnails(iconsNeeded, "PlaceIcon", "150x150");
+  const friendIcons = await fetchThumbnails(
+    friends.map((friend) => friend.id),
+    "AvatarHeadShot",
+    "150x150"
+  );
+  const thumbnailsNeeded = await getMissingValues(places, "thumbnail");
+  const gameThumbnails = await fetchThumbnails(thumbnailsNeeded, "GameThumbnail", "768x432");
 
   const lastOnlineMap = new Map();
   for (const element of lastOnline.lastOnlineTimestamps) {
@@ -265,8 +270,8 @@ const getFriendInfo = async () => {
   }
   const friendIconMap = new Map();
   for await (const icon of friendIcons.flat()) {
-    if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
-      if (icon.state === "Blocked") { 
+    if ((icon.targetId && icon.imageUrl) || icon.state === "Blocked") {
+      if (icon.state === "Blocked") {
         console.log("Blocked", icon);
       }
       friendIconMap.set(icon.targetId, icon.imageUrl);
@@ -278,15 +283,15 @@ const getFriendInfo = async () => {
     }
   }
   for await (const icon of placeIcons.flat()) {
-    if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
-      if (icon.state === "Blocked") { 
+    if ((icon.targetId && icon.imageUrl) || icon.state === "Blocked") {
+      if (icon.state === "Blocked") {
         console.log("Blocked", icon);
       }
       places[icon.targetId].icon = icon.imageUrl;
     }
   }
   for await (const icon of gameThumbnails.flat()) {
-    if (icon.targetId && icon.imageUrl || icon.state === "Blocked") {
+    if ((icon.targetId && icon.imageUrl) || icon.state === "Blocked") {
       if (icon.state === "Blocked") {
         console.log("Blocked", icon);
       }
@@ -359,7 +364,7 @@ setInterval(() => {
 }, 10000);
 
 chrome.runtime.onConnect.addListener((port) => {
-  console.assert(port.name === 'update');
+  console.assert(port.name === "update");
   port.onMessage.addListener(() => {
     port.postMessage(friendsList);
   });
