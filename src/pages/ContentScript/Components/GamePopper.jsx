@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import ReactDOM from "react-dom";
+import { createPortal } from 'react-dom';
 
 import { usePopper } from "react-popper";
 
@@ -119,7 +119,7 @@ export const GamePopper = (props) => {
         </div>
       )}
       {showPopper
-        ? ReactDOM.createPortal(
+        ? createPortal(
           <div ref={setPopperElement} style={{ ...styles.popper, zIndex: 9999 }} {...attributes.popper}>
             <div
               className="game-popper-container"

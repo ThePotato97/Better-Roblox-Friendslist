@@ -3,7 +3,7 @@ import DateSince from "../DateSince";
 import { GamePopper } from "./GamePopper";
 import { Fade } from "@mui/material";
 import FriendsListItemMenu from "./FriendsListItemMenu";
-const unknownGameImage = chrome.runtime.getURL("/unknowngame.png");
+import unknownGameImage from "../../../images/unknownGame.png";
 
 const PresenceTypes = {
   0: {

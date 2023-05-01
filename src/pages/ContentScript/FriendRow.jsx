@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import DateSince from "./DateSince";
 import { JoinButton } from "./FriendRow/JoinButton";
-import unknownGame from "./unknownGame.png";
+import unknownGame from "/images/unknownGame.png";
 import { Fade } from "@mui/material";
 
 export class FriendRow extends Component {

@@ -1,6 +1,8 @@
 # Output
 build
 web-ext-artifacts
+dist
+.parcel-cache
 
 # Node
 node_modules
