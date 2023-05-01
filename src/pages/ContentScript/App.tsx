@@ -21,8 +21,8 @@ const PresenceTypes = {
   },
 };
 
-const getGroups = (groups) => {
-  const groupStates = JSON.parse(localStorage.getItem("groupStates"));
+const getGroups = async (groups) => {
+  const groupStates = await chrome.storage.local.get("groupStates");
   const { presence, friends } = groups;
   let tempGroups = {
     ingame: {
@@ -69,10 +69,7 @@ const getGroups = (groups) => {
     const duplicates = friends.reduce((frGroups, friend) => {
       const item = presence[friend.id];
       const placeId = item.rootPlaceId || item.placeId;
-      if (
-        null === placeId ||
-        "offline" === PresenceTypes[item.userPresenceType]
-      ) {
+      if (null === placeId || "offline" === PresenceTypes[item.userPresenceType]) {
         return frGroups;
       }
       const group = frGroups[placeId] || [];
@@ -82,8 +79,7 @@ const getGroups = (groups) => {
     }, {});
 
     let tempDuplicates = [];
-    for (const [placeId, item] of Object.entries(duplicates))
-      item.length > 1 && tempDuplicates.push(placeId);
+    for (const [placeId, item] of Object.entries(duplicates)) item.length > 1 && tempDuplicates.push(placeId);
 
     tempDuplicates.forEach((id) => {
       const t = {
@@ -125,11 +121,7 @@ const getGroups = (groups) => {
           gameIdGroup.forEach((gameIdGroup, index) => {
             {
               gameIdGroup.groupPosition =
-                0 === index
-                  ? "firstInGroup"
-                  : index === length - 1
-                  ? "lastInGroup"
-                  : "inGroup";
+                0 === index ? "firstInGroup" : index === length - 1 ? "lastInGroup" : "inGroup";
               gameIdGroup.isInGroup = true;
             }
           });
@@ -145,9 +137,7 @@ const getGroups = (groups) => {
       return bDate - aDate;
     });
 
-    const groupsMerged = Object.values(extraGroups).concat(
-      Object.values(tempGroups)
-    );
+    const groupsMerged = Object.values(extraGroups).concat(Object.values(tempGroups));
     return groupsMerged;
   }
 };
@@ -155,57 +145,52 @@ const getGroups = (groups) => {
 export class App extends Component {
   constructor(props) {
     super(props);
-    const showFriendsList = JSON.parse(
-      sessionStorage.getItem("showFriendsList")
-    );
-    const showFriendsExtension = JSON.parse(
-      sessionStorage.getItem("showFriendsExtension")
-    );
-    const groupStates = JSON.parse(localStorage.getItem("groupStates"));
-    this.state = {
-      groups: [
-        {
-          name: "In Game",
-          indexName: "ingame",
-          friends: [],
-          defaultGroupState: groupStates?.ingame ?? true,
-          extraClasses: "gameGroup OtherGamesGroup",
-        },
-        {
-          name: "In Studio",
-          indexName: "studio",
-          friends: [],
-          defaultGroupState: groupStates?.studio ?? true,
-          extraClasses: "gameGroup OtherGamesGroup",
-        },
-        {
-          name: "Online",
-          indexName: "online",
-          friends: [],
-          defaultGroupState: groupStates?.online ?? true,
-          extraClasses: "onlineFriends",
-        },
-        {
-          name: "Offline",
-          indexName: "offline",
-          friends: [],
-          defaultGroupState: groupStates?.offline ?? true,
-          extraClasses: "offlineFriends",
-        },
-      ],
-      showFriendsList: showFriendsList ?? true,
-      showExtension: showFriendsExtension ?? true,
-    };
-    this.handleToggleFriendsList = this.handleToggleFriendsList.bind(this);
-    this.handleToggleExtension = this.handleToggleExtension.bind(this);
+    const showFriendsList = JSON.parse(sessionStorage.getItem("showFriendsList"));
+    const showFriendsExtension = JSON.parse(sessionStorage.getItem("showFriendsExtension"));
+    chrome.storage.local.get("groupStates").then((groupStates) => {
+      this.state = {
+        groups: [
+          {
+            name: "In Game",
+            indexName: "ingame",
+            friends: [],
+            defaultGroupState: groupStates?.ingame ?? true,
+            extraClasses: "gameGroup OtherGamesGroup",
+          },
+          {
+            name: "In Studio",
+            indexName: "studio",
+            friends: [],
+            defaultGroupState: groupStates?.studio ?? true,
+            extraClasses: "gameGroup OtherGamesGroup",
+          },
+          {
+            name: "Online",
+            indexName: "online",
+            friends: [],
+            defaultGroupState: groupStates?.online ?? true,
+            extraClasses: "onlineFriends",
+          },
+          {
+            name: "Offline",
+            indexName: "offline",
+            friends: [],
+            defaultGroupState: groupStates?.offline ?? true,
+            extraClasses: "offlineFriends",
+          },
+        ],
+        showFriendsList: showFriendsList ?? true,
+        showExtension: showFriendsExtension ?? true,
+      };
+      this.handleToggleFriendsList = this.handleToggleFriendsList.bind(this);
+      this.handleToggleExtension = this.handleToggleExtension.bind(this);
+    });
   }
 
   componentDidMount() {
     const friendsListElement = document.querySelector("#chat-container");
     if (friendsListElement) {
-      friendsListElement.style.display = this.state.showExtension
-        ? "none"
-        : "block";
+      friendsListElement.style.display = this.state.showExtension ? "none" : "block";
     }
     let port = chrome.runtime.connect({ name: "update" });
     port.postMessage({ message: "request" });
@@ -227,9 +212,7 @@ export class App extends Component {
     })),
       sessionStorage.setItem("showFriendsExtension", !this.state.showExtension);
     if (friendsListElement) {
-      friendsListElement.style.display = !this.state.showExtension
-        ? "none"
-        : "block";
+      friendsListElement.style.display = !this.state.showExtension ? "none" : "block";
     }
   }
   handleToggleFriendsList() {
@@ -245,18 +228,10 @@ export class App extends Component {
       <>
         <Slide in={this.state.showExtension} direction={"up"} appear>
           <div className="friendsContainer noselect">
-            <button
-              type="button"
-              className="friendsButton"
-              onClick={this.handleToggleFriendsList}
-            >
+            <button type="button" className="friendsButton" onClick={this.handleToggleFriendsList}>
               <div>Friends List</div>
             </button>
-            <Collapse
-              unmountOnExit
-              in={this.state.showFriendsList}
-              dimension="height"
-            >
+            <Collapse unmountOnExit in={this.state.showFriendsList} dimension="height">
               <FriendsList>
                 {groups &&
                   groups.map((group) => (
@@ -266,10 +241,7 @@ export class App extends Component {
                       groupSize={group.friends.length}
                       placeDetails={placeDetails[group.placeId] || {}}
                       groupName={
-                        group.name ||
-                        (group.placeId &&
-                          placeDetails[group.placeId] &&
-                          placeDetails[group.placeId].name)
+                        group.name || (group.placeId && placeDetails[group.placeId] && placeDetails[group.placeId].name)
                       }
                       placeId={group.placeId}
                       defaultGroupState={group.defaultGroupState}
@@ -287,9 +259,7 @@ export class App extends Component {
                             {}
                           }
                           rootPlaceDetails={
-                            (presence[friend.id] &&
-                              placeDetails[presence[friend.id].rootPlaceId]) ||
-                            {}
+                            (presence[friend.id] && placeDetails[presence[friend.id].rootPlaceId]) || {}
                           }
                           disableAvatarGameIcons={group.disableAvatarGameIcons}
                           gameGroups={group.gameGroups}
@@ -303,10 +273,7 @@ export class App extends Component {
         </Slide>
         {document.querySelector("#navbar-stream")
           ? ReactDOM.createPortal(
-              <li
-                id="navbar-settings"
-                className="cursor-pointer navbar-icon-item"
-              >
+              <li id="navbar-settings" className="cursor-pointer navbar-icon-item">
                 <span
                   id="settings-icon"
                   className="nav-settings-icon rbx-menu-item"
@@ -326,9 +293,7 @@ export class App extends Component {
                       display: "inline-block",
                     }}
                   />
-                  <span className="notification-red notification nav-setting-highlight hidden">
-                    0
-                  </span>
+                  <span className="notification-red notification nav-setting-highlight hidden">0</span>
                 </span>
               </li>,
               document.querySelector("#navbar-stream").parentElement
@@ -338,3 +303,4 @@ export class App extends Component {
     );
   }
 }
+

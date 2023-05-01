@@ -1,34 +1,17 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "ES6",
-    "lib": [
-      "ES5",
-      "ES6",
-      "DOM"
-    ],
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
+    "allowImportingTsExtensions": true,
     "jsx": "react",
-    
-    "noImplicitAny": true,
-    "preserveConstEnums": true,
-    "removeComments": true,
-    "skipLibCheck": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
+    "esModuleInterop": true,
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "strict": true,
+    "baseUrl": "./src",
+    "lib": ["ESNext", "DOM"]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*", "src/globals.d.ts"],
+  "resolve": {
+    "extensions": [".ts", ".tsx", ".js", ".jsx", ".json"]
+  }
 }

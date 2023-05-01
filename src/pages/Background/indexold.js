@@ -1,27 +1,9 @@
+const { FriendsGroup } = require("../ContentScript/Components");
+
 let friendsList = [];
 let thumbnailCache = new Map();
 
 let places = {};
-
-const getFriends = function (id) {
-  return new Promise((resolve, reject) => {
-    fetch(`https://friends.roblox.com/v1/users/${id}/friends?userSort=StatusFrequents`, {
-      credentials: "include",
-      headers: {
-        Accept: "application/json",
-      },
-      method: "GET",
-    })
-      .then((response) => {
-        response.json().then((data) => {
-          resolve(data.data);
-        });
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-};
 
 const getThumbnails = function (data) {
   return new Promise((resolve) => {
@@ -370,3 +352,4 @@ chrome.runtime.onConnect.addListener((port) => {
   });
   openPorts.add(port);
 });
+

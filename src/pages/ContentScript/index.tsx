@@ -1,8 +1,8 @@
 import React from "react";
-import { createRoot } from "react-dom";
+import { createRoot } from 'react-dom/client';
 import { App } from "./App";
 
-const injectScript = function (file_path, tag) {
+const injectScript = function (file_path: string, tag: string) {
   const node = document.getElementsByTagName(tag)[0];
   const script = document.createElement("script");
   script.setAttribute("type", "text/javascript");

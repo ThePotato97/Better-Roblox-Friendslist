@@ -1,0 +1,1345 @@
+openapi: 3.0.1
+info:
+  title: Friends Api v1
+  version: v1
+servers:
+- url: https://friends.roblox.com/
+paths:
+  /v1/metadata:
+    get:
+      tags:
+      - Friends
+      parameters:
+      - name: targetUserId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.FriendsPageMetadataResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.FriendsPageMetadataResponse'
+  /v1/my/friends/count:
+    get:
+      tags:
+      - Friends
+      summary: Get the number of friends a user has
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FriendsCountResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FriendsCountResponse'
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+  /v1/my/friends/requests:
+    get:
+      tags:
+      - Friends
+      summary: Get all users that friend requests with targetUserId using exclusive
+        start paging
+      parameters:
+      - name: limit
+        in: query
+        description: The number of results per request.
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+      - name: cursor
+        in: query
+        description: The paging cursor for the previous or next page.
+        schema:
+          type: string
+      - name: sortOrder
+        in: query
+        description: Sorted by friend request updated time with default descending
+          sort order
+        schema:
+          type: string
+          default: Desc
+          enum:
+          - Asc
+          - Desc
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.FriendRequestResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.FriendRequestResponse]'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: "2: The user is banned from performing operation.\r\n3: The\
+            \ user is blocked from performing this action."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+  /v1/recommended-users:
+    get:
+      tags:
+      - UserRecommendations
+      summary: "Return a list of Recommendations for the Authenticated User.\r\nV1\
+        \ API to just return list of existing friends for the Authenticated user."
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserRecommendationsResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserRecommendationsResponse'
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+  /v1/user/friend-requests/count:
+    get:
+      tags:
+      - Friends
+      summary: Return the number of pending friend requests.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.PendingFriendRequestCountModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.PendingFriendRequestCountModel'
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+  /v1/users/{targetUserId}/followers:
+    get:
+      tags:
+      - Friends
+      summary: Get all users that follow user with targetUserId in page response format
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: limit
+        in: query
+        description: The number of results per request.
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+      - name: cursor
+        in: query
+        description: The paging cursor for the previous or next page.
+        schema:
+          type: string
+      - name: sortOrder
+        in: query
+        description: The order the results are sorted in.
+        schema:
+          type: string
+          default: Asc
+          enum:
+          - Asc
+          - Desc
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters."
+          content: {}
+        403:
+          description: "2: The user is banned from performing operation.\r\n3: The\
+            \ user is blocked from performing this action."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+  /v1/users/{targetUserId}/followers/count:
+    get:
+      tags:
+      - Friends
+      summary: Get the number of following a user has
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FollowCountResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FollowCountResponse'
+        400:
+          description: '1: The target user is invalid or does not exist.'
+          content: {}
+  /v1/users/{targetUserId}/followings:
+    get:
+      tags:
+      - Friends
+      summary: Get all users that user with targetUserId is following in page response
+        format
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: limit
+        in: query
+        description: The number of results per request.
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+      - name: cursor
+        in: query
+        description: The paging cursor for the previous or next page.
+        schema:
+          type: string
+      - name: sortOrder
+        in: query
+        description: The order the results are sorted in.
+        schema:
+          type: string
+          default: Asc
+          enum:
+          - Asc
+          - Desc
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters."
+          content: {}
+        403:
+          description: "2: The user is banned from performing operation.\r\n3: The\
+            \ user is blocked from performing this action."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+  /v1/users/{targetUserId}/followings/count:
+    get:
+      tags:
+      - Friends
+      summary: Get the number of following a user has
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FollowCountResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FollowCountResponse'
+        400:
+          description: '1: The target user is invalid or does not exist.'
+          content: {}
+  /v1/users/{userId}/friends:
+    get:
+      tags:
+      - Friends
+      summary: Get list of all friends for the specified user.
+      parameters:
+      - name: userId
+        in: path
+        description: The user Id to get the friends for.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userSort
+        in: query
+        description: Specifies how to sort the returned friends.
+        schema:
+          type: integer
+          format: int32
+          enum:
+          - 0
+          - 1
+          - 2
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+        400:
+          description: '1: The target user is invalid or does not exist.'
+          content: {}
+  /v1/users/{userId}/friends/count:
+    get:
+      tags:
+      - Friends
+      summary: Get the number of friends a user has
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FriendsCountResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.FriendsCountResponse'
+        400:
+          description: '1: The target user is invalid or does not exist.'
+          content: {}
+  /v1/users/{userId}/friends/inactive:
+    get:
+      tags:
+      - Friends
+      summary: Get list of inactive friends for the specified user.
+      parameters:
+      - name: userId
+        in: path
+        description: The user Id to get the friends for.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserResponse]'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+  /v1/users/{userId}/friends/online:
+    get:
+      tags:
+      - Friends
+      summary: Get list of all online friends for the specified user.
+      parameters:
+      - name: userId
+        in: path
+        description: The user Id to get the friends for.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserPresenceResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserPresenceResponse]'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+  /v1/users/{userId}/friends/statuses:
+    get:
+      tags:
+      - Friends
+      summary: Gets a list of friend statuses of specified users against the specified
+        user.
+      parameters:
+      - name: userId
+        in: path
+        description: The user to check the friend statuses against.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userIds
+        in: query
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.FriendStatusResponse]'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.FriendStatusResponse]'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n15: Too\
+            \ many ids.\r\n16: Invalid ids."
+          content: {}
+  /v1/contacts/{targetContactId}/request-friendship:
+    post:
+      tags:
+      - Friends
+      summary: Send a contact friend request to target user
+      parameters:
+      - name: targetContactId
+        in: path
+        description: The target contact Id for friend request
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.CaptchaStatusResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.CaptchaStatusResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n5: The\
+            \ target user is already a friend.\r\n6: Invalid parameters.\r\n7: The\
+            \ user cannot be friends with itself.\r\n31: User with max friends sent\
+            \ friend request."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: "0: Token Validation Failed\r\n2: The user is banned from performing\
+            \ operation.\r\n3: The user is blocked from performing this action.\r\n\
+            14: The user has not passed the captcha."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+  /v1/user/following-exists:
+    post:
+      tags:
+      - Followings
+      summary: Returns whether or not the current user is following each userId in
+        a list of userIds
+      requestBody:
+        description: The userIds potentially being followed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Friends.Api.FollowingExistsRequestModel'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Friends.Api.FollowingExistsRequestModel'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.FollowingExistsResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.FollowingExistsResponseModel'
+        400:
+          description: '0: An invalid userId was passed in.'
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: '0: Token Validation Failed'
+          content: {}
+        503:
+          description: '1: Followers are disabled at this time.'
+          content: {}
+      x-codegen-request-body-name: requestModel
+  /v1/user/friend-requests/decline-all:
+    post:
+      tags:
+      - Friends
+      summary: Decline all pending friend requests for the authenticated user.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: '0: Token Validation Failed'
+          content: {}
+  /v1/users/{requesterUserId}/accept-friend-request:
+    post:
+      tags:
+      - Friends
+      summary: Accept a friend request.
+      parameters:
+      - name: requesterUserId
+        in: path
+        description: The user Id of the requester
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n10: The\
+            \ friend request does not exist.\r\n11: The current users friends limit\
+            \ has been exceeded.\r\n12: The target users friends limit has been exceeded."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: "0: Token Validation Failed\r\n3: The user is blocked from\
+            \ performing this action."
+          content: {}
+  /v1/users/{requesterUserId}/decline-friend-request:
+    post:
+      tags:
+      - Friends
+      summary: Decline a friend request.
+      parameters:
+      - name: requesterUserId
+        in: path
+        description: The user Id of the requester
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n10: The\
+            \ friend request does not exist."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: '0: Token Validation Failed'
+          content: {}
+  /v1/users/{senderUserId}/accept-friend-request-with-token:
+    post:
+      tags:
+      - Friends
+      summary: Accept a friend request with an Off Network Friending token.
+      parameters:
+      - name: senderUserId
+        in: path
+        description: The user id of the sender of the off network friend request
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Friends.Api.Models.Request.FriendingTokenRequestModel'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Friends.Api.Models.Request.FriendingTokenRequestModel'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n3: The\
+            \ user is blocked from performing this action.\r\n5: The target user is\
+            \ already a friend.\r\n6: Invalid parameters.\r\n7: The user cannot be\
+            \ friends with itself.\r\n11: The current users friends limit has been\
+            \ exceeded.\r\n12: The target users friends limit has been exceeded."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: '0: Token Validation Failed'
+          content: {}
+      x-codegen-request-body-name: requestModel
+  /v1/users/{targetUserId}/follow:
+    post:
+      tags:
+      - Friends
+      summary: Creates the following between a user and user with targetUserId
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Web.Captcha.Models.Request.CaptchaTokenRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Web.Captcha.Models.Request.CaptchaTokenRequest'
+        required: false
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.CaptchaStatusResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.CaptchaStatusResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters.\r\n8: The user cannot follow itself."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: "0: Token Validation Failed\r\n2: The user is banned from performing\
+            \ operation.\r\n3: The user is blocked from performing this action.\r\n\
+            14: The user has not passed the captcha."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+      x-codegen-request-body-name: captchaTokenRequest
+  /v1/users/{targetUserId}/followings/recount:
+    post:
+      tags:
+      - Friends
+      summary: Recompute the number of followings for a user by comparing the existing
+        counter to list of followings
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.RecountResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.RecountResponse'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n32: Counter\
+            \ over limit."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: '0: Token Validation Failed'
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+  /v1/users/{targetUserId}/request-friendship:
+    post:
+      tags:
+      - Friends
+      summary: Send a friend request to target user
+      parameters:
+      - name: targetUserId
+        in: path
+        description: The target user Id for friend request
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The source which the friend request originated from
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Friends.Api.FriendshipRequestModel'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/Roblox.Friends.Api.FriendshipRequestModel'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.CaptchaStatusResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Friends.Api.CaptchaStatusResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n5: The\
+            \ target user is already a friend.\r\n6: Invalid parameters.\r\n7: The\
+            \ user cannot be friends with itself.\r\n10: The friend request does not\
+            \ exist.\r\n13: The users are not in the same game.\r\n31: User with max\
+            \ friends sent friend request."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: "0: Token Validation Failed\r\n2: The user is banned from performing\
+            \ operation.\r\n3: The user is blocked from performing this action.\r\n\
+            14: The user has not passed the captcha."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+      x-codegen-request-body-name: friendshipRequestModel
+  /v1/users/{targetUserId}/unfollow:
+    post:
+      tags:
+      - Friends
+      summary: Deletes the following between a user and user with targetUserId
+      parameters:
+      - name: targetUserId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+        400:
+          description: "1: The target user is invalid or does not exist.\r\n6: Invalid\
+            \ parameters.\r\n8: The user cannot follow itself."
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: "0: Token Validation Failed\r\n2: The user is banned from performing\
+            \ operation.\r\n3: The user is blocked from performing this action.\r\n\
+            14: The user has not passed the captcha."
+          content: {}
+        429:
+          description: '9: The flood limit has been exceeded.'
+          content: {}
+  /v1/users/{targetUserId}/unfriend:
+    post:
+      tags:
+      - Friends
+      summary: Unfriend a user
+      parameters:
+      - name: targetUserId
+        in: path
+        description: The target user id to unfriend
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Roblox.Web.WebAPI.ApiEmptyResponseModel'
+        400:
+          description: '1: The target user is invalid or does not exist.'
+          content: {}
+        401:
+          description: '0: Authorization has been denied for this request.'
+          content: {}
+        403:
+          description: '0: Token Validation Failed'
+          content: {}
+components:
+  schemas:
+    Roblox.Friends.Api.CaptchaStatusResponseModel:
+      type: object
+      properties:
+        success:
+          type: boolean
+        isCaptchaRequired:
+          type: boolean
+          description: Captcha is set to true if captcha is required from user to
+            perform action
+      description: This is response model to notify when action succeeded, failed,
+        or captcha is required
+    Roblox.Friends.Api.FollowCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Count of following or followers
+          format: int64
+      description: Response model for following or followers Count
+    Roblox.Friends.Api.FollowingExistsRequestModel:
+      type: object
+      properties:
+        targetUserIds:
+          type: array
+          description: The userIds which the user may or may not be following.
+          items:
+            type: integer
+            format: int64
+      description: Request model for FollowingExists endpoint
+    Roblox.Friends.Api.FriendRequest:
+      type: object
+      properties:
+        sentAt:
+          type: string
+          description: When the friend request was sent.
+          format: date-time
+        senderId:
+          type: integer
+          description: The sender user Id.
+          format: int64
+        sourceUniverseId:
+          type: integer
+          description: The source universe Id which the request was sent in.
+          format: int64
+        originSourceType:
+          type: integer
+          description: The origin source type associated with the friend request.
+            ['Unknown' = 0, 'PlayerSearch' = 1, 'QrCode' = 2, 'InGame' = 3, 'UserProfile'
+            = 4, 'QqContactImporter' = 5, 'WeChatContactImporter' = 6, 'ProfileShare'
+            = 7, 'PhoneContactImporter' = 8, 'FriendRecommendations' = 9]
+          format: int32
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+        contactName:
+          type: string
+          description: The contact name associated with the friend request.
+      description: A response model representing a friend request.
+    Roblox.Friends.Api.FriendRequestResponse:
+      type: object
+      properties:
+        friendRequest:
+          $ref: '#/components/schemas/Roblox.Friends.Api.FriendRequest'
+        mutualFriendsList:
+          type: array
+          description: mutualFriendsList
+          items:
+            type: string
+        hasVerifiedBadge:
+          type: boolean
+          description: The user's verified badge status.
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+        isBanned:
+          type: boolean
+        externalAppDisplayName:
+          type: string
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        displayName:
+          type: string
+      description: A response model representing a friend request.
+    Roblox.Friends.Api.FriendStatusResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The user Id of the friend.
+          format: int64
+        status:
+          type: integer
+          description: The friendship status. ['NotFriends' = 0, 'Friends' = 1, 'RequestSent'
+            = 2, 'RequestReceived' = 3]
+          format: int32
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+      description: The friendship status response model.
+    Roblox.Friends.Api.FriendsCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Count of friends
+          format: int32
+      description: Response model for Friends Count
+    Roblox.Friends.Api.FriendshipRequestModel:
+      type: object
+      properties:
+        friendshipOriginSourceType:
+          type: integer
+          description: Which source the friend request originated from ['Unknown'
+            = 0, 'PlayerSearch' = 1, 'QrCode' = 2, 'InGame' = 3, 'UserProfile' = 4,
+            'QqContactImporter' = 5, 'WeChatContactImporter' = 6, 'ProfileShare' =
+            7, 'PhoneContactImporter' = 8, 'FriendRecommendations' = 9]
+          format: int32
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+    Roblox.Friends.Api.Models.Request.FriendingTokenRequestModel:
+      type: object
+      properties:
+        friendingToken:
+          type: string
+          description: FriendingToken to authorize the creation of an Off Network
+            Friend request
+      description: Request model for AcceptFriendRequestWithToken endpoint
+    Roblox.Friends.Api.Models.Response.FollowingExistsResponse:
+      type: object
+      properties:
+        isFollowing:
+          type: boolean
+          description: Whether or not a user is following userId in FriendsController.FollowingExists
+        isFollowed:
+          type: boolean
+          description: Whether or not a user is followed by userId in FriendsController.FollowingExists
+        userId:
+          type: integer
+          description: The userId being potentially followed
+          format: int64
+      description: Response contained in list for FollowingExists endpoint. Corresponds
+        to a single userId.
+    Roblox.Friends.Api.Models.Response.FollowingExistsResponseModel:
+      type: object
+      properties:
+        followings:
+          type: array
+          description: A list of userIds and whether or not the given user is following
+            them.
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.FollowingExistsResponse'
+      description: Response model for FollowingExists endpoint.
+    Roblox.Friends.Api.Models.Response.FriendsPageMetadataResponse:
+      type: object
+      properties:
+        isFriendsFilterBarEnabled:
+          type: boolean
+          readOnly: true
+        isFriendsPageSortExperimentEnabled:
+          type: boolean
+          readOnly: true
+        isFriendsUserDataStoreCacheEnabled:
+          type: boolean
+          readOnly: true
+        frequentFriendSortRollout:
+          type: integer
+          format: int32
+          readOnly: true
+        userName:
+          type: string
+        displayName:
+          type: string
+    Roblox.Friends.Api.Models.Response.UserPresenceResponse:
+      type: object
+      properties:
+        userPresence:
+          $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserPresenceResponseModel'
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        displayName:
+          type: string
+      description: A response model representing user presence information.
+    Roblox.Friends.Api.Models.Response.UserPresenceResponseModel:
+      type: object
+      properties:
+        UserPresenceType:
+          type: string
+          description: User Presence Type
+        UserLocationType:
+          type: string
+          description: Location Type
+        lastLocation:
+          type: string
+          description: Last Location
+        placeId:
+          type: integer
+          description: Place Id
+          format: int64
+        rootPlaceId:
+          type: integer
+          description: Root Place Id
+          format: int64
+        gameInstanceId:
+          type: string
+          description: Game Instance Id
+          format: uuid
+        universeId:
+          type: integer
+          format: int64
+        lastOnline:
+          type: string
+          description: Most recent time online
+          format: date-time
+      description: Response model for Roblox.Web.Presence.Interfaces.IUserPresence
+        objects
+    Roblox.Friends.Api.Models.Response.UserRecommendation:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        userProfilePageUrl:
+          type: string
+        userPresenceType:
+          type: integer
+          description: ' [''Offline'' = 0, ''Online'' = 1, ''InGame'' = 2, ''InStudio''
+            = 3]'
+          format: int32
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+    Roblox.Friends.Api.Models.Response.UserRecommendationsResponse:
+      type: object
+      properties:
+        recommendedUsers:
+          type: array
+          description: A collection of User Recommendations for a user.
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserRecommendation'
+    Roblox.Friends.Api.Models.Response.UserResponse:
+      type: object
+      properties:
+        isOnline:
+          type: boolean
+          description: Whether the user is online.
+        presenceType:
+          type: integer
+          description: Where the user is online. ['Offline' = 0, 'Online' = 1, 'InGame'
+            = 2, 'InStudio' = 3]
+          format: int32
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+        isDeleted:
+          type: boolean
+          description: Whether the user is deleted.
+        friendFrequentScore:
+          type: integer
+          description: Frequents value for the user.
+          format: int64
+        friendFrequentRank:
+          type: integer
+          description: Frequents rank for the user.
+          format: int64
+        hasVerifiedBadge:
+          type: boolean
+          description: The user's verified badge status.
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+        isBanned:
+          type: boolean
+        externalAppDisplayName:
+          type: string
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        displayName:
+          type: string
+      description: A response model representing user information that also contains
+        select presence information
+    Roblox.Friends.Api.PendingFriendRequestCountModel:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Count of pending friend requests
+          format: int32
+      description: Response model for Pending Friend Request Count
+    Roblox.Friends.Api.RecountResponse:
+      type: object
+      properties:
+        existingCount:
+          type: integer
+          description: Existing stored value for the given count
+          format: int64
+        computedCount:
+          type: integer
+          description: Computed value for the given count
+          format: int64
+        updated:
+          type: boolean
+          description: Boolean for if the computed value was stored as the count
+      description: Response model for recount of friends counter
+    Roblox.Platform.Core.ExclusiveStartPaging.IExclusiveStartKeyInfo[Roblox.Web.Friends.FriendRequestsPlatformExclusiveStartKey]:
+      type: object
+      properties:
+        SortOrder:
+          type: integer
+          description: ' [''Asc'' = 1, ''Desc'' = 2]'
+          format: int32
+          readOnly: true
+          enum:
+          - 1
+          - 2
+        PagingDirection:
+          type: integer
+          description: ' [''Forward'' = 1, ''Backward'' = 2]'
+          format: int32
+          readOnly: true
+          enum:
+          - 1
+          - 2
+        Count:
+          type: integer
+          format: int32
+          readOnly: true
+    Roblox.Platform.Core.ExclusiveStartPaging.IExclusiveStartKeyInfo[System.Int64]:
+      type: object
+      properties:
+        SortOrder:
+          type: integer
+          description: ' [''Asc'' = 1, ''Desc'' = 2]'
+          format: int32
+          readOnly: true
+          enum:
+          - 1
+          - 2
+        PagingDirection:
+          type: integer
+          description: ' [''Forward'' = 1, ''Backward'' = 2]'
+          format: int32
+          readOnly: true
+          enum:
+          - 1
+          - 2
+        Count:
+          type: integer
+          format: int32
+          readOnly: true
+    Roblox.Web.Captcha.Models.Request.CaptchaTokenRequest:
+      type: object
+      properties:
+        captchaId:
+          type: string
+        captchaToken:
+          type: string
+        captchaProvider:
+          type: string
+        challengeId:
+          type: string
+    Roblox.Web.WebAPI.ApiEmptyResponseModel:
+      type: object
+    Roblox.Web.WebAPI.ExclusiveStartRequest[Roblox.Web.Friends.FriendRequestsPlatformExclusiveStartKey]:
+      type: object
+      properties:
+        ExclusiveStartKeyInfo:
+          $ref: '#/components/schemas/Roblox.Platform.Core.ExclusiveStartPaging.IExclusiveStartKeyInfo[Roblox.Web.Friends.FriendRequestsPlatformExclusiveStartKey]'
+        CursorRecipe:
+          type: string
+    Roblox.Web.WebAPI.ExclusiveStartRequest[System.Int64]:
+      type: object
+      properties:
+        ExclusiveStartKeyInfo:
+          $ref: '#/components/schemas/Roblox.Platform.Core.ExclusiveStartPaging.IExclusiveStartKeyInfo[System.Int64]'
+        CursorRecipe:
+          type: string
+    Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.FriendStatusResponse]:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.FriendStatusResponse'
+    Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserPresenceResponse]:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserPresenceResponse'
+    Roblox.Web.WebAPI.Models.ApiArrayResponse[Roblox.Friends.Api.Models.Response.UserResponse]:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserResponse'
+    Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.FriendRequestResponse]:
+      type: object
+      properties:
+        previousPageCursor:
+          type: string
+        nextPageCursor:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.FriendRequestResponse'
+    Roblox.Web.WebAPI.Models.ApiPageResponse[Roblox.Friends.Api.Models.Response.UserResponse]:
+      type: object
+      properties:
+        previousPageCursor:
+          type: string
+        nextPageCursor:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roblox.Friends.Api.Models.Response.UserResponse'
