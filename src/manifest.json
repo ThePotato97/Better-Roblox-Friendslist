@@ -9,12 +9,14 @@
     "128": "icons/Icon128x.png"
   },
   "background": {
-    "service_worker": "./pages/Background/index.js"
+    "service_worker": "./pages/Background/index.ts",
+    "type": "module"
   },
   "web_accessible_resources": [
     {
       "resources": [
-        "./pages/WindowCommunication/inject.js",
+        "./pages/WindowCommunication/inject.ts",
+        "./pages/ContentScript/inject.ts",
         "images/unknowngame.png",
         "icons/Icon48x.png"
       ],
@@ -32,9 +34,12 @@
       ],
       "run_at": "document_idle",
       "js": [
-        "./pages/ContentScript/index.js"
+        "./pages/ContentScript/index.tsx"
       ]
     }
+  ],
+  "permissions": [
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "*://*.roblox.com/*"

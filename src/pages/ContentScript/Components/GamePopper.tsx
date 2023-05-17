@@ -16,7 +16,7 @@ const intToString = (value) => {
   return shortValue + suffixes[suffixNum];
 };
 
-let cacheConcurrent = {};
+const cacheConcurrent = {};
 const getPlacePlaying = (universeId) => {
   if (cacheConcurrent[universeId]) {
     return Promise.resolve(cacheConcurrent[universeId]);
@@ -37,7 +37,7 @@ const getPlacePlaying = (universeId) => {
   });
 };
 
-let cacheVotes = {};
+const cacheVotes = {};
 const getPlaceVotes = (universeId) => {
   if (cacheVotes[universeId]) {
     return Promise.resolve(cacheVotes[universeId]);

@@ -1,12 +1,10 @@
 import { fetchApiSplit } from "rozod";
-import { postV1batch as thumbnailsBatch } from "rozod/lib/endpoints/thumbnailsv1";
+import { postBatch as thumbnailsBatch } from "rozod/lib/endpoints/thumbnailsv1";
 import { z } from "zod";
-
-type thumbnailsBatchGetResponse = z.infer<(typeof thumbnailsBatch)["response"]>;
 
 type ThumbnailType = z.infer<(typeof thumbnailsBatch)["parameters"]["body"]>[0]["type"];
 
-const thumbnailsCache = new Map<string, thumbnailsBatchGetResponse>();
+const thumbnailsCache = new Map<string, string>();
 
 export const getRequestId = (id: number, thumbnailType: ThumbnailType, size: string) => {
   return `${id}:${thumbnailType}:${size}:png:regular`;
@@ -18,6 +16,7 @@ export const fetchThumbnails = async function (
   size: string
 ): Promise<typeof thumbnailsCache> {
   const newIds = ids.filter((id) => !thumbnailsCache.has(getRequestId(id, thumbnailType, size)));
+  if (newIds.length === 0) return thumbnailsCache;
   const response = await fetchApiSplit(
     thumbnailsBatch,
     {
@@ -26,23 +25,20 @@ export const fetchThumbnails = async function (
         requestId: getRequestId(id, thumbnailType, size),
         targetId: id,
         size: size,
+        alias: "",
         token: "",
         type: thumbnailType,
+        isCircular: false,
       })),
     },
     { body: 60 }
   );
   const data = response.map((response) => response.data).flat();
   data.forEach((responseData) => {
-    // Check if the responseData object has an array of data
-    if (Array.isArray(responseData)) {
-      // Iterate through each data object in the array and cache it
-      responseData.forEach((data) => {
-        const { requestId } = data;
-        thumbnailsCache.set(requestId, data);
-      });
-    }
+    const { requestId } = responseData;
+    thumbnailsCache.set(requestId, responseData.imageUrl);
   });
 
   return thumbnailsCache;
 };
+

@@ -27,7 +27,7 @@ export class JoinButton extends Component {
 
   render() {
     const { purchaseRequired, currentStatus, placePrice } = this.props;
-    let placePriceDisplay = placePrice || 0;
+    const placePriceDisplay = placePrice || 0;
     return (
       <div id="joinButton" className="joinButtonContainer">
         <button type="button" className={`joinButton ${currentStatus}`} onClick={this.handleJoinGame}>

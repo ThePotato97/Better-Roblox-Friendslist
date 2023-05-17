@@ -47,12 +47,13 @@ export default class FriendsListItemMenu extends Component {
   }
 
   handleJoinFriend() {
-    const { placeId, gameId, userId, rootPlaceId, purchaseRequired } = this.props;
+    const { placeId, gameId, userId, rootPlaceId, purchaseRequired } =
+      this.props;
     if (purchaseRequired) {
       window.location = `https://www.roblox.com/games/${placeId}`;
       return;
     }
-    let content = {
+    const content = {
       action: "joinGame",
       rootPlaceId: rootPlaceId,
       placeId: placeId,
@@ -69,7 +70,7 @@ export default class FriendsListItemMenu extends Component {
       window.location = `https://www.roblox.com/games/${placeId}`;
       return;
     }
-    let content = {
+    const content = {
       action: "joinGame",
       rootPlaceId: rootPlaceId,
       placeId: placeId,
@@ -97,12 +98,14 @@ export default class FriendsListItemMenu extends Component {
           {isPlayEnabled ? (
             <>
               <MenuItem onClick={this.handleJoinFriend}>
-                {purchaseRequired ? <span className="icon icon-robux-white-16x16" /> : null}
+                {purchaseRequired ? (
+                  <span className="icon icon-robux-white-16x16" />
+                ) : null}
                 {purchaseRequired ? placePriceDisplay : "Join Friend"}
               </MenuItem>
               {purchaseRequired ? undefined : (
                 <MenuItem onClick={this.handleJoinGame}>
-                  {"Join Game"}
+                  {"Launch Game"}
                 </MenuItem>
               )}
             </>

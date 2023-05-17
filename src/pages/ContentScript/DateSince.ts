@@ -1,4 +1,4 @@
-const DateSince = (date, relativeTo, short = false) => {
+const DateSince = (date: Date, relativeTo?: Date, short = false) => {
   if (relativeTo instanceof Date) {
     relativeTo = relativeTo.getTime();
   } else if (typeof relativeTo === "string") {

@@ -13,7 +13,7 @@ export class FriendsGroup extends Component {
 
   handleToggleGroup() {
     if (this.props.indexName) {
-      const groupStates = JSON.parse(localStorage.getItem("groupStates")) || {};
+      const groupStates = JSON.parse(localStorage.getItem("groupStates") ?? "{}");
       groupStates[this.props.indexName] = !this.state.showGroup;
       localStorage.setItem("groupStates", JSON.stringify(groupStates));
     }
@@ -27,7 +27,7 @@ export class FriendsGroup extends Component {
     return (
       <Fade unmountOnExit in={groupSize > 0}>
         <div className={`DropTarget friendGroup ${extraClasses ? extraClasses : ""}`}>
-          <FriendsGroupMenu placeId={placeId} universeId={universeId} >
+          <FriendsGroupMenu placeId={placeId} universeId={universeId}>
             <div className="groupHeaderContainer Panel Focusable" onClick={this.handleToggleGroup}>
               <div className={`groupName ${!this.state.showGroup && "Collapsed"} Panel Focusable`} tabIndex="0">
                 <div className="ExpandPlusMinus">
