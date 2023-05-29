@@ -1,4 +1,4 @@
-import React, { Component, useRef } from "react";
+import React, { Component, forwardRef, useRef, useState } from "react";
 import DateSince from "../DateSince";
 import { GamePopper } from "./GamePopper";
 import { Fade } from "@mui/material";
@@ -15,12 +15,12 @@ const PresenceTypesLookup = {
   4: "invisible",
 };
 
-type friendInfoProp = {
+interface friendInfoProp {
   isInGroup: boolean;
   groupPosition: number;
-};
+}
 
-type FriendsListItemProps = {
+interface FriendsListItemProps {
   friendInfo: Exclude<FriendInfo["friends"], null>[0] & friendInfoProp;
   disableAvatarGameIcons: boolean;
   gameGroups: boolean;
@@ -28,40 +28,28 @@ type FriendsListItemProps = {
   placeDetails: Exclude<FriendInfo["placeDetails"], null>[0];
   rootPlaceDetails: Exclude<FriendInfo["placeDetails"], null>[0];
   serverDetails: Exclude<FriendInfo["serverDetails"], null>[""];
-};
-export const FriendsListItem = (props: FriendsListItemProps) => {
-  const contextMenuRef = useRef<FriendsListItemMenu>(null);
+}
+export const FriendsListItem = function FriendsListItem({
+  friendInfo, disableAvatarGameIcons, gameGroups, presence, placeDetails, rootPlaceDetails, serverDetails,
+}: FriendsListItemProps) {
+
+  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+  const [menuProps, setMenuProps] = useState<{ state: "open" | "closed" }>({ state: "closed" });
+
+  const handleToggleMenu = (isOpen: boolean, x = 0, y = 0) => {
+    setAnchorPoint({ x: x, y: y });
+    setMenuProps({ state: isOpen ? "open" : "closed" });
+  };
+
   const {
-    friendInfo,
-    disableAvatarGameIcons,
-    gameGroups,
-    presence,
-    placeDetails,
-    rootPlaceDetails,
-    serverDetails,
-  } = props;
-  const {
-    name,
-    displayName,
-    id: userId,
-    isInGroup,
-    groupPosition,
-    avatar,
+    name, displayName, id: userId, isInGroup, groupPosition, avatar,
   } = friendInfo;
-  const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } =
-    presence;
+  const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } = presence;
   const {
-    icon: placeIcon,
-    name: placeName,
-    isPlayable,
-    reasonProhibited,
-    universeId,
-    thumbnail,
+    icon: placeIcon, name: placeName, isPlayable, reasonProhibited, universeId, thumbnail,
   } = placeDetails;
   const {
-    name: rootPlaceName,
-    price: placePrice,
-    description: rootPlaceDescription,
+    name: rootPlaceName, price: placePrice, description: rootPlaceDescription,
   } = rootPlaceDetails;
   const { status } = serverDetails;
 
@@ -71,57 +59,55 @@ export const FriendsListItem = (props: FriendsListItemProps) => {
     return userPresenceType === PresenceTypes.OFFLINE
       ? `Last online ${lastOnlineString}`
       : userPresenceType === PresenceTypes.ONLINE
-      ? `Online`
-      : userPresenceType === PresenceTypes.IN_GAME
-      ? gameGroups
-        ? placeName || rootPlaceName
-        : rootPlaceName || placeName || "In Game"
-      : userPresenceType === PresenceTypes.IN_STUDIO
-      ? rootPlaceName || placeName || "In Studio"
-      : "Unknown";
+        ? `Online`
+        : userPresenceType === PresenceTypes.IN_GAME
+          ? gameGroups
+            ? placeName || rootPlaceName
+            : rootPlaceName || placeName || "In Game"
+          : userPresenceType === PresenceTypes.IN_STUDIO
+            ? rootPlaceName || placeName || "In Studio"
+            : "Unknown";
   };
-  const isPlayEnabled =
-    (isPlayable &&
-      (status === JoinStatusCodes.OK ||
-        status === JoinStatusCodes.SERVER_FULL) &&
-      (userPresenceType === PresenceTypes.IN_GAME ||
-        userPresenceType === PresenceTypes.IN_STUDIO)) ||
+  const isPlayEnabled = (isPlayable &&
+    (status === JoinStatusCodes.OK ||
+      status === JoinStatusCodes.SERVER_FULL) &&
+    (userPresenceType === PresenceTypes.IN_GAME ||
+      userPresenceType === PresenceTypes.IN_STUDIO)) ||
     (!!purchaseRequired && !!placeId && !!gameId);
 
   const lastOnlineObject = new Date(lastOnline);
 
   const lastOnlineString = DateSince(lastOnlineObject);
 
-  const richPresenceEnabled =
-    userPresenceType === PresenceTypes.IN_GAME &&
+  const richPresenceEnabled = userPresenceType === PresenceTypes.IN_GAME &&
     !gameGroups &&
     rootPlaceName &&
     rootPlaceName !== placeName;
 
   return (
     <FriendsListItemMenu
+      handleToggleMenu={handleToggleMenu}
+      anchorPoint={anchorPoint}
+      menuProps={menuProps}
       userId={userId}
       placeId={placeId}
       gameId={gameId}
-      placePrice={placePrice}
+      placePrice={placePrice ?? 0}
       purchaseRequired={purchaseRequired}
       isPlayEnabled={isPlayEnabled}
       rootPlaceId={rootPlaceId}
-      ref={contextMenuRef}
     >
       <Fade in>
         <div className="friendCategoryContainer friend-anim-enter-done">
           <div
-            className={`friend ${PresenceTypesLookup[userPresenceType]} ${
-              groupPosition && isInGroup ? groupPosition : null
-            } 
+            className={`friend ${PresenceTypesLookup[userPresenceType]} ${groupPosition && isInGroup ? groupPosition : null} 
         friendStatusHover Panel Focusable`}
           >
             {isInGroup && <div className="SteamPlayerGroupLines" />}
             {placeIcon &&
-            (userPresenceType === PresenceTypes.IN_GAME ||
-              userPresenceType === PresenceTypes.IN_STUDIO) &&
-            !disableAvatarGameIcons ? (
+              (userPresenceType === PresenceTypes.IN_GAME ||
+                userPresenceType === PresenceTypes.IN_STUDIO) &&
+              !disableAvatarGameIcons ? (
               <a href={`/games/${placeId}`}>
                 <GamePopper
                   placeIcon={placeIcon}
@@ -129,11 +115,10 @@ export const FriendsListItem = (props: FriendsListItemProps) => {
                   placeId={presence.rootPlaceId || placeId}
                   description={rootPlaceDescription || placeDetails.description}
                   universeId={universeId}
-                  builder={rootPlaceDetails.builder || placeDetails.builder}
-                />
+                  builder={rootPlaceDetails.builder || placeDetails.builder} />
               </a>
             ) : (userPresenceType === PresenceTypes.IN_GAME ||
-                userPresenceType === PresenceTypes.IN_STUDIO) &&
+              userPresenceType === PresenceTypes.IN_STUDIO) &&
               !disableAvatarGameIcons ? (
               <div className="FriendInGameIcon">
                 <img className="gameIcon" src={unknownGameImage} alt="" />
@@ -146,21 +131,16 @@ export const FriendsListItem = (props: FriendsListItemProps) => {
                   className="steamavatar_avatar_f2laR avatar"
                   src={avatar}
                   alt=""
-                  draggable="false"
-                />
+                  draggable="false" />
               </a>
             </div>
             <div
-              className={`labelHolder ${
-                !richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
-              } ${PresenceTypesLookup[userPresenceType]}`}
+              className={`labelHolder ${!richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""} ${PresenceTypesLookup[userPresenceType]}`}
             >
               <div
-                className={`personanameandstatus_statusAndName_9U-hi ${
-                  richPresenceEnabled
-                    ? "personanameandstatus_threeLines_2pPym"
-                    : ""
-                }`}
+                className={`personanameandstatus_statusAndName_9U-hi ${richPresenceEnabled
+                  ? "personanameandstatus_threeLines_2pPym"
+                  : ""}`}
               >
                 <div className="personanameandstatus_playerName_1uxaf">
                   {displayName}
@@ -183,8 +163,7 @@ export const FriendsListItem = (props: FriendsListItemProps) => {
                     >
                       <path
                         fill="currentColor"
-                        d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"
-                      />
+                        d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z" />
                     </svg>
                   </div>
                 ) : null}
@@ -192,14 +171,12 @@ export const FriendsListItem = (props: FriendsListItemProps) => {
                   className="ContextMenuButton"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (contextMenuRef.current) {
-                      // Check if `contextMenuRef.current` is truthy.
-                      contextMenuRef.current.handleToggleMenu(
-                        true,
-                        e.clientX,
-                        e.clientY
-                      );
-                    }
+                    // Check if `contextMenuRef.current` is truthy.
+                    handleToggleMenu(
+                      true,
+                      e.clientX,
+                      e.clientY
+                    );
                   }}
                 >
                   <svg
@@ -230,4 +207,4 @@ export const FriendsListItem = (props: FriendsListItemProps) => {
       </Fade>
     </FriendsListItemMenu>
   );
-};
+}

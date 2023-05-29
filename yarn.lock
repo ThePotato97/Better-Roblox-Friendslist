@@ -1080,6 +1080,13 @@
     "@parcel/workers" "2.8.3"
     nullthrows "^1.1.1"
 
+"@parcel/transformer-inline-string@^2.8.3":
+  version "2.8.3"
+  resolved "https://registry.npmjs.org/@parcel/transformer-inline-string/-/transformer-inline-string-2.8.3.tgz"
+  integrity sha512-TBMk2H9nV8JMOsLztalhzS6HgthG5SCHKYkR2MaW7eSZuSGotbSP22aJip8HgQZ/lPMdOMb1lknHmd8WROxWHg==
+  dependencies:
+    "@parcel/plugin" "2.8.3"
+
 "@parcel/transformer-js@2.8.3":
   version "2.8.3"
   resolved "https://registry.npmjs.org/@parcel/transformer-js/-/transformer-js-2.8.3.tgz"
@@ -1319,6 +1326,11 @@
   version "18.16.3"
   resolved "https://registry.npmjs.org/@types/node/-/node-18.16.3.tgz"
   integrity sha512-OPs5WnnT1xkCBiuQrZA4+YAV4HEJejmHneyraIaxsbev5yCEr6KMwINNFP9wQeFIw8FWcoTqF3vQsa5CDaI+8Q==
+
+"@types/parcel-env@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.npmjs.org/@types/parcel-env/-/parcel-env-0.0.1.tgz"
+  integrity sha512-8WmdiJ1uEBcW6AOWzQH7i0141ZXZr7B03YfTpguUDrTHXJHwYU9eEOckBRCZzYGrzb4pdoyBlaIMiTee04uqPQ==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"

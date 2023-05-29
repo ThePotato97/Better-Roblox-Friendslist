@@ -5,8 +5,7 @@ import unknownGame from "/images/unknownGame.png";
 import { Fade } from "@mui/material";
 import { PresenceTypes } from "../global";
 
-export const FriendRow = (props) => {
-  const { friendInfo, disableAvatarGameIcons, gameGroups } = props;
+export const FriendRow = ({ friendInfo, disableAvatarGameIcons, gameGroups }) => {
   const {
     name,
     userPresenceType,
@@ -36,7 +35,6 @@ export const FriendRow = (props) => {
   const lastOnlineObject = new Date(lastOnline);
 
   const lastOnlineString = DateSince(lastOnlineObject);
-
   const getCurrentLocation = () => {
     switch (currentStatus) {
       case "offline":

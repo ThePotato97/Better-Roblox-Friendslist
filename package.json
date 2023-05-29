@@ -27,8 +27,10 @@
     "@parcel/compressor-gzip": "^2.8.3",
     "@parcel/config-webextension": "^2.8.3",
     "@parcel/reporter-bundle-analyzer": "^2.8.3",
+    "@parcel/transformer-inline-string": "^2.8.3",
     "@parcel/transformer-sass": "2.8.3",
     "@types/chrome": "^0.0.234",
+    "@types/parcel-env": "^0.0.1",
     "@types/react": "^18.0.28",
     "@types/serviceworker": "^0.0.62",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
@@ -67,6 +69,7 @@
     "redux": "^4.2.1",
     "rozod": "^2.0.2",
     "typeface-roboto": "^1.1.13",
+    "webext-storage-cache": "^5.1.1",
     "zod": "^3.21.4"
   }
 }

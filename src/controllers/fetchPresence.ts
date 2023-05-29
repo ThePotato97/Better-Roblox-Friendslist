@@ -1,10 +1,11 @@
-import { fetchApi, fetchApiSplit, fetchApiPages, fetchApiPagesGenerator } from "rozod";
+import { fetchApi } from "rozod";
 import { postPresenceUsers, postPresenceLastOnline } from "rozod/lib/endpoints/presencev1";
 import { z } from "zod";
+import cache from 'webext-storage-cache';
 
-const PRESENCE_UPDATE_INTERVAL = 10 * 1000;
+const PRESENCE_UPDATE_INTERVAL = 10;
 
-type UserPresence = {
+interface UserPresence {
   userId: number;
   placeId: number;
   universeId: number;
@@ -13,14 +14,15 @@ type UserPresence = {
   lastLocation: string;
   lastOnline: string;
   gameId: string;
-};
+}
 
-const presenceCache: Record<number, UserPresence[]> = {};
-const lastUpdatedCache: Record<number, number> = {};
+const API_NAME = "pPU";
 
 export default async function fetchPresence(friends: number[], userId: number) {
-  if (presenceCache[userId] && Date.now() - lastUpdatedCache[userId] < PRESENCE_UPDATE_INTERVAL) {
-    return presenceCache[userId];
+  const uniqueName = `${API_NAME}-${userId}`;
+
+  if (await cache.has(uniqueName)) {
+    return await cache.get(uniqueName) as UserPresence[];
   }
 
   const presence = await fetchApi(postPresenceUsers, {
@@ -43,8 +45,8 @@ export default async function fetchPresence(friends: number[], userId: number) {
     return { ...user, lastOnline: lastOnlineLookup[user.userId] };
   });
 
-  lastUpdatedCache[userId] = Date.now();
-  presenceCache[userId] = merged;
+  await cache.set(uniqueName, merged, {
+    seconds: PRESENCE_UPDATE_INTERVAL,
+  });
   return merged;
 }
-

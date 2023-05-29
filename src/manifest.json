@@ -15,6 +15,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "./styles/*.scss",
         "./pages/WindowCommunication/inject.ts",
         "./pages/ContentScript/inject.ts",
         "images/unknowngame.png",
@@ -22,7 +23,8 @@
       ],
       "matches": [
         "*://www.roblox.com/*",
-        "*://web.roblox.com/*"
+        "*://web.roblox.com/*",
+        "*://rokitty.app/*"
       ]
     }
   ],
@@ -30,7 +32,8 @@
     {
       "matches": [
         "*://www.roblox.com/*",
-        "*://web.roblox.com/*"
+        "*://web.roblox.com/*",
+        "*://rokitty.app/*"
       ],
       "run_at": "document_idle",
       "js": [
@@ -39,7 +42,9 @@
     }
   ],
   "permissions": [
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "storage",
+    "alarms"
   ],
   "host_permissions": [
     "*://*.roblox.com/*"

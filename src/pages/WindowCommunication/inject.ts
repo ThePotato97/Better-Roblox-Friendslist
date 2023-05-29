@@ -3,22 +3,22 @@ declare global {
   {
   }
 }
-type Window = {
+interface Window {
   Roblox: {
     GameLauncher: {
       joinGameInstance: (placeId: number, gameId: string) => void;
       joinMultiplayerGame: (placeId: number) => void;
     };
   };
-};
+}
 
-type JoinGameInterface = {
+interface JoinGameInterface {
   action: "joinGame";
   rootPlaceId: number;
   placeId: number;
   gameId: number;
   userId: number;
-};
+}
 
 type ReceiveContentEvent = {
   detail: JoinGameInterface;

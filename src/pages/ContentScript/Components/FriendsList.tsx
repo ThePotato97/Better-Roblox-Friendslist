@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import "./friendslist.scss";
 export class FriendsList extends Component {
   constructor(props) {
     super(props);

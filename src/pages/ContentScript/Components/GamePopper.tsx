@@ -4,8 +4,6 @@ import { createPortal } from 'react-dom';
 
 import { usePopper } from "react-popper";
 
-import "./GamePopper.scss";
-
 const intToString = (value) => {
   const suffixes = ["", "k", "m", "b", "t"];
   const suffixNum = Math.floor(("" + value).length / 3);
@@ -70,6 +68,15 @@ export const GamePopper = (props) => {
   const [showPopper, setPopperState] = useState(false);
   const [referenceElement, setReferenceElement] = useState(null);
   const [popperElement, setPopperElement] = useState(null);
+  const [rootElement, setRootElement] = useState<HTMLElement>();
+
+  //listen for root element
+  React.useEffect(() => {
+    const root = document.getElementById("friend-list-container-shadow")?.shadowRoot?.getElementById("friend-list-container");
+    if (!root) return;
+    setRootElement(root);
+  }, []);
+
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: "left",
     modifiers: [
@@ -118,7 +125,7 @@ export const GamePopper = (props) => {
           <img className="gameIcon" src={props.placeIcon} alt="" />
         </div>
       )}
-      {showPopper
+      {showPopper && rootElement
         ? createPortal(
           <div ref={setPopperElement} style={{ ...styles.popper, zIndex: 9999 }} {...attributes.popper}>
             <div
@@ -178,7 +185,7 @@ export const GamePopper = (props) => {
               </div>
             </div>
           </div>,
-          document.querySelector("#root")
+          rootElement
         )
         : null}
     </>

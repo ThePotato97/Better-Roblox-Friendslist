@@ -1,20 +1,27 @@
-import { JoinStatusCodes } from "../global";
+import { JoinStatusCodes } from "../pages/global";
 import { fetchApi } from "rozod";
+import cache from "webext-storage-cache";
 import { postJoinGameInstance } from "rozod/lib/endpoints/gamejoinv1";
 import { z } from "zod";
 
-type fetchServerDetailsInput = { placeId: number; gameId: string };
+interface fetchServerDetailsInput { placeId: number; gameId: string }
 
 type fetchServerDetailsResponse = z.infer<(typeof postJoinGameInstance)["response"]>;
 
-const serverDetailsCache: Record<string, fetchServerDetailsResponse> = {};
+//const serverDetailsCache: Record<string, fetchServerDetailsResponse> = {};
+
+const API_NAME = "fSD";
+
+const uniqueNameGenerator = (id: string) => `${API_NAME}-${id}`;
 
 export default async function fetchServerDetails(gameIds: fetchServerDetailsInput[]) {
   const serverDetails = await Promise.all(
     gameIds.map(async (gameDetails) => {
       const { placeId, gameId } = gameDetails;
-      const serverDetailsResponse =
-        serverDetailsCache[gameId] ||
+      const uniqueId = uniqueNameGenerator(gameId);
+      const inCache = await cache.has(uniqueId);
+      const serverDetailsResponse = inCache ?
+        await cache.get(uniqueId) as fetchServerDetailsResponse :
         (await fetchApi(postJoinGameInstance, {
           body: {
             placeId: placeId,
@@ -34,7 +41,9 @@ export default async function fetchServerDetails(gameIds: fetchServerDetailsInpu
         status === JoinStatusCodes.SERVER_FULL ||
         status === JoinStatusCodes.UNAUTHORIZED
       ) {
-        serverDetailsCache[gameId] = serverDetailsResponse;
+        await cache.set(uniqueId, serverDetailsResponse, {
+          minutes: 5,
+        });
       }
       return { serverDetails: serverDetailsResponse, gameId: gameId };
     })

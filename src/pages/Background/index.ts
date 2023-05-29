@@ -1,9 +1,9 @@
 import OpenPorts from "./OpenPorts";
-import { multiGetPlaceDetails } from "../controllers/fetchPlaceDetails";
-import fetchPresence from "../controllers/fetchPresence";
-import { fetchThumbnails, getRequestId } from "../controllers/fetchThumbnails";
-import fetchServerDetails from "../controllers/fetchServerDetails";
-import { fetchFriends } from "../controllers/fetchFriends";
+import { multiGetPlaceDetails } from "../../controllers/fetchPlaceDetails";
+import fetchPresence from "../../controllers/fetchPresence";
+import { fetchThumbnails, getRequestId } from "../../controllers/fetchThumbnails";
+import fetchServerDetails from "../../controllers/fetchServerDetails";
+import { fetchFriends } from "../../controllers/fetchFriends";
 
 const newRule = [
   {
@@ -180,3 +180,22 @@ chrome.runtime.onConnect.addListener((port) => {
   openPorts.add(port);
 });
 
+const joinGameInstance = (place: number, gameId: number) => window.Roblox.GameLauncher.joinGameInstance(place, gameId);
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  const { message, action } = msg;
+  const { tab } = sender;
+  const id = tab?.id;
+  if (!id) return;
+  switch (action) {
+    case "joinGameInstance": {
+      const { gameId, placeId } = message;
+      chrome.scripting.executeScript({
+        target: { tabId: id },
+        func: joinGameInstance,
+        args: [placeId, gameId],
+        world: "MAIN",
+      });
+      break;
+    }
+  }
+});

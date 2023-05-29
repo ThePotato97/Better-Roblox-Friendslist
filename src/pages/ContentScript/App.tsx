@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { FriendsList, FriendsListItem, FriendsGroup } from "./Components";
 import { Collapse, Slide } from "@mui/material";
-import "./friendsmain.scss";
-import "./friends.scss";
 import extensionIcon from "../../icons/Icon48x.png";
 import { FriendInfo } from "pages/Background";
 import { JoinStatusCodes, PresenceTypes } from "../global";
@@ -20,7 +18,7 @@ const sortFriendsAlphabet = (a: friendItem, b: friendItem) => {
   return 0;
 };
 
-type IGroup = {
+interface IGroup {
   name: string;
   placeId?: number;
   indexName: string;
@@ -30,7 +28,7 @@ type IGroup = {
   defaultGroupState: boolean;
   extraClasses: string;
   disableAvatarGameIcons?: boolean;
-};
+}
 
 const getGroups = async (friendInfo: FriendInfo | undefined) => {
   if (!friendInfo) return [];
@@ -332,7 +330,7 @@ export const App = () => {
                       const friendPresence = presence[friend.id];
                       const placeDetail = placeDetails[friendPresence.placeId];
                       const gameId = friendPresence.gameId;
-
+                      const rootPlaceDetail = placeDetails[friendPresence.rootPlaceId] ?? {};
                       const serverDetail = serverDetails[gameId] ?? {};
 
                       return (
@@ -342,7 +340,7 @@ export const App = () => {
                           serverDetails={serverDetail}
                           presence={friendPresence}
                           placeDetails={placeDetail || {}}
-                          rootPlaceDetails={friendPresence}
+                          rootPlaceDetails={rootPlaceDetail}
                           disableAvatarGameIcons={group.disableAvatarGameIcons}
                           gameGroups={group.gameGroups}
                         />
@@ -356,36 +354,36 @@ export const App = () => {
       </Slide>
       {document.querySelector("#navbar-stream")
         ? ReactDOM.createPortal(
-            <li
-              id="navbar-settings"
-              className="cursor-pointer navbar-icon-item"
+          <li
+            id="navbar-settings"
+            className="cursor-pointer navbar-icon-item"
+          >
+            <span
+              id="settings-icon"
+              className="nav-settings-icon rbx-menu-item"
+              onClick={handleToggleExtension}
             >
               <span
-                id="settings-icon"
-                className="nav-settings-icon rbx-menu-item"
-                onClick={handleToggleExtension}
-              >
-                <span
-                  className="roblox-popover-close"
-                  id="nav-settings"
-                  style={{
-                    backgroundImage: `url(${extensionIcon})`,
-                    cursor: "pointer",
-                    filter: !showFriendsExtension ? "grayscale(100%)" : "none",
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "cover",
-                    width: "28px",
-                    height: "28px",
-                    display: "inline-block",
-                  }}
-                />
-                <span className="notification-red notification nav-setting-highlight hidden">
-                  0
-                </span>
+                className="roblox-popover-close"
+                id="nav-settings"
+                style={{
+                  backgroundImage: `url(${extensionIcon})`,
+                  cursor: "pointer",
+                  filter: !showFriendsExtension ? "grayscale(100%)" : "none",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "cover",
+                  width: "28px",
+                  height: "28px",
+                  display: "inline-block",
+                }}
+              />
+              <span className="notification-red notification nav-setting-highlight hidden">
+                0
               </span>
-            </li>,
-            document.querySelector("#navbar-stream").parentElement
-          )
+            </span>
+          </li>,
+          document.querySelector("#navbar-stream").parentElement
+        )
         : null}
     </>
   );
