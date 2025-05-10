@@ -10,8 +10,9 @@ enum userPresenceType {
 
 export interface Friend {
 	userId: number;
-	isVerified: boolean;
-	username?: string;
+	isVerified?: boolean;
+	username: string;
+	displayName?: string;
 	thumbnail?: string;
 	lastUpdated: number;
 }
@@ -41,7 +42,7 @@ export interface FriendsDBSchema extends DBSchema {
 		key: number;
 		value: Friend;
 		indexes: {
-			"by-username": string;
+			"by-userId": string;
 			"by-lastUpdated": number;
 		};
 	};
@@ -71,7 +72,7 @@ export const FriendsDB = async () => {
 			const friendsStore = db.createObjectStore("friends", {
 				keyPath: "userId",
 			});
-			friendsStore.createIndex("by-username", "username");
+			friendsStore.createIndex("by-userId", "userId");
 			friendsStore.createIndex("by-lastUpdated", "lastUpdated");
 
 			// Presences store
@@ -91,17 +92,3 @@ export const FriendsDB = async () => {
 		},
 	});
 };
-
-export function useFriendsDB(): IDBPDatabase<FriendsDBSchema> | null {
-	const [db, setDb] = useState<IDBPDatabase<FriendsDBSchema> | null>(null);
-	const initRef = useRef(false);
-
-	useEffect(() => {
-		if (initRef.current) return;
-		initRef.current = true;
-
-		FriendsDB().then(setDb);
-	}, []);
-
-	return db;
-}

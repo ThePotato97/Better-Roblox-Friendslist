@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import { getDefaultStore } from "jotai";
 import { FriendsDB, Presence } from "../database/FriendsDB";
 
-const presenceAtom = atom<Record<number, Presence>>({});
+export const presenceAtom = atom<Record<number, Presence>>({});
 
 presenceAtom.onMount = (set) => {
 	FriendsDB().then(async (db) => {
