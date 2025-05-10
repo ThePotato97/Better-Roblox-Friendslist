@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Collapse } from '@mui/material';
+import { Collapse } from "@mui/material";
 import { FriendRow } from "./FriendRow";
 export class FriendsGroup extends Component {
   constructor(props) {
@@ -15,11 +15,27 @@ export class FriendsGroup extends Component {
     }));
   }
   render() {
-    const { groupName, groupContents, extraClasses, icon, disableAvatarGameIcons, gameGroups, placeId } = this.props;
+    const {
+      groupName,
+      groupContents,
+      extraClasses,
+      icon,
+      disableAvatarGameIcons,
+      gameGroups,
+      placeId,
+    } = this.props;
     return (
-      <div className={`DropTarget friendGroup ${extraClasses ? extraClasses : ""}`}>
-        <div className="groupHeaderContainer Panel Focusable" onClick={this.handleToggleGroup}>
-          <div className={`groupName ${this.state.showGroup ? "" : "Collapsed"} Panel Focusable`} tabIndex="0">
+      <div
+        className={`DropTarget friendGroup ${extraClasses ? extraClasses : ""}`}
+      >
+        <div
+          className="groupHeaderContainer Panel Focusable"
+          onClick={this.handleToggleGroup}
+        >
+          <div
+            className={`groupName ${this.state.showGroup ? "" : "Collapsed"} Panel Focusable`}
+            tabIndex="0"
+          >
             <div className="ExpandPlusMinus">
               <svg
                 version="1.1"
@@ -31,7 +47,14 @@ export class FriendsGroup extends Component {
                 height="256px"
                 viewBox="0 0 256 256"
               >
-                <circle fill="none" strokeWidth="10" strokeMiterlimit="10" cx="128" cy="128" r="95.333" />
+                <circle
+                  fill="none"
+                  strokeWidth="10"
+                  strokeMiterlimit="10"
+                  cx="128"
+                  cy="128"
+                  r="95.333"
+                />
                 <line
                   className="horizontalLine"
                   fill="none"
@@ -56,18 +79,21 @@ export class FriendsGroup extends Component {
                 />
               </svg>
             </div>
-            {icon 
-              ? <a href={`/games/${placeId}`}> <img className="groupIcon" src={icon} alt="" /> </a>
-              : null}
+            {icon ? (
+              <a href={`https://www.roblox.com/games/${placeId}`} target="_top">
+                <img className="groupIcon" src={icon} alt="" />{" "}
+              </a>
+            ) : null}
             {groupName}
             {!this.state.showGroup && groupContents?.length > 0 ? (
-              
               <span className="groupCount">{groupContents?.length}</span>
-              
             ) : null}
           </div>
         </div>
-        <Collapse unmountOnExit in={this.state.showGroup && groupContents?.length > 0}>
+        <Collapse
+          unmountOnExit
+          in={this.state.showGroup && groupContents?.length > 0}
+        >
           <div className="groupList">
             {groupContents?.map((friend) => (
               <FriendRow

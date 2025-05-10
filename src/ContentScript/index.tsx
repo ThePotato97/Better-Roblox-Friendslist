@@ -87,8 +87,8 @@ if (viewport) viewport.prepend(container);
 
   container.id = "friend-list-container-shadow";
 
-  const body = document.querySelector('body');
-  const isDark = true || body?.classList.contains('dark-theme');
+  const body = document.querySelector("body");
+  const isDark = true || body?.classList.contains("dark-theme");
 
   console.log("isDark", isDark);
 
@@ -121,15 +121,13 @@ if (viewport) viewport.prepend(container);
     container: emotionRoot,
   });
 
-
-
   const root = createRoot(shadowRootElement);
   root.render(
     <CacheProvider value={cache}>
       <ThemeProvider theme={theme}>
         <App />
       </ThemeProvider>
-    </CacheProvider>
+    </CacheProvider>,
   );
   // });
 })();

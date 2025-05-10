@@ -1,41 +1,106 @@
+import ReactDOM from "react-dom/client";
+import React from "react";
+import createCache from "@emotion/cache";
+import { CacheProvider, ThemeProvider } from "@emotion/react";
+import { createTheme } from "@mui/material";
+import { FriendList } from "@/src/ContentScript/App";
+import injectUrl from "?script";
+
+import "../entrypoints/popup/style.css";
+
+import "../entrypoints/popup/styles/friends.scss";
+// import "./styles/friendslist.scss";
+// import "./styles/GamePopper.scss";
+// import "./styles/menu.scss";
 // 1. Import the style
 // import './style.css';
 
 // injects the iframe into the page
 export default defineContentScript({
-  matches: ['<all_urls>'],
+	matches: ["https://www.roblox.com/*"],
+	cssInjectionMode: "ui",
+	async main(ctx) {
+		await injectScript("/inject-world.js");
 
-  main(ctx) {
-    // Define the UI
-    const ui = createIframeUi(ctx, {
-      page: '/iframe.html',
-      position: 'overlay',
-      alignment: 'bottom-right',
-      anchor: 'body',
-      onMount: (wrapper, iframe) => {
-        // Add styles to the iframe like width
-        iframe.width = '400px';
-        iframe.height = '400px';
-        // make the iframe blend in with the page
-        iframe.style.backgroundColor = 'transparent';
-        iframe.style.border = 'none';
-        // make the wrapper div fill the viewport
-        wrapper.style.width = '100%';
-        wrapper.style.height = '100%';
-        wrapper.style.position = 'fixed';
-        wrapper.style.top = '0';
-        wrapper.style.left = '0';
-        wrapper.style.right = '0';
-        wrapper.style.bottom = '0';
-        wrapper.style.zIndex = '99999';
+		const ui = await createShadowRootUi(ctx, {
+			name: "friends-list-shadow-root",
+			position: "overlay",
+			alignment: "bottom-left",
+			anchor: "body",
+			onMount: (container) => {
+				const shadowApp = document.createElement("div");
+				const portalRoot = document.createElement("div");
+				const emotionRoot = document.createElement("style");
 
-        iframe.style.pointerEvents = 'auto';
-        wrapper.style.pointerEvents = 'none';
+				portalRoot.id = "portal-root";
+				window.portalRoot = portalRoot;
+				container.appendChild(portalRoot);
+				container.appendChild(emotionRoot);
+				container.appendChild(shadowApp);
 
-      },
-    });
+				const theme = createTheme({
+					palette: { mode: "dark" },
+					components: {
+						MuiPopover: { defaultProps: { container: portalRoot } },
+						MuiPopper: { defaultProps: { container: portalRoot } },
+						MuiModal: { defaultProps: { container: portalRoot } },
+					},
+				});
 
-    // Show UI to user
-    ui.mount();
-  },
+				const cache = createCache({
+					key: "mykey",
+					prepend: true,
+					container: emotionRoot,
+				});
+
+				const root = ReactDOM.createRoot(shadowApp);
+				root.render(
+					<CacheProvider value={cache}>
+						<ThemeProvider theme={theme}>
+							<FriendList />
+						</ThemeProvider>
+					</CacheProvider>,
+				);
+				return root;
+			},
+			onRemove: (root) => {
+				root?.unmount();
+			},
+		});
+		ui.mount();
+	},
+
+	// main(ctx) {
+	//   // Define the UI
+	//   const ui = createIframeUi(ctx, {
+	//     page: "/iframe.html",
+	//     position: "overlay",
+	//     alignment: "bottom-right",
+	//     anchor: "body",
+	//     onMount: (wrapper, iframe) => {
+	//       // Add styles to the iframe like width
+	//       iframe.width = "400px";
+	//       iframe.height = "800px";
+
+	//       // make the iframe blend in with the page
+	//       iframe.style.backgroundColor = "transparent";
+	//       iframe.style.border = "none";
+	//       // make the wrapper div fill the viewport
+	//       wrapper.style.width = "100%";
+	//       wrapper.style.height = "100%";
+	//       wrapper.style.position = "fixed";
+	//       wrapper.style.top = "0";
+	//       wrapper.style.left = "0";
+	//       wrapper.style.right = "0";
+	//       wrapper.style.bottom = "0";
+	//       wrapper.style.zIndex = "99999";
+
+	//       iframe.style.pointerEvents = "auto";
+	//       wrapper.style.pointerEvents = "none";
+	//     },
+	//   });
+
+	//   // Show UI to user
+	//   ui.mount();
+	// },
 });

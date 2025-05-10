@@ -1,0 +1,63 @@
+@keyframes szh-menu-show {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes szh-menu-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+.view-game-button {
+  text-align: center;
+}
+
+.szh-menu {
+  overflow: hidden;
+  min-width: 64px;
+  padding: 0;
+  background-color: #393b3d;
+  border-radius: 5px;
+  box-shadow: 0 0 8px 0 rgb(0 0 0 / 30%);
+  box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.1);
+  color: #bdbebe;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  user-select: none;
+
+  &--state-opening {
+    animation: szh-menu-show 0.15s ease-out;
+  }
+
+  &--state-closing {
+    animation: szh-menu-hide 0.2s ease-out;
+  }
+
+  &__item {
+    padding: 10px 12px;
+    border-radius: 0;
+    font-weight: 400;
+
+    &--hover {
+      background-color: hsla(0, 0%, 100%, 0.1);
+      box-shadow: none;
+      color: #fff;
+    }
+
+    &--submenu {
+      position: relative;
+
+      &::after {
+        position: absolute;
+        right: 0.625rem;
+        width: 7px;
+      }
+    }
+  }
+
+  &__divider {
+    margin: 0.5rem 0.625rem;
+  }
+}

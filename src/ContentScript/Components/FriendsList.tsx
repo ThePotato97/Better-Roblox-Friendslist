@@ -1,18 +1,19 @@
+import { Paper } from "@mui/material";
 import React, { Component } from "react";
-export class FriendsList extends Component {
-  constructor(props) {
-    super(props);
-    this.props = props;
-  }
-  render() {
-    return (
-      <div className="friendsMain">
-        <div className="friendlistListContainer">
-          <div className="listContentContainer">
-            {this.props.children}
-          </div>
-        </div>
-      </div>
-    );
-  }
+
+interface FriendsListProps {
+	children: React.ReactNode;
 }
+
+export const FriendsList = (props: FriendsListProps) => {
+	return (
+		<Paper
+			sx={{
+				height: "80vh",
+				overflow: "auto",
+			}}
+		>
+			{props.children}
+		</Paper>
+	);
+};

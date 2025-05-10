@@ -5,7 +5,11 @@ import "@szhsin/react-menu/dist/core.css";
 const intToString = (value) => {
   const suffixes = ["", "k", "m", "b", "t"];
   const suffixNum = Math.floor(("" + value).length / 3);
-  let shortValue = parseFloat((suffixNum !== 0 ? value / Math.pow(1000, suffixNum) : value).toPrecision(2));
+  let shortValue = parseFloat(
+    (suffixNum !== 0 ? value / Math.pow(1000, suffixNum) : value).toPrecision(
+      2,
+    ),
+  );
   if (shortValue % 1 !== 0) {
     shortValue = shortValue.toFixed(1);
   }
@@ -14,25 +18,29 @@ const intToString = (value) => {
 
 const getPlacePlaying = (universeId) => {
   return new Promise((resolve) => {
-    fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then((response) => {
-      response.json().then((data) => {
-        const placeInfo = data.data && data.data[0];
-        if (placeInfo) {
-          const shortened = intToString(placeInfo.playing);
-          resolve(shortened);
-        }
-      });
-    });
+    fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then(
+      (response) => {
+        response.json().then((data) => {
+          const placeInfo = data.data?.[0];
+          if (placeInfo) {
+            const shortened = intToString(placeInfo.playing);
+            resolve(shortened);
+          }
+        });
+      },
+    );
   });
 };
 
 const getPlaceVotes = (universeId) => {
   return new Promise((resolve, reject) => {
-    fetch(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`).then((response) =>
+    fetch(
+      `https://games.roblox.com/v1/games/votes?universeIds=${universeId}`,
+    ).then((response) =>
       response
         .json()
         .then((data) => {
-          const placeVotes = data.data && data.data[0];
+          const placeVotes = data.data?.[0];
           if (placeVotes) {
             const { upVotes, downVotes } = placeVotes;
             const totalVotes = upVotes + downVotes;
@@ -42,7 +50,7 @@ const getPlaceVotes = (universeId) => {
         })
         .catch((err) => {
           reject(err);
-        })
+        }),
     );
   });
 };
@@ -79,7 +87,11 @@ export default function FriendsGroupMenu(props) {
       >
         {props.children}
 
-        <ControlledMenu {...menuProps} anchorPoint={anchorPoint} onClose={() => toggleMenu(false)}>
+        <ControlledMenu
+          {...menuProps}
+          anchorPoint={anchorPoint}
+          onClose={() => toggleMenu(false)}
+        >
           <div>
             <div
               style={{
@@ -94,11 +106,17 @@ export default function FriendsGroupMenu(props) {
               <span className="info-label icon-votes-gray" />
               <span className="info-label vote-percentage-label">{`${votes || "??"}%`}</span>
               <span className="info-label icon-playing-counts-gray" />
-              <span className="info-label playing-counts-label">{playing || "???"}</span>
+              <span className="info-label playing-counts-label">
+                {playing || "???"}
+              </span>
             </div>
           </div>
 
-          <MenuItem className="view-game-button" style={{ align: "center" }} onClick={handleViewPlace}>
+          <MenuItem
+            className="view-game-button"
+            style={{ align: "center" }}
+            onClick={handleViewPlace}
+          >
             View Game
           </MenuItem>
         </ControlledMenu>

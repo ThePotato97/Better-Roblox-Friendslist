@@ -5,7 +5,11 @@ import unknownGame from "/images/unknownGame.png";
 import { Fade } from "@mui/material";
 import { PresenceTypes } from "../global";
 
-export const FriendRow = ({ friendInfo, disableAvatarGameIcons, gameGroups }) => {
+export const FriendRow = ({
+  friendInfo,
+  disableAvatarGameIcons,
+  gameGroups,
+}) => {
   const {
     name,
     userPresenceType,
@@ -36,12 +40,14 @@ export const FriendRow = ({ friendInfo, disableAvatarGameIcons, gameGroups }) =>
 
   const lastOnlineString = DateSince(lastOnlineObject);
   const getCurrentLocation = () => {
+
     switch (currentStatus) {
       case "offline":
         return `Last online ${lastOnlineString}`;
       case "online":
         return "Online";
       case "ingame":
+
         return gameGroups
           ? placeName || rootPlaceName
           : rootPlaceName || placeName || "In Game";
@@ -57,7 +63,7 @@ export const FriendRow = ({ friendInfo, disableAvatarGameIcons, gameGroups }) =>
       !disableAvatarGameIcons
     ) {
       return (
-        <a href={`/games/${placeId} 69`}>
+        <a href={`https://www.roblox.com/games/${placeId}`} target="_top">
           <div className="FriendInGameIcon">
             <img className="gameIcon" src={placeIcon} alt="" />
           </div>
@@ -86,9 +92,8 @@ export const FriendRow = ({ friendInfo, disableAvatarGameIcons, gameGroups }) =>
     <Fade in>
       <div className="friendCategoryContainer friend-anim-enter-done">
         <div
-          className={`friend ${currentStatus} ${
-            groupPosition && isInGroup ? groupPosition : null
-          } 
+          className={`friend ${currentStatus} ${groupPosition && isInGroup ? groupPosition : null
+            } 
         friendStatusHover Panel Focusable`}
         >
           {isInGroup && <div className="SteamPlayerGroupLines" />}
@@ -105,16 +110,14 @@ export const FriendRow = ({ friendInfo, disableAvatarGameIcons, gameGroups }) =>
             </a>
           </div>
           <div
-            className={`labelHolder ${
-              !richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
-            } ${currentStatus}`}
+            className={`labelHolder ${!richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
+              } ${currentStatus}`}
           >
             <div
-              className={`personanameandstatus_statusAndName_9U-hi ${
-                richPresenceEnabled
-                  ? "personanameandstatus_threeLines_2pPym"
-                  : ""
-              }`}
+              className={`personanameandstatus_statusAndName_9U-hi ${richPresenceEnabled
+                ? "personanameandstatus_threeLines_2pPym"
+                : ""
+                }`}
             >
               <div className="personanameandstatus_playerName_1uxaf">
                 {displayName}

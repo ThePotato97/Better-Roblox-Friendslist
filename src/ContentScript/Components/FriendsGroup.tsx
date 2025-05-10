@@ -19,15 +19,15 @@ interface FriendsGroupProps {
 export function FriendsGroup(props: FriendsGroupProps) {
   const [showGroup, setShowGroup] = useState(props.defaultGroupState);
 
-
-
   const handleToggleGroup = () => {
     if (props.indexName) {
-      const groupStates = JSON.parse(localStorage.getItem("groupStates") ?? "{}");
+      const groupStates = JSON.parse(
+        localStorage.getItem("groupStates") ?? "{}",
+      );
       groupStates[props.indexName] = !showGroup;
       localStorage.setItem("groupStates", JSON.stringify(groupStates));
     }
-    setShowGroup(prevState => !prevState);
+    setShowGroup((prevState) => !prevState);
   };
 
   const { groupSize, extraClasses, placeId, placeDetails, groupName } = props;
@@ -37,8 +37,14 @@ export function FriendsGroup(props: FriendsGroupProps) {
     <Fade unmountOnExit in={groupSize > 0}>
       <div className={`DropTarget friendGroup ${extraClasses ?? ""}`}>
         <FriendsGroupMenu placeId={placeId} universeId={universeId}>
-          <div className="groupHeaderContainer Panel Focusable" onClick={handleToggleGroup}>
-            <div className={`groupName ${!showGroup && "Collapsed"} Panel Focusable`} tabIndex={0}>
+          <div
+            className="groupHeaderContainer Panel Focusable"
+            onClick={handleToggleGroup}
+          >
+            <div
+              className={`groupName ${!showGroup && "Collapsed"} Panel Focusable`}
+              tabIndex={0}
+            >
               <div className="ExpandPlusMinus">
                 <svg
                   version="1.1"
@@ -50,7 +56,14 @@ export function FriendsGroup(props: FriendsGroupProps) {
                   height="256px"
                   viewBox="0 0 256 256"
                 >
-                  <circle fill="none" strokeWidth="10" strokeMiterlimit="10" cx="128" cy="128" r="95.333" />
+                  <circle
+                    fill="none"
+                    strokeWidth="10"
+                    strokeMiterlimit="10"
+                    cx="128"
+                    cy="128"
+                    r="95.333"
+                  />
                   <line
                     className="horizontalLine"
                     fill="none"
@@ -76,7 +89,7 @@ export function FriendsGroup(props: FriendsGroupProps) {
                 </svg>
               </div>
               {placeId ? (
-                <a href={`/games/${placeId}`}>
+                <a href={`https://www.roblox.com/games/${placeId}`} target="_top">
                   <GamePopper
                     placeId={placeId}
                     description={description}
@@ -87,11 +100,20 @@ export function FriendsGroup(props: FriendsGroupProps) {
                 </a>
               ) : null}
               {groupName || name}
-              <span className={`groupCount ${!showGroup && "collapsed"} `}>{groupSize}</span>
+              <span className={`groupCount ${!showGroup && "collapsed"} `}>
+                {groupSize}
+              </span>
             </div>
           </div>
         </FriendsGroupMenu>
-        <Collapse unmountOnExit in={showGroup && Array.isArray(props.children) && props.children.length > 0}>
+        <Collapse
+          unmountOnExit
+          in={
+            showGroup &&
+            Array.isArray(props.children) &&
+            props.children.length > 0
+          }
+        >
           <div className="groupList">{props.children}</div>
         </Collapse>
       </div>

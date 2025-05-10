@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 
-import { createPortal } from 'react-dom';
+import { createPortal } from "react-dom";
 
 import { usePopper } from "react-popper";
 import { ThumbnailContext } from "../Context/Thumbnails";
@@ -9,7 +9,11 @@ import { getRequestId } from "../../apis";
 const intToString = (value) => {
   const suffixes = ["", "k", "m", "b", "t"];
   const suffixNum = Math.floor(("" + value).length / 3);
-  let shortValue = parseFloat((suffixNum !== 0 ? value / Math.pow(1000, suffixNum) : value).toPrecision(2));
+  let shortValue = Number.parseFloat(
+    (suffixNum !== 0 ? value / Math.pow(1000, suffixNum) : value).toPrecision(
+      2,
+    ),
+  );
   if (shortValue % 1 !== 0) {
     shortValue = shortValue.toFixed(1);
   }
@@ -22,18 +26,20 @@ const getPlacePlaying = (universeId) => {
     return Promise.resolve(cacheConcurrent[universeId]);
   }
   return new Promise((resolve) => {
-    fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then((response) => {
-      response.json().then((data) => {
-        const placeInfo = data.data && data.data[0];
-        if (placeInfo) {
-          const shortened = intToString(placeInfo.playing);
-          if (shortened) {
-            cacheConcurrent[universeId] = shortened;
+    fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then(
+      (response) => {
+        response.json().then((data) => {
+          const placeInfo = data.data?.[0];
+          if (placeInfo) {
+            const shortened = intToString(placeInfo.playing);
+            if (shortened) {
+              cacheConcurrent[universeId] = shortened;
+            }
+            resolve(shortened);
           }
-          resolve(shortened);
-        }
-      });
-    });
+        });
+      },
+    );
   });
 };
 
@@ -43,11 +49,13 @@ const getPlaceVotes = (universeId) => {
     return Promise.resolve(cacheVotes[universeId]);
   }
   return new Promise((resolve, reject) => {
-    fetch(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`).then((response) =>
+    fetch(
+      `https://games.roblox.com/v1/games/votes?universeIds=${universeId}`,
+    ).then((response) =>
       response
         .json()
         .then((data) => {
-          const placeVotes = data.data && data.data[0];
+          const placeVotes = data.data?.[0];
           if (placeVotes) {
             const { upVotes, downVotes } = placeVotes;
             const totalVotes = upVotes + downVotes;
@@ -58,12 +66,18 @@ const getPlaceVotes = (universeId) => {
         })
         .catch((err) => {
           reject(err);
-        })
+        }),
     );
   });
 };
 
-export const GamePopper = ({ isInGroup, builder, universeId, description, placeId }) => {
+export const GamePopper = ({
+  isInGroup,
+  builder,
+  universeId,
+  description,
+  placeId,
+}) => {
   const [votes, setVotes] = useState("???");
   const [playing, setPlaying] = useState("???");
   const [showPopper, setPopperState] = useState(false);
@@ -71,11 +85,12 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
   const [popperElement, setPopperElement] = useState(null);
   const [rootElement, setRootElement] = useState<HTMLElement>();
 
-  const thumbnails = React.useContext(ThumbnailContext);
+  const thumbnails = useContext(ThumbnailContext);
 
-
-  React.useEffect(() => {
-    const root = document.getElementById("friend-list-container-shadow")?.shadowRoot?.getElementById("friend-list-container");
+  useEffect(() => {
+    const root = document
+      .getElementById("friend-list-container-shadow")
+      ?.shadowRoot?.getElementById("friend-list-container");
     if (!root) return;
     setRootElement(root);
   }, []);
@@ -105,8 +120,9 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
   const handleMouseLeave = () => {
     setPopperState(false);
   };
-  const placeIcon = thumbnails[getRequestId(placeId, "PlaceIcon", "150x150")]
-  const placeThumbnail = thumbnails[getRequestId(placeId, "GameThumbnail", "768x432")]
+  const placeIcon = thumbnails[getRequestId(placeId, "PlaceIcon", "150x150")];
+  const placeThumbnail =
+    thumbnails[getRequestId(placeId, "GameThumbnail", "768x432")];
   return (
     <>
       {isInGroup ? (
@@ -131,7 +147,11 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
       )}
       {showPopper && rootElement
         ? createPortal(
-          <div ref={setPopperElement} style={{ ...styles.popper, zIndex: 9999 }} {...attributes.popper}>
+          <div
+            ref={setPopperElement}
+            style={{ ...styles.popper, zIndex: 9999 }}
+            {...attributes.popper}
+          >
             <div
               className="game-popper-container"
               style={{
@@ -142,7 +162,10 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
                 borderRadius: "5px",
               }}
             >
-              <div className="game-popper-header" style={{ height: "217px", width: "390px" }}>
+              <div
+                className="game-popper-header"
+                style={{ height: "217px", width: "390px" }}
+              >
                 <div
                   style={{
                     height: "217px",
@@ -154,15 +177,24 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
                 />
                 <div
                   className="creator-name-popper"
-                  style={{ color: "white", position: "absolute", top: "165px", left: "10px" }}
+                  style={{
+                    color: "white",
+                    position: "absolute",
+                    top: "165px",
+                    left: "10px",
+                  }}
                 >
                   {`By ${builder}`}
                 </div>
-                <div style={{ position: "absolute", top: "190px", left: "5px" }}>
+                <div
+                  style={{ position: "absolute", top: "190px", left: "5px" }}
+                >
                   <span className="icon-popper icon-vote-popper" />
                   <span className="count-label-popper">{`${votes || "??"}%`}</span>
                   <span className="icon-popper icon-playing-popper" />
-                  <span className="count-label-popper">{playing || "???"}</span>
+                  <span className="count-label-popper">
+                    {playing || "???"}
+                  </span>
                 </div>
               </div>
 
@@ -176,10 +208,17 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
                   style={{ backgroundImage: `url(${placeIcon})` }}
                 />
               </div>
-              <div className="game-popper-footer" style={{ height: "60px", width: "390px" }}>
+              <div
+                className="game-popper-footer"
+                style={{ height: "60px", width: "390px" }}
+              >
                 <div>
                   <pre
-                    style={{ color: "#C5C5C5", overflow: "hidden", padding: "10px" }}
+                    style={{
+                      color: "#C5C5C5",
+                      overflow: "hidden",
+                      padding: "10px",
+                    }}
                     className="game-description-popper"
                   >
                     {description}
@@ -189,7 +228,7 @@ export const GamePopper = ({ isInGroup, builder, universeId, description, placeI
               </div>
             </div>
           </div>,
-          rootElement
+          rootElement,
         )
         : null}
     </>

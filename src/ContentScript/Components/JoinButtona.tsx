@@ -30,9 +30,15 @@ export class JoinButton extends Component {
     const placePriceDisplay = placePrice || 0;
     return (
       <div id="joinButton" className="joinButtonContainer">
-        <button type="button" className={`joinButton ${currentStatus}`} onClick={this.handleJoinGame}>
+        <button
+          type="button"
+          className={`joinButton ${currentStatus}`}
+          onClick={this.handleJoinGame}
+        >
           <span>
-            {purchaseRequired ? <span className="icon icon-robux-white-16x16" /> : null}
+            {purchaseRequired ? (
+              <span className="icon icon-robux-white-16x16" />
+            ) : null}
             {purchaseRequired ? placePriceDisplay : "Join"}
           </span>
         </button>
