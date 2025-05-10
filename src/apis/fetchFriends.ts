@@ -7,5 +7,9 @@ export const fetchFriends = async (userId: number) => {
 	});
 	const { data: friends } = response;
 
-	return friends;
+	return friends.map((friend) => ({
+		userId: friend.id,
+		username: friend.name,
+		displayName: friend.displayName,
+	}));
 };

@@ -1,0 +1,82 @@
+diff --git a/lib/endpoints/friendsv1.d.ts b/lib/endpoints/friendsv1.d.ts
+index bb50d2dfc0d40428ea76c1fff74c9e4dabfaba16..0fdfda0818aa298cf2b4c88666efa6eecebb5630 100644
+--- a/lib/endpoints/friendsv1.d.ts
++++ b/lib/endpoints/friendsv1.d.ts
+@@ -53,16 +53,6 @@ const Roblox_Friends_Api_PendingFriendRequestCountModel = z.object({
+   count: z.number().int(),
+ });
+ const Roblox_Friends_Api_Models_Response_UserResponse = z.object({
+-  isOnline: z.boolean(),
+-  presenceType: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
+-  isDeleted: z.boolean(),
+-  friendFrequentScore: z.number().int(),
+-  friendFrequentRank: z.number().int(),
+-  hasVerifiedBadge: z.boolean(),
+-  description: z.string(),
+-  created: z.string().datetime({ offset: true }),
+-  isBanned: z.boolean(),
+-  externalAppDisplayName: z.string(),
+   id: z.number().int(),
+   name: z.string(),
+   displayName: z.string(),
+@@ -96,7 +86,6 @@ const Roblox_Friends_Api_Models_Response_UserPresenceResponseModel = z.object({
+   rootPlaceId: z.number().int(),
+   gameInstanceId: z.string().uuid(),
+   universeId: z.number().int(),
+-  lastOnline: z.string().datetime({ offset: true }),
+ });
+ const Roblox_Friends_Api_Models_Response_UserPresenceResponse = z.object({
+   userPresence: Roblox_Friends_Api_Models_Response_UserPresenceResponseModel,
+diff --git a/lib/endpoints/friendsv1.js b/lib/endpoints/friendsv1.js
+index 4a55e5fce7a52f2b4d63d7d3ee2582df01c6dc36..92a79e91430a72a66ad4ae17a83764434ca15c14 100644
+--- a/lib/endpoints/friendsv1.js
++++ b/lib/endpoints/friendsv1.js
+@@ -55,16 +55,6 @@ const Roblox_Friends_Api_PendingFriendRequestCountModel = zod_1.z.object({
+     count: zod_1.z.number().int(),
+ });
+ const Roblox_Friends_Api_Models_Response_UserResponse = zod_1.z.object({
+-    isOnline: zod_1.z.boolean(),
+-    presenceType: zod_1.z.union([zod_1.z.literal(0), zod_1.z.literal(1), zod_1.z.literal(2), zod_1.z.literal(3), zod_1.z.literal(4)]),
+-    isDeleted: zod_1.z.boolean(),
+-    friendFrequentScore: zod_1.z.number().int(),
+-    friendFrequentRank: zod_1.z.number().int(),
+-    hasVerifiedBadge: zod_1.z.boolean(),
+-    description: zod_1.z.string(),
+-    created: zod_1.z.string().datetime({ offset: true }),
+-    isBanned: zod_1.z.boolean(),
+-    externalAppDisplayName: zod_1.z.string(),
+     id: zod_1.z.number().int(),
+     name: zod_1.z.string(),
+     displayName: zod_1.z.string(),
+@@ -98,7 +88,6 @@ const Roblox_Friends_Api_Models_Response_UserPresenceResponseModel = zod_1.z.obj
+     rootPlaceId: zod_1.z.number().int(),
+     gameInstanceId: zod_1.z.string().uuid(),
+     universeId: zod_1.z.number().int(),
+-    lastOnline: zod_1.z.string().datetime({ offset: true }),
+ });
+ const Roblox_Friends_Api_Models_Response_UserPresenceResponse = zod_1.z.object({
+     userPresence: Roblox_Friends_Api_Models_Response_UserPresenceResponseModel,
+diff --git a/lib/endpoints/presencev1.d.ts b/lib/endpoints/presencev1.d.ts
+index 4162aac568bfa582ee5ab925f32a009e64894787..0ec97917905fc631d9a652b6c96d344d11076f93 100644
+--- a/lib/endpoints/presencev1.d.ts
++++ b/lib/endpoints/presencev1.d.ts
+@@ -12,7 +12,6 @@ const Roblox_Presence_Api_Models_Response_UserPresence = z.object({
+   gameId: z.string().uuid(),
+   universeId: z.number().int(),
+   userId: z.number().int(),
+-  lastOnline: z.string().datetime({ offset: true }),
+   invisibleModeExpiry: z.string().datetime({ offset: true }),
+ });
+ const Roblox_Presence_Api_Models_Response_UserPresencesResponse = z.object({
+diff --git a/lib/endpoints/presencev1.js b/lib/endpoints/presencev1.js
+index a3ba5ed0ae006f211b7390e5f241bc4693b79c1a..9bd44bb7a3f2bb743c3379209a005270fe73c261 100644
+--- a/lib/endpoints/presencev1.js
++++ b/lib/endpoints/presencev1.js
+@@ -14,7 +14,6 @@ const Roblox_Presence_Api_Models_Response_UserPresence = zod_1.z.object({
+     gameId: zod_1.z.string().uuid(),
+     universeId: zod_1.z.number().int(),
+     userId: zod_1.z.number().int(),
+-    lastOnline: zod_1.z.string().datetime({ offset: true }),
+     invisibleModeExpiry: zod_1.z.string().datetime({ offset: true }),
+ });
+ const Roblox_Presence_Api_Models_Response_UserPresencesResponse = zod_1.z.object({

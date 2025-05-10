@@ -5,12 +5,15 @@ import { Fade } from "@mui/material";
 
 import { FriendInfo } from "pages/Background";
 import unknownGameImage from "../../unknowngame.png";
-import { JoinStatusCodes, PresenceTypes } from "../../global";
-import { fetchServerDetails, getRequestId } from "../../apis";
+import { JoinStatusCodes } from "../../global";
+import { fetchServerDetails } from "../../apis";
 import { ThumbnailContext } from "../Context/Thumbnails";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import FriendsListItemMenu from "./FriendsListItemMenu";
 import { contextMenuAtom } from "@/src/atoms/contextMenu";
+import { thumbnailsAtom } from "@/src/atoms/thumbnailsAtom";
+import { getThumbnailRequestId, PresenceType } from "@/src/database/FriendsDB";
+import { placesAtom, presenceAtom } from "@/src/atoms";
 
 const PresenceTypesLookup = {
 	0: "offline",
@@ -20,35 +23,34 @@ const PresenceTypesLookup = {
 	4: "invisible",
 };
 
-interface friendInfoProp {
+interface FriendsListItemProps {
+	userId: number;
+	username: string;
 	isInGroup: boolean;
+	displayName: string;
 	groupPosition: number;
 }
-
-interface FriendsListItemProps {
-	friendInfo: Exclude<FriendInfo["friends"], null>[0] & friendInfoProp;
-	disableAvatarGameIcons: boolean;
-	gameGroups: boolean;
-	presence: Exclude<FriendInfo["presence"], null>[0];
-	placeDetails: Exclude<FriendInfo["placeDetails"], null>[0];
-	rootPlaceDetails: Exclude<FriendInfo["placeDetails"], null>[0];
-}
 export const FriendsListItem = function FriendsListItem({
-	friendInfo,
-	disableAvatarGameIcons,
-	gameGroups,
-	presence,
-	placeDetails,
-	rootPlaceDetails,
+	userId,
+	username,
+	isInGroup,
+	groupPosition,
+	displayName,
 }: FriendsListItemProps) {
 	const setContextMenu = useSetAtom(contextMenuAtom);
+	const thumbnails = useAtomValue(thumbnailsAtom);
+	const placeDetailsAtom = useAtomValue(placesAtom);
+	const presence = useAtomValue(presenceAtom);
+
+	const userPresence = presence[userId];
+	const placeDetails = placeDetailsAtom[userId];
+
+	console.log("thumbnails", thumbnails);
 	const [serverDetails, setServerDetails] = useState<
 		Exclude<FriendInfo["serverDetails"], null>[""]
 	>({
 		status: 1,
 	});
-
-	const thumbnails = React.useContext(ThumbnailContext);
 
 	const [menuProps, setMenuProps] = useState<{ state: "open" | "closed" }>({
 		state: "closed",
@@ -56,9 +58,9 @@ export const FriendsListItem = function FriendsListItem({
 
 	useEffect(() => {
 		const getServerDetails = async () => {
-			const { placeId, gameId, userPresenceType } = presence;
+			const { placeId, gameId, userPresenceType } = userPresence;
 
-			if (userPresenceType === PresenceTypes.IN_GAME) {
+			if (userPresenceType === PresenceType.InGame) {
 				const serverDetails = await fetchServerDetails(placeId, gameId);
 				setServerDetails(serverDetails);
 			}
@@ -66,49 +68,43 @@ export const FriendsListItem = function FriendsListItem({
 		getServerDetails();
 	}, []);
 
-	const {
-		name,
-		displayName,
-		id: userId,
-		isInGroup,
-		groupPosition,
-	} = friendInfo;
+	// const {
+	// 	name,
+	// 	displayName,
+	// 	id: userId,
+	// 	isInGroup,
+	// 	groupPosition,
+	// } = friendInfo;
 
 	const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } =
-		presence;
+		userPresence || {};
 
-	const {
-		name: placeName,
-		isPlayable,
-		reasonProhibited,
-		universeId,
-	} = placeDetails;
+	const { name: placeName } = placeDetails || {};
 
-	const {
-		name: rootPlaceName,
-		price: placePrice,
-		description: rootPlaceDescription,
-	} = rootPlaceDetails;
+	const rootPlaceDetails = placeDetailsAtom[rootPlaceId];
+
+	const { name: rootPlaceName, description: rootPlaceDescription } =
+		rootPlaceDetails || {};
 	const { status } = serverDetails;
 
-	const purchaseRequired = reasonProhibited === "PurchaseRequired";
+	const purchaseRequired = false;
 
 	const presencePrivate = gameId === null;
 
 	const getCurrentLocation = () => {
 		switch (userPresenceType) {
-			case PresenceTypes.OFFLINE:
+			case PresenceType.Offline:
 				return `Last online ${lastOnlineString}`;
-			case PresenceTypes.ONLINE:
+			case PresenceType.Online:
 				return "Online";
-			case PresenceTypes.IN_GAME:
+			case PresenceType.InGame:
 				if (presencePrivate) return "In Game";
-				if (gameGroups) {
+				if (isInGroup) {
 					return placeName || rootPlaceName;
 				} else {
 					return rootPlaceName || placeName || "Loading...";
 				}
-			case PresenceTypes.IN_STUDIO:
+			case PresenceType.InStudio:
 				return rootPlaceName || placeName || "In Studio";
 			default:
 				return "Unknown";
@@ -116,9 +112,9 @@ export const FriendsListItem = function FriendsListItem({
 	};
 	const isPlayEnabled = (() => {
 		switch (userPresenceType) {
-			case PresenceTypes.IN_GAME:
+			case PresenceType.InGame:
 				if (
-					(isPlayable && status === JoinStatusCodes.OK) ||
+					status === JoinStatusCodes.OK ||
 					status === JoinStatusCodes.SERVER_FULL
 				) {
 					return true;
@@ -130,13 +126,13 @@ export const FriendsListItem = function FriendsListItem({
 		}
 	})();
 
-	const lastOnlineObject = new Date(lastOnline);
+	const lastOnlineObject = new Date(lastOnline ?? 0);
 
 	const lastOnlineString = DateSince(lastOnlineObject);
 
 	const richPresenceEnabled =
-		userPresenceType === PresenceTypes.IN_GAME &&
-		!gameGroups &&
+		userPresenceType === PresenceType.InGame &&
+		!isInGroup &&
 		rootPlaceName &&
 		rootPlaceName !== placeName;
 
@@ -165,9 +161,9 @@ export const FriendsListItem = function FriendsListItem({
 					>
 						{isInGroup && <div className="SteamPlayerGroupLines" />}
 						{presence.placeId &&
-						(userPresenceType === PresenceTypes.IN_GAME ||
-							userPresenceType === PresenceTypes.IN_STUDIO) &&
-						!disableAvatarGameIcons ? (
+						(userPresenceType === PresenceType.InGame ||
+							userPresenceType === PresenceType.InStudio) &&
+						!isInGroup ? (
 							<a href={`https://www.roblox.com/games/${placeId}`} target="_top">
 								<GamePopper
 									placeId={placeId}
@@ -176,9 +172,9 @@ export const FriendsListItem = function FriendsListItem({
 									builder={rootPlaceDetails.builder || placeDetails.builder}
 								/>
 							</a>
-						) : (userPresenceType === PresenceTypes.IN_GAME ||
-								userPresenceType === PresenceTypes.IN_STUDIO) &&
-							!disableAvatarGameIcons ? (
+						) : (userPresenceType === PresenceType.InGame ||
+								userPresenceType === PresenceType.InStudio) &&
+							!isInGroup ? (
 							<div className="FriendInGameIcon">
 								<img className="gameIcon" src={unknownGameImage} alt="" />
 							</div>
@@ -189,8 +185,14 @@ export const FriendsListItem = function FriendsListItem({
 								<img
 									className="steamavatar_avatar_f2laR avatar"
 									src={
-										thumbnails[
-											getRequestId(userId, "AvatarHeadShot", "150x150")
+										thumbnails && [
+											thumbnails[
+												getThumbnailRequestId(
+													userId,
+													"AvatarHeadShot",
+													"150x150",
+												)
+											]?.imageUrl,
 										]
 									}
 									alt=""

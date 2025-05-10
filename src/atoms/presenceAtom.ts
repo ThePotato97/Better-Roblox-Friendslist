@@ -1,6 +1,7 @@
 import { atom } from "jotai";
 import { getDefaultStore } from "jotai";
-import { FriendsDB, Presence } from "../database/FriendsDB";
+import { FriendsDB, Presence, PresenceType } from "../database/FriendsDB";
+import { PresenceTypes } from "../global";
 
 export const presenceAtom = atom<Record<number, Presence>>({});
 
@@ -22,28 +23,40 @@ presenceAtom.onMount = (set) => {
 	});
 };
 
-export async function updatePresenceBatch(presenceList: Presence[]) {
+export async function updatePresenceBatch(
+	presenceList: Omit<Omit<Presence, "lastUpdated">, "lastOnline">[],
+) {
 	const db = await FriendsDB();
-	const transaction = db.transaction("presences", "readwrite");
 
+	// 1) grab the in‑memory map so we know each user’s existing lastOnline
+	const store = getDefaultStore();
+	const existingMap = store.get(presenceAtom);
+
+	// 2) batch‑write to IndexedDB
+	const tx = db.transaction("presences", "readwrite");
 	const now = Date.now();
 	const updatedMap: Record<number, Presence> = {};
 
-	for (const presenceEntry of presenceList) {
-		const updatedEntry = {
-			...presenceEntry,
+	for (const entry of presenceList) {
+		// decide whether to refresh lastOnline
+		const old = existingMap[entry.userId];
+		const lastOnline =
+			entry.userPresenceType === PresenceType.Online ? now : old?.lastOnline;
+
+		const stamped: Presence = {
+			...entry,
+			lastOnline,
 			lastUpdated: now,
 		};
-		transaction.store.put(updatedEntry);
-		updatedMap[presenceEntry.userId] = updatedEntry;
+
+		tx.store.put(stamped);
+		updatedMap[entry.userId] = stamped;
 	}
+	await tx.done;
 
-	await transaction.done;
-
-	// Merge once into atom
-	const store = getDefaultStore();
-	store.set(presenceAtom, (existingPresence) => ({
-		...existingPresence,
+	// 3) merge once into the atom
+	store.set(presenceAtom, (prev) => ({
+		...prev,
 		...updatedMap,
 	}));
 }

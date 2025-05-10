@@ -1,7 +1,7 @@
 import { atom, getDefaultStore } from "jotai";
 import { FriendsDB, Place } from "../database/FriendsDB";
 
-export const placesAtom = atom<Record<number, Place> | null>(null);
+export const placesAtom = atom<Record<number, Place>>({});
 
 placesAtom.onMount = (set) => {
 	FriendsDB().then(async (db) => {

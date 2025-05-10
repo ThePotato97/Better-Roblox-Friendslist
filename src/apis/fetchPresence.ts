@@ -11,7 +11,6 @@ interface UserPresence {
 	rootPlaceId: number;
 	userPresenceType: 0 | 2 | 1 | 3 | 4;
 	lastLocation: string;
-	lastOnline: string;
 	gameId: string;
 }
 

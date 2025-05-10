@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  rozod@5.0.0:
+    hash: 6dsu2fswteftaqqosmlujslpoi
+    path: patches/rozod@5.0.0.patch
+
 importers:
 
   .:
@@ -54,8 +59,8 @@ importers:
         specifier: ^9.1.2
         version: 9.1.2(@types/react@18.3.12)(react@18.3.1)(redux@5.0.1)
       rozod:
-        specifier: ^4.9.1
-        version: 4.9.1
+        specifier: ^5.0.0
+        version: 5.0.0(patch_hash=6dsu2fswteftaqqosmlujslpoi)
       webext-storage-cache:
         specifier: ^6.0.3
         version: 6.0.3
@@ -3264,8 +3269,8 @@ packages:
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
 
-  roblox-bat@0.4.0:
-    resolution: {integrity: sha512-jGQtHPL6Ka6Yj5/21mY47Cr9PcMzfaaim5BK2pN7MJ5+yqXwObp1kaYj8RfhmUbTWQKMCmMcqCUyXB4c6/OWxA==}
+  roblox-bat@0.5.1:
+    resolution: {integrity: sha512-rxwtTPcc9DfJFTrycRq46PAWVQy74+yckOW8hD92BN5C9ywKfNlJNeX19sKA8Yrcc/ESbMWwDzaYLkFyC4mUQw==}
 
   rollup@4.27.3:
     resolution: {integrity: sha512-SLsCOnlmGt9VoZ9Ek8yBK8tAdmPHeppkw+Xa7yDlCEhDTvwYei03JlWo1fdc7YTfLZ4tD8riJCUyAgTbszk1fQ==}
@@ -3277,8 +3282,8 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
-  rozod@4.9.1:
-    resolution: {integrity: sha512-4+AVYeahC8Tb2ZBqoyqIw4mJFqpERq2a4HlD10nATIWMOUQMpPgNmXd2M+p2oIupc1NpGON3+SV6ky8tbiSA3w==}
+  rozod@5.0.0:
+    resolution: {integrity: sha512-FrJD/GgYHWH5nC6PPMteV3E/SO0H5frvtgG/NLGti+jmVI+BBAz0uljwmotjymelbVHcgvzlruDndWsDhYKA1Q==}
 
   rrweb-cssom@0.7.1:
     resolution: {integrity: sha512-TrEMa7JGdVm0UThDJSx7ddw5nVm3UJS9o9CCIZ72B1vSyEZoziDqBYP3XIoi/12lKrJR8rE3jeFHMok2F/Mnsg==}
@@ -7362,7 +7367,7 @@ snapshots:
 
   rfdc@1.4.1: {}
 
-  roblox-bat@0.4.0: {}
+  roblox-bat@0.5.1: {}
 
   rollup@4.27.3:
     dependencies:
@@ -7414,10 +7419,10 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.40.2
       fsevents: 2.3.3
 
-  rozod@4.9.1:
+  rozod@5.0.0(patch_hash=6dsu2fswteftaqqosmlujslpoi):
     dependencies:
       parse-roblox-errors: 1.1.10
-      roblox-bat: 0.4.0
+      roblox-bat: 0.5.1
       zod: 3.24.4
 
   rrweb-cssom@0.7.1: {}

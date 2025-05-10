@@ -21,9 +21,8 @@ import { FriendInfo } from "pages/Background";
 import { JoinStatusCodes, PresenceTypes } from "../global.ts";
 import {
 	fetchFriends,
-	multiGetPlaceDetails,
+	fetchPlaceDetails,
 	fetchThumbnails,
-	getRequestId,
 	fetchPresence,
 	getUsersUseridFriendsResponse,
 	gameMultiGetResponse,
@@ -31,6 +30,18 @@ import {
 import { ThumbnailContext } from "./Context/Thumbnails.ts";
 import { fetchUserInfo } from "../apis/fetchCurrentUserInfo.ts";
 import FriendsListItemMenu from "./Components/FriendsListItemMenu.tsx";
+import { useAtomValue, useSetAtom } from "jotai";
+import { presenceAtom, updatePresenceBatch } from "../atoms/presenceAtom.ts";
+import { placesAtom, updatePlacesBatch } from "../atoms/placesAtom.ts";
+import {
+	friendsAtom,
+	groupsAtom,
+	thumbnailsAtom,
+	updateFriendsBatch,
+	updateThumbnailsBatch,
+} from "../atoms/index.ts";
+import { getMissingThumbnails } from "../atoms/thumbnailsSelectors.ts";
+import { getMissingPlacesDetails } from "../atoms/placeSelectors.ts";
 
 type friendItem = FriendInfo["friends"][0];
 
@@ -186,8 +197,6 @@ const getGroups = async (friendInfo: FriendInfo | undefined) => {
 	return newGroups;
 };
 
-
-
 const groupInfo: Record<
 	number,
 	{
@@ -250,127 +259,85 @@ interface FriendGroup {
 }
 
 export const FriendList = () => {
-	// const [groups, setGroups] = useState<friendGroups>([]);
-	const [presence, setPresence] = useState<
-		Exclude<FriendInfo["presence"], null>
-	>([]);
+	const friends = useAtomValue(friendsAtom);
+	const presence = useAtomValue(presenceAtom);
+	const placeDetails = useAtomValue(placesAtom);
+	const thumbnails = useAtomValue(thumbnailsAtom);
+	const groups = useAtomValue(groupsAtom);
 
-	const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
-
-	const [friends, setFriends] = useState<getUsersUseridFriendsResponse["data"]>(
-		[],
-	);
-
-	const [placeDetails, setPlaceDetails] = useState<
-		Record<number, gameMultiGetResponse[0]>
-	>([]);
-	const [showFriendsList, setShowFriendsList] = useState<boolean>(
+	const [isListVisible, setListVisible] = useState<boolean>(
 		JSON.parse(sessionStorage.getItem("showFriendsList") ?? "true"),
 	);
-	const [showFriendsExtension, setShowFriendsExtension] = useState<boolean>(
+	const [isExtensionActive, setExtensionActive] = useState<boolean>(
 		true ||
 			JSON.parse(sessionStorage.getItem("showFriendsExtension") ?? "true"),
 	);
 
+	// 1) initial + polling for friends & presence
 	useEffect(() => {
-		const getFriendsList = async () => {
+		async function reload() {
 			const userInfo = await fetchUserInfo();
-
-			const userIdNum = userInfo.id;
-
-			if (isNaN(userIdNum)) return;
-			const friends = await fetchFriends(userIdNum);
-
-			const presence = await fetchPresence(
-				friends.map((user) => user.id),
-				userIdNum,
+			const friendList = await fetchFriends(userInfo.id);
+			const presList = await fetchPresence(
+				friendList.map((f) => f.userId),
+				userInfo.id,
 			);
-			setFriends(friends);
-			setPresence(
-				presence.reduce(
-					(acc, p) => {
-						acc[p.userId] = p;
-						return acc;
-					},
-					{} as Record<number, (typeof presence)[0]>,
-				),
-			);
-		};
-		const interval = setInterval(() => {
-			console.log("Updating friends list");
-			getFriendsList();
-		}, 5000);
-		return () => clearInterval(interval);
+
+			updateFriendsBatch(friendList);
+			updatePresenceBatch(presList);
+		}
+		reload();
+		const handle = setInterval(reload, 5_000);
+		return () => clearInterval(handle);
 	}, []);
 
+	// fetch headshots
 	useEffect(() => {
-		const getPlaceDetails = async () => {
-			if (!presence) return;
-			const places: Set<number> = getPlaces(presence);
-			const placeDetails = await multiGetPlaceDetails([...places]);
-
-			setPlaceDetails(() => placeDetails);
-		};
-		getPlaceDetails();
-	}, [presence]);
-
-	useEffect(() => {
-		const getThumbnails = async () => {
-			let newThumbnails = {};
-			const places = getPlaces(presence);
-			if ([...places].length > 0) {
-				const placeIcons = await fetchThumbnails(
-					[...places],
-					"PlaceIcon",
-					"150x150",
-				);
-				newThumbnails = {
-					...newThumbnails,
-					...placeIcons,
-				};
-
-				setThumbnails((current) => ({
-					...current,
-					...placeIcons,
-				}));
-				const gameThumbnails = await fetchThumbnails(
-					[...places],
-					"GameThumbnail",
-					"768x432",
-				);
-				newThumbnails = {
-					...newThumbnails,
-					...gameThumbnails,
-				};
-				setThumbnails((current) => ({
-					...current,
-					...gameThumbnails,
-				}));
-			}
-
-			const friendIcons = await fetchThumbnails(
-				friends.map((friend) => friend.id),
+		const updateThumbnails = async () => {
+			const missingThumbnails = getMissingThumbnails(
+				friends.map((f) => f.userId),
 				"AvatarHeadShot",
 				"150x150",
 			);
-			newThumbnails = {
-				...newThumbnails,
-				...friendIcons,
-			};
-
-			setThumbnails(newThumbnails);
+			if (missingThumbnails.length > 0) {
+				const newThumbnails = await fetchThumbnails(
+					missingThumbnails,
+					"AvatarHeadShot",
+					"150x150",
+				);
+				updateThumbnailsBatch(newThumbnails);
+			}
 		};
-		getThumbnails();
-	}, [presence, friends, placeDetails]);
+		updateThumbnails();
+	}, [friends]);
+
+	// fetch place details
+	useEffect(() => {
+		const updatePlaces = async () => {
+			const places = getMissingPlacesDetails(
+				Object.values(presence).map((p) => p.placeId),
+			);
+			if (places.length > 0) {
+				const placeDetails = await fetchPlaceDetails(places);
+				updatePlacesBatch(placeDetails);
+			}
+			const rootplaces = getMissingPlacesDetails(places.map((p) => p));
+			if (rootplaces.length > 0) {
+				const rootPlaceDetails = await fetchPlaceDetails(rootplaces);
+				updatePlacesBatch(rootPlaceDetails);
+			}
+		};
+		updatePlaces();
+	}, [presence]);
 
 	useEffect(() => {
-		const friendsListElement = document.querySelector("#chat-container")!;
+		const friendsListElement = document.querySelector(
+			"#chat-container",
+		)! as HTMLElement;
 		if (friendsListElement) {
-			friendsListElement.style.display = showFriendsExtension
-				? "none"
-				: "block";
+			friendsListElement.style.display = isExtensionActive ? "none" : "block";
 		}
-	}, [showFriendsList]);
+	}, [isListVisible]);
 
 	// useEffect(() => {
 	//   const getFriendsList = async () => {
@@ -393,139 +360,88 @@ export const FriendList = () => {
 	// }, []);
 
 	const handleToggleFriendsList = () => {
-		setShowFriendsList(!showFriendsList);
-		sessionStorage.setItem("showFriendsList", JSON.stringify(!showFriendsList));
+		setListVisible(!isListVisible);
+		sessionStorage.setItem("showFriendsList", JSON.stringify(!isListVisible));
 	};
 
 	const handleToggleExtension = () => {
 		const friendsListElement = document.querySelector("#chat-container")!;
-		setShowFriendsExtension(!showFriendsExtension);
+		setExtensionActive(!isExtensionActive);
 		sessionStorage.setItem(
 			"showFriendsExtension",
-			JSON.stringify(!showFriendsExtension),
+			JSON.stringify(!isExtensionActive),
 		);
 		if (friendsListElement) {
-			friendsListElement.style.display = !showFriendsExtension
-				? "none"
-				: "block";
+			friendsListElement.style.display = !isExtensionActive ? "none" : "block";
 		}
 	};
 
-	const rootPlaceIds = friends.map((f) => presence[f.id].rootPlaceId);
-
-	const duplicates = rootPlaceIds.filter(
-		(id, index) => rootPlaceIds.indexOf(id) !== index && id !== null,
-	);
-
-	const newGroups = Object.values(
-		friends.reduce(
-			(acc, friend) => {
-				const friendPresence = presence?.[friend.id];
-
-				if (!friendPresence) return acc;
-				const { userPresenceType, rootPlaceId } = friendPresence;
-				const duplicate = duplicates.includes(rootPlaceId);
-
-				if (duplicate && userPresenceType === PresenceTypes.IN_GAME) {
-					acc[rootPlaceId] = acc[rootPlaceId] || {
-						friends: [],
-						isGameGroup: true,
-						id: rootPlaceId,
-					};
-					acc[rootPlaceId].friends.push(friend);
-				} else {
-					acc[userPresenceType] = acc[userPresenceType] || {
-						friends: [],
-						isGameGroup: false,
-						id: userPresenceType,
-					};
-					acc[userPresenceType].friends.push(friend);
-				}
-				return acc;
-			},
-			{} as Record<string, FriendGroup>,
-		),
-	).sort((a, b) => {
-		if (a.isGameGroup && !b.isGameGroup) return -1;
-		if (!a.isGameGroup && b.isGameGroup) return 1;
-		if (!groupInfo[a.id] || !groupInfo[b.id]) return -1;
-		const aPriority = groupInfo[a.id].priority;
-		const bPriority = groupInfo[b.id].priority;
-		return aPriority - bPriority;
-	});
-
 	return (
 		<>
-			<ThumbnailContext.Provider value={thumbnails}>
-				<FriendsListItemMenu />
-				<Slide in={showFriendsExtension} direction={"up"} appear>
-					<Paper
+			<FriendsListItemMenu />
+			<Slide in={isExtensionActive} direction={"up"} appear>
+				<Paper
+					sx={{
+						userSelect: "none",
+						position: "fixed",
+						bottom: 0,
+						left: 0,
+						width: "400px",
+						zIndex: 999,
+						display: "flex",
+						flexDirection: "column-reverse", // <-- yes, this stays here
+						pointerEvents: "auto",
+					}}
+				>
+					<Button
+						disableRipple
+						onClick={handleToggleFriendsList}
 						sx={{
-							userSelect: "none",
-							position: "fixed",
-							bottom: 0,
-							left: 0,
-							width: "400px",
-							zIndex: 999,
-							display: "flex",
-							flexDirection: "column-reverse", // <-- yes, this stays here
-							pointerEvents: "auto",
+							width: "100%",
 						}}
 					>
-						<Button
-							disableRipple
-							onClick={handleToggleFriendsList}
-							sx={{
-								width: "100%",
-							}}
-						>
-							<div>Friends List</div>
-						</Button>
-						<Collapse unmountOnExit in={showFriendsList}>
-							<FriendsList>
-								{presence !== null &&
-									newGroups.length > 0 &&
-									newGroups.map(({ id, friends, isGameGroup }) => {
-										return (
-											<FriendsGroup
-												key={id}
-												groupSize={friends.length}
-												placeDetails={isGameGroup ? placeDetails[id] || {} : {}}
-												groupName={
-													isGameGroup ? undefined : groupInfo[id]?.name
-												}
-												placeId={isGameGroup ? id : undefined}
-												defaultGroupState={groupInfo[id]?.defaultGroupState}
-												extraClasses={
-													groupInfo[id]?.extraClasses || "gameGroup"
-												}
-											>
-												{friends.map((friend) => {
-													const friendPresence = presence[friend.id];
-													const placeDetail =
-														placeDetails?.[friendPresence.placeId] || {};
-													const rootPlaceDetail =
-														placeDetails?.[friendPresence.rootPlaceId] ?? {};
-													return (
-														<FriendsListItem
-															key={friend.id}
-															friendInfo={friend}
-															presence={friendPresence}
-															placeDetails={placeDetail || {}}
-															rootPlaceDetails={rootPlaceDetail}
-															disableAvatarGameIcons={isGameGroup}
-															gameGroups={isGameGroup}
-														/>
-													);
-												})}
-											</FriendsGroup>
-										);
-									})}
-							</FriendsList>
-						</Collapse>
-					</Paper>
-				</Slide>
-			</ThumbnailContext.Provider>
+						<div>Friends List</div>
+					</Button>
+					<Collapse unmountOnExit in={isListVisible}>
+						<FriendsList>
+							{presence !== null &&
+								groups.length > 0 &&
+								groups.map(({ id, friends, isGameGroup }) => {
+									return (
+										<FriendsGroup
+											key={id}
+											groupSize={friends.length}
+											placeDetails={isGameGroup ? placeDetails?.[id] || {} : {}}
+											groupName={isGameGroup ? undefined : groupInfo[id]?.name}
+											placeId={isGameGroup ? id : undefined}
+											defaultGroupState={groupInfo[id]?.defaultGroupState}
+											extraClasses={groupInfo[id]?.extraClasses || "gameGroup"}
+										>
+											{friends.map((friend) => {
+												const friendPresence = presence[friend.userId] ?? {};
+												const placeDetail =
+													placeDetails?.[friendPresence.placeId] || {};
+												const rootPlaceDetail =
+													placeDetails?.[friendPresence.rootPlaceId] ?? {};
+												return (
+													<FriendsListItem
+														key={friend.userId}
+														userId={friend.userId}
+														username={friend.username}
+														displayName={friend.displayName}
+														isInGroup={isGameGroup}
+														groupPosition={0}
+													/>
+												);
+											})}
+										</FriendsGroup>
+									);
+								})}
+						</FriendsList>
+					</Collapse>
+				</Paper>
+			</Slide>
+
 			{document.querySelector("#navbar-stream")
 				? ReactDOM.createPortal(
 						<li
@@ -550,7 +466,7 @@ export const FriendList = () => {
 									style={{
 										backgroundImage: `url(${extensionIcon})`,
 										cursor: "pointer",
-										filter: !showFriendsExtension ? "grayscale(100%)" : "none",
+										filter: !isExtensionActive ? "grayscale(100%)" : "none",
 										backgroundRepeat: "no-repeat",
 										backgroundSize: "cover",
 										width: "100%",

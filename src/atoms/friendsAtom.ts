@@ -10,23 +10,27 @@ friendsAtom.onMount = (set) => {
 	});
 };
 
-export async function updateFriendsBatch(friendList: Friend[]) {
+export async function updateFriendsBatch(
+	friendList: Array<Omit<Friend, "lastUpdated">>,
+) {
 	const database = await FriendsDB();
 	const transaction = database.transaction("friends", "readwrite");
 
 	const now = Date.now();
+
+	const updatedFriends: Friend[] = [];
 
 	for (const friendEntry of friendList) {
 		const updatedFriend: Friend = {
 			...friendEntry,
 			lastUpdated: now,
 		};
-
+		updatedFriends.push(updatedFriend);
 		transaction.store.put(updatedFriend);
 	}
 
 	await transaction.done;
 
 	const store = getDefaultStore();
-	store.set(friendsAtom, friendList);
+	store.set(friendsAtom, updatedFriends);
 }

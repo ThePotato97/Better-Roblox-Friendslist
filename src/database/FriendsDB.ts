@@ -1,6 +1,7 @@
-import { DBSchema, IDBPDatabase, openDB } from "idb";
+import { DBSchema, openDB } from "idb";
+import { ThumbnailType } from "../apis";
 
-enum userPresenceType {
+export enum PresenceType {
 	Offline = 0,
 	Online = 1,
 	InGame = 2,
@@ -10,31 +11,48 @@ enum userPresenceType {
 
 export interface Friend {
 	userId: number;
-	isVerified?: boolean;
 	username: string;
-	displayName?: string;
-	thumbnail?: string;
+	displayName: string;
 	lastUpdated: number;
 }
 
 export interface Presence {
-	userId: number;
-	userPresenceType: userPresenceType;
+	userPresenceType: PresenceType;
 	placeId: number;
 	rootPlaceId: number;
-	gameId: number;
+	gameId: string;
+	lastOnline?: number;
 	universeId: number;
-	lastOnline: number;
+	userId: number;
 	lastUpdated: number;
 }
 
 export interface Place {
 	placeId: number;
 	rootPlaceId: number;
+	isPlayable: boolean;
+	reasonProhibited: string;
 	name: string;
 	description: string;
 	thumbnail: string;
 	lastUpdated: number;
+}
+
+export interface Thumbnail {
+	requestId: ThumbnailRequestId;
+	type: ThumbnailType;
+	imageUrl: string;
+	lastUpdated: number;
+}
+
+export type ThumbnailRequestId = `${number}:${ThumbnailType}:${string}`;
+
+export function getThumbnailRequestId(
+	id: number,
+	thumbnailType: ThumbnailType,
+	size: string,
+): ThumbnailRequestId {
+	return `${id}:${thumbnailType}:${size}`;
 }
 
 export interface FriendsDBSchema extends DBSchema {
@@ -50,7 +68,7 @@ export interface FriendsDBSchema extends DBSchema {
 		key: number;
 		value: Presence;
 		indexes: {
-			"by-status": userPresenceType;
+			"by-status": PresenceType;
 			"by-gameId": number;
 			"by-universeId": number;
 			"by-lastUpdated": number;
@@ -61,6 +79,14 @@ export interface FriendsDBSchema extends DBSchema {
 		value: Place;
 		indexes: {
 			"by-lastUpdated": number;
+		};
+	};
+	thumbnails: {
+		key: ThumbnailRequestId;
+		value: Thumbnail;
+		indexes: {
+			"by-lastUpdated": number;
+			"by-type": ThumbnailType;
 		};
 	};
 }
@@ -89,6 +115,13 @@ export const FriendsDB = async () => {
 				keyPath: "placeId",
 			});
 			placesStore.createIndex("by-lastUpdated", "lastUpdated");
+
+			// Thumbnails store
+			const thumbnailsStore = db.createObjectStore("thumbnails", {
+				keyPath: "requestId",
+			});
+			thumbnailsStore.createIndex("by-lastUpdated", "lastUpdated");
+			thumbnailsStore.createIndex("by-type", "type");
 		},
 	});
 };
