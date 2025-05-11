@@ -11,8 +11,6 @@ export enum PresenceType {
 
 export interface Friend {
 	userId: number;
-	username: string;
-	displayName: string;
 	lastUpdated: number;
 }
 
@@ -27,14 +25,30 @@ export interface Presence {
 	lastUpdated: number;
 }
 
+export interface Profiles {
+	userId: number;
+	displayName: string;
+	combinedName: string;
+	username: string;
+}
+
 export interface Place {
+	builder: string;
+	builderId: number;
+	hasVerifiedBadge: boolean;
+	imageToken: string;
+	price: number;
 	placeId: number;
 	rootPlaceId: number;
 	isPlayable: boolean;
+	sourceDescription: string;
+	sourceName: string;
 	reasonProhibited: string;
 	name: string;
 	description: string;
 	thumbnail: string;
+	universeId: number;
+	universeRootPlaceId: number;
 	lastUpdated: number;
 }
 

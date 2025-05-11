@@ -1,16 +1,17 @@
 import { getDefaultStore } from "jotai";
 
-import { placesAtom } from "./";
+import { presenceAtom } from "./";
 
 const store = getDefaultStore();
 
-export const getMissingPlacesDetails = (ids: number[]): number[] => {
+export const getMissingPresence = (ids: number[]): number[] => {
 	const filteredIds = ids.filter((id) => id !== null);
 	const uniqueIds = Array.from(new Set(filteredIds));
-	const placeDetails = store.get(placesAtom);
+
+	const presenceState = store.get(presenceAtom);
 
 	return uniqueIds.filter((id) => {
-		const thumb = placeDetails[id];
-		return !thumb;
+		const presence = presenceState[id];
+		return !presence;
 	});
 };

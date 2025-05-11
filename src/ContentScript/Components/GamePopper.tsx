@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, memo } from "react";
 
 import { createPortal } from "react-dom";
 
@@ -6,7 +6,7 @@ import { usePopper } from "react-popper";
 import { ThumbnailContext } from "../Context/Thumbnails";
 import { getThumbnailRequestId } from "@/src/database/FriendsDB";
 import { useAtomValue } from "jotai";
-import { thumbnailsAtom } from "@/src/atoms";
+import { placesAtom, thumbnailsAtom } from "@/src/atoms";
 
 const intToString = (value) => {
 	const suffixes = ["", "k", "m", "b", "t"];
@@ -73,43 +73,55 @@ const getPlaceVotes = (universeId) => {
 	});
 };
 
-export const GamePopper = ({
-	isInGroup,
-	builder,
-	universeId,
-	description,
-	placeId,
-}) => {
+interface GamePopperProps {
+	placeId: number;
+	isInGroup: boolean;
+}
+
+export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
 	const [votes, setVotes] = useState("???");
 	const [playing, setPlaying] = useState("???");
 	const [showPopper, setPopperState] = useState(false);
-	const [referenceElement, setReferenceElement] = useState(null);
-	const [popperElement, setPopperElement] = useState(null);
+	const [referenceElement, setReferenceElement] =
+		useState<HTMLDivElement | null>(null);
+	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
+		null,
+	);
+
+	const [popperReady, setPopperReady] = useState(false);
 	const [rootElement, setRootElement] = useState<HTMLElement>();
+
+	const placeDetails = useAtomValue(placesAtom)[placeId];
+
+	const { universeId, description, builder } = placeDetails || {};
 
 	const thumbnails = useAtomValue(thumbnailsAtom);
 
 	useEffect(() => {
-		const root = document
-			.getElementById("friend-list-container-shadow")
-			?.shadowRoot?.getElementById("friend-list-container");
+		const root = window.portalRoot;
 		if (!root) return;
 		setRootElement(root);
 	}, []);
 
-	const { styles, attributes } = usePopper(referenceElement, popperElement, {
-		placement: "left",
-		modifiers: [
-			{
-				name: "offset",
-				options: {
-					offset: [0, 20],
+	const { styles, attributes, update } = usePopper(
+		referenceElement,
+		popperElement,
+		{
+			placement: "left",
+
+			modifiers: [
+				{
+					name: "offset",
+					options: {
+						offset: [0, 20],
+					},
 				},
-			},
-		],
-	});
+			],
+		},
+	);
 
 	const handleMouseEnter = () => {
+		console.log("handleMouseEnter");
 		setPopperState(true);
 		getPlaceVotes(universeId).then((votes) => {
 			setVotes(votes);
@@ -119,13 +131,25 @@ export const GamePopper = ({
 		});
 	};
 
+	useEffect(() => {
+		if (showPopper && update) {
+			setPopperReady(false);
+			requestAnimationFrame(() => {
+				console.log("update");
+				update().then(() => setPopperReady(true));
+			});
+		}
+	}, [showPopper]);
+
 	const handleMouseLeave = () => {
 		setPopperState(false);
 	};
 	const placeIcon =
-		thumbnails[getThumbnailRequestId(placeId, "PlaceIcon", "150x150")];
+		thumbnails[getThumbnailRequestId(placeId, "PlaceIcon", "150x150")]
+			?.imageUrl;
 	const placeThumbnail =
-		thumbnails[getThumbnailRequestId(placeId, "GameThumbnail", "768x432")];
+		thumbnails[getThumbnailRequestId(placeId, "GameThumbnail", "768x432")]
+			?.imageUrl;
 	return (
 		<>
 			{isInGroup ? (
@@ -152,7 +176,11 @@ export const GamePopper = ({
 				? createPortal(
 						<div
 							ref={setPopperElement}
-							style={{ ...styles.popper, zIndex: 9999 }}
+							className={`game-popper-container ${showPopper ? "popper-open" : "popper-exit"}`}
+							style={{
+								...styles.popper,
+								zIndex: 9999,
+							}}
 							{...attributes.popper}
 						>
 							<div
@@ -236,4 +264,4 @@ export const GamePopper = ({
 				: null}
 		</>
 	);
-};
+});

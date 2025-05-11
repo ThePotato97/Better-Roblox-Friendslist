@@ -14,7 +14,9 @@ placesAtom.onMount = (set) => {
 	});
 };
 
-export async function updatePlacesBatch(placesList: Place[]) {
+export async function updatePlacesBatch(
+	placesList: Omit<Place, "lastUpdated">[],
+) {
 	const db = await FriendsDB();
 	const transaction = db.transaction("places", "readwrite");
 

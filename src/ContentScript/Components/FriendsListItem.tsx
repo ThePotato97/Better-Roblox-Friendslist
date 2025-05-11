@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import DateSince from "../DateSince";
 import { GamePopper } from "./GamePopper";
 import { Fade } from "@mui/material";
@@ -28,9 +28,9 @@ interface FriendsListItemProps {
 	username: string;
 	isInGroup: boolean;
 	displayName: string;
-	groupPosition: number;
+	groupPosition: string;
 }
-export const FriendsListItem = function FriendsListItem({
+export const FriendsListItem = memo(function FriendsListItem({
 	userId,
 	username,
 	isInGroup,
@@ -42,10 +42,9 @@ export const FriendsListItem = function FriendsListItem({
 	const placeDetailsAtom = useAtomValue(placesAtom);
 	const presence = useAtomValue(presenceAtom);
 
-	const userPresence = presence[userId];
-	const placeDetails = placeDetailsAtom[userId];
+	const userPresence = presence[userId] || {};
+	const placeDetails = placeDetailsAtom[userPresence.placeId] || {};
 
-	console.log("thumbnails", thumbnails);
 	const [serverDetails, setServerDetails] = useState<
 		Exclude<FriendInfo["serverDetails"], null>[""]
 	>({
@@ -79,12 +78,12 @@ export const FriendsListItem = function FriendsListItem({
 	const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } =
 		userPresence || {};
 
-	const { name: placeName } = placeDetails || {};
+	const { name: placeName, price: placePrice, universeId } = placeDetails ?? {};
 
-	const rootPlaceDetails = placeDetailsAtom[rootPlaceId];
+	const rootPlaceDetails = placeDetailsAtom[rootPlaceId] ?? {};
 
 	const { name: rootPlaceName, description: rootPlaceDescription } =
-		rootPlaceDetails || {};
+		rootPlaceDetails ?? {};
 	const { status } = serverDetails;
 
 	const purchaseRequired = false;
@@ -94,7 +93,7 @@ export const FriendsListItem = function FriendsListItem({
 	const getCurrentLocation = () => {
 		switch (userPresenceType) {
 			case PresenceType.Offline:
-				return `Last online ${lastOnlineString}`;
+				return `Last seen ${lastOnline === null ? "??? ago" : lastOnlineString}`;
 			case PresenceType.Online:
 				return "Online";
 			case PresenceType.InGame:
@@ -160,17 +159,12 @@ export const FriendsListItem = function FriendsListItem({
         friendStatusHover Panel Focusable`}
 					>
 						{isInGroup && <div className="SteamPlayerGroupLines" />}
-						{presence.placeId &&
+						{userPresence.placeId &&
 						(userPresenceType === PresenceType.InGame ||
 							userPresenceType === PresenceType.InStudio) &&
 						!isInGroup ? (
 							<a href={`https://www.roblox.com/games/${placeId}`} target="_top">
-								<GamePopper
-									placeId={placeId}
-									description={rootPlaceDescription || placeDetails.description}
-									universeId={universeId}
-									builder={rootPlaceDetails.builder || placeDetails.builder}
-								/>
+								<GamePopper placeId={placeId} isInGroup={isInGroup} />
 							</a>
 						) : (userPresenceType === PresenceType.InGame ||
 								userPresenceType === PresenceType.InStudio) &&
@@ -212,8 +206,8 @@ export const FriendsListItem = function FriendsListItem({
 							>
 								<div className="personanameandstatus_playerName_1uxaf">
 									{displayName}
-									{name !== displayName ? (
-										<span className="personanameandstatus_playerNickname_3-32P">{`(@${name})`}</span>
+									{username !== null && username !== displayName ? (
+										<span className="personanameandstatus_playerNickname_3-32P">{`(@${username})`}</span>
 									) : null}
 								</div>
 								{isPlayEnabled ? (
@@ -275,4 +269,4 @@ export const FriendsListItem = function FriendsListItem({
 			</Fade>
 		</div>
 	);
-};
+});

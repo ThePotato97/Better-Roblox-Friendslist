@@ -42,6 +42,8 @@ import {
 } from "../atoms/index.ts";
 import { getMissingThumbnails } from "../atoms/thumbnailsSelectors.ts";
 import { getMissingPlacesDetails } from "../atoms/placeSelectors.ts";
+import { getMissingPresence } from "../atoms/presenceSelector.ts";
+import { useThumbnailStream } from "../hooks/useThumbnailStream.ts";
 
 type friendItem = FriendInfo["friends"][0];
 
@@ -53,148 +55,6 @@ const sortFriendsAlphabet = (a: friendItem, b: friendItem) => {
 		return 1;
 	}
 	return 0;
-};
-
-interface IGroup {
-	name: string;
-	placeId?: number;
-	indexName: string;
-	friends: friendItem[];
-	isGroup?: boolean;
-	gameGroups?: boolean;
-	defaultGroupState: boolean;
-	extraClasses: string;
-	disableAvatarGameIcons?: boolean;
-}
-
-const getGroups = async (friendInfo: FriendInfo | undefined) => {
-	if (!friendInfo) return [];
-	const groupStates = {} || (await chrome.storage.local.get("groupStates"));
-	const { presence, friends } = friendInfo;
-	if (!friends || !presence) return [];
-	const rootPlaceIds = friends.map((f) => presence[f.id].rootPlaceId);
-
-	const duplicates = rootPlaceIds.filter(
-		(id, index) => rootPlaceIds.indexOf(id) !== index && id !== null,
-	);
-	const sortedFriendsList = friends.sort(sortFriendsAlphabet);
-	const newGroups: IGroup[] = [
-		{
-			name: "In Game",
-			indexName: "ingame",
-			friends: sortedFriendsList
-				.filter((f) => {
-					const userPresence = presence[f.id];
-					return (
-						userPresence.userPresenceType === PresenceTypes.IN_GAME &&
-						!duplicates.includes(userPresence.rootPlaceId)
-					);
-				})
-				.sort((a: friendItem, b: friendItem) => {
-					const { placeId: aPlace, gameId: aGameId } = presence[a.id] ?? {};
-					const { placeId: bPlace, gameId: bGameId } = presence[b.id] ?? {};
-
-					// const aServerDetails = serverDetails[aGameId];
-					// const bServerDetails = 0
-					// const aStatus = aServerDetails?.status;
-					// const bStatus = bServerDetails?.status;
-
-					const aIsJoinable =
-						true ||
-						aStatus === JoinStatusCodes.OK ||
-						aStatus === JoinStatusCodes.SERVER_FULL;
-					const bIsJoinable =
-						true ||
-						bStatus === JoinStatusCodes.OK ||
-						bStatus === JoinStatusCodes.SERVER_FULL;
-
-					if (aIsJoinable && !bIsJoinable) {
-						return -1;
-					} else if (!aIsJoinable && bIsJoinable) {
-						return 1;
-					} else if (aPlace && !bPlace) {
-						return -1;
-					} else if (!aPlace && bPlace) {
-						return 1;
-					} else {
-						return 0;
-					}
-				}),
-			defaultGroupState: groupStates.ingame ?? true,
-			extraClasses: "gameGroup OtherGamesGroup",
-		},
-		{
-			name: "In Studio",
-			indexName: "studio",
-			friends: sortedFriendsList.filter((f) => {
-				const userPresence = presence[f.id];
-				return userPresence.userPresenceType === PresenceTypes.IN_STUDIO;
-			}),
-			defaultGroupState: groupStates.studio ?? true,
-			extraClasses: "gameGroup OtherGamesGroup",
-		},
-		{
-			name: "Online",
-			indexName: "online",
-			friends: sortedFriendsList.filter((f) => {
-				const userPresence = presence[f.id];
-				return userPresence.userPresenceType === PresenceTypes.ONLINE;
-			}),
-			defaultGroupState: groupStates.online ?? true,
-			extraClasses: "onlineFriends",
-		},
-		{
-			name: "Offline",
-			indexName: "offline",
-			friends: sortedFriendsList
-				.filter((f) => {
-					const userPresence = presence[f.id];
-					return userPresence.userPresenceType === PresenceTypes.OFFLINE;
-				})
-				.sort((a, b) => {
-					const userPresenceA = presence[a.id];
-					const userPresenceB = presence[b.id];
-					const aDate = new Date(userPresenceA.lastOnline);
-					const bDate = new Date(userPresenceB.lastOnline);
-					return bDate.getTime() - aDate.getTime();
-				}),
-			defaultGroupState: groupStates.offline ?? true,
-			extraClasses: "offlineFriends",
-		},
-	];
-	const groupedFriends = Object.entries(
-		sortedFriendsList
-			.filter((f) => {
-				const userPresence = presence[f.id];
-				return duplicates.includes(userPresence.rootPlaceId);
-			})
-			.reduce(
-				(acc, f) => {
-					const userPresence = presence[f.id];
-					acc[userPresence.rootPlaceId] = acc[userPresence.rootPlaceId] || [];
-					acc[userPresence.rootPlaceId].push(f);
-					return acc;
-				},
-				{} as Record<number, friendItem[]>,
-			),
-	).map(([placeId, group]) => {
-		return {
-			placeId: placeId,
-			friends: group.sort((a, b) => {
-				const userPresenceA = presence[a.id];
-				const userPresenceB = presence[b.id];
-				const aGameId = userPresenceA.gameId;
-				const bGameId = userPresenceB.gameId;
-				return aGameId === bGameId ? 0 : -1;
-			}),
-			gameGroups: !0,
-			disableAvatarGameIcons: !0,
-			defaultGroupState: !0,
-			extraClasses: "gameGroup",
-		};
-	});
-	newGroups.unshift(...groupedFriends);
-	return newGroups;
 };
 
 const groupInfo: Record<
@@ -238,24 +98,14 @@ const groupInfo: Record<
 	},
 };
 
-const getPlaces = (
-	presence: Exclude<FriendInfo["presence"], null>,
-): Set<number> => {
-	return Object.values(presence).reduce((acc, currPresence) => {
-		if (currPresence.placeId) {
-			acc.add(currPresence.placeId);
-		}
-		if (currPresence.rootPlaceId) {
-			acc.add(currPresence.rootPlaceId);
-		}
-		return acc;
-	}, new Set<number>());
-};
-
-interface FriendGroup {
-	friends: getUsersUseridFriendsResponse["data"][0][];
-	isGameGroup: boolean;
-	id: number;
+function getGroupPosition(total: number, position: number) {
+	if (position === 0) {
+		return "firstInGroup";
+	}
+	if (position === total - 1) {
+		return "lastInGroup";
+	}
+	return "inGroup";
 }
 
 export const FriendList = () => {
@@ -273,23 +123,43 @@ export const FriendList = () => {
 			JSON.parse(sessionStorage.getItem("showFriendsExtension") ?? "true"),
 	);
 
-	// 1) initial + polling for friends & presence
+	// 1) initial + polling for friends
 	useEffect(() => {
 		async function reload() {
 			const userInfo = await fetchUserInfo();
-			const friendList = await fetchFriends(userInfo.id);
-			const presList = await fetchPresence(
-				friendList.map((f) => f.userId),
-				userInfo.id,
-			);
 
-			updateFriendsBatch(friendList);
-			updatePresenceBatch(presList);
+			await fetchFriends(109176680, (friends) => {
+				updateFriendsBatch(friends);
+			});
 		}
 		reload();
-		const handle = setInterval(reload, 5_000);
+		const handle = setInterval(reload, 20_000);
 		return () => clearInterval(handle);
 	}, []);
+
+	// fetch presence
+	useEffect(() => {
+		const updatePresence = async () => {
+			const missingPresence = getMissingPresence(
+				Object.values(friends).map((f) => f.userId),
+			);
+			if (missingPresence.length > 0) {
+				fetchPresence(missingPresence, (newPresence) => {
+					updatePresenceBatch(newPresence);
+				});
+			}
+		};
+		updatePresence();
+	}, [friends]);
+
+	useThumbnailStream(
+		friends.map((f) => f.userId),
+		"AvatarHeadShot",
+		"150x150",
+	);
+	const placeIds = Object.values(placeDetails).map((p) => p.placeId);
+	useThumbnailStream(placeIds, "GameThumbnail", "768x432");
+	useThumbnailStream(placeIds, "PlaceIcon", "150x150");
 
 	// fetch headshots
 	useEffect(() => {
@@ -310,6 +180,46 @@ export const FriendList = () => {
 		};
 		updateThumbnails();
 	}, [friends]);
+
+	// fetch place icons
+	useEffect(() => {
+		const updatePlaces = async () => {
+			const missingIcons = getMissingThumbnails(
+				Object.values(placeDetails).map((p) => p.placeId),
+				"PlaceIcon",
+				"150x150",
+			);
+			if (missingIcons.length > 0) {
+				const newIcons = await fetchThumbnails(
+					missingIcons,
+					"PlaceIcon",
+					"150x150",
+				);
+				updateThumbnailsBatch(newIcons);
+			}
+		};
+		updatePlaces();
+	}, [placeDetails]);
+
+	// fetch place thumbnails
+	useEffect(() => {
+		const updatePlaces = async () => {
+			const missingIcons = getMissingThumbnails(
+				Object.values(placeDetails).map((p) => p.placeId),
+				"GameThumbnail",
+				"768x432",
+			);
+			if (missingIcons.length > 0) {
+				const newIcons = await fetchThumbnails(
+					missingIcons,
+					"GameThumbnail",
+					"768x432",
+				);
+				updateThumbnailsBatch(newIcons);
+			}
+		};
+		updatePlaces();
+	}, [placeDetails]);
 
 	// fetch place details
 	useEffect(() => {
@@ -385,9 +295,9 @@ export const FriendList = () => {
 						userSelect: "none",
 						position: "fixed",
 						bottom: 0,
-						left: 0,
+						right: 0,
 						width: "400px",
-						zIndex: 999,
+						zIndex: 1299,
 						display: "flex",
 						flexDirection: "column-reverse", // <-- yes, this stays here
 						pointerEvents: "auto",
@@ -417,12 +327,12 @@ export const FriendList = () => {
 											defaultGroupState={groupInfo[id]?.defaultGroupState}
 											extraClasses={groupInfo[id]?.extraClasses || "gameGroup"}
 										>
-											{friends.map((friend) => {
+											{friends.map((friend, index) => {
+												const groupPosition = getGroupPosition(
+													friends.length,
+													index,
+												);
 												const friendPresence = presence[friend.userId] ?? {};
-												const placeDetail =
-													placeDetails?.[friendPresence.placeId] || {};
-												const rootPlaceDetail =
-													placeDetails?.[friendPresence.rootPlaceId] ?? {};
 												return (
 													<FriendsListItem
 														key={friend.userId}
@@ -430,7 +340,7 @@ export const FriendList = () => {
 														username={friend.username}
 														displayName={friend.displayName}
 														isInGroup={isGameGroup}
-														groupPosition={0}
+														groupPosition={groupPosition}
 													/>
 												);
 											})}

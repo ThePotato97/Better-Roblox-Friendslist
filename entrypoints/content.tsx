@@ -7,7 +7,7 @@ import { FriendList } from "@/src/ContentScript/App";
 import injectUrl from "?script";
 
 import "../entrypoints/popup/style.css";
-
+import "../entrypoints/popup/styles/GamePopper.scss";
 import "../entrypoints/popup/styles/friends.scss";
 // import "./styles/friendslist.scss";
 // import "./styles/GamePopper.scss";
@@ -25,7 +25,7 @@ export default defineContentScript({
 		const ui = await createShadowRootUi(ctx, {
 			name: "friends-list-shadow-root",
 			position: "overlay",
-			alignment: "bottom-left",
+			alignment: "bottom-right",
 			anchor: "body",
 			onMount: (container) => {
 				const shadowApp = document.createElement("div");
@@ -33,6 +33,20 @@ export default defineContentScript({
 				const emotionRoot = document.createElement("style");
 
 				portalRoot.id = "portal-root";
+				portalRoot.style.position = "fixed";
+				portalRoot.style.top = "0";
+				portalRoot.style.left = "0";
+				portalRoot.style.width = "100vw";
+				portalRoot.style.height = "100vh";
+				portalRoot.style.zIndex = "9999";
+				portalRoot.style.pointerEvents = "none";
+
+				const interactiveLayer = document.createElement("div");
+				interactiveLayer.id = "interactive-layer";
+				interactiveLayer.style.pointerEvents = "auto";
+				portalRoot.appendChild(interactiveLayer);
+
+				window.interactiveLayer = interactiveLayer;
 				window.portalRoot = portalRoot;
 				container.appendChild(portalRoot);
 				container.appendChild(emotionRoot);
@@ -41,9 +55,9 @@ export default defineContentScript({
 				const theme = createTheme({
 					palette: { mode: "dark" },
 					components: {
-						MuiPopover: { defaultProps: { container: portalRoot } },
-						MuiPopper: { defaultProps: { container: portalRoot } },
-						MuiModal: { defaultProps: { container: portalRoot } },
+						MuiPopover: { defaultProps: { container: interactiveLayer } },
+						MuiPopper: { defaultProps: { container: interactiveLayer } },
+						MuiModal: { defaultProps: { container: interactiveLayer } },
 					},
 				});
 

@@ -2,8 +2,6 @@ import { fetchApi } from "rozod";
 import { postPresenceUsers } from "rozod/lib/endpoints/presencev1";
 import cache from "webext-storage-cache/legacy.js";
 
-const PRESENCE_UPDATE_INTERVAL = 10;
-
 interface UserPresence {
 	userId: number;
 	placeId: number;
@@ -14,28 +12,27 @@ interface UserPresence {
 	gameId: string;
 }
 
-const API_NAME = "pPU";
+const MAX_BATCH_SIZE = 200;
 
-export const fetchPresence = async (friends: number[], userId: number) => {
-	const uniqueName = `${API_NAME}-${userId}`;
+export const fetchPresence = async (
+	friends: number[],
+	onPage?: (batch: UserPresence[]) => void,
+): Promise<UserPresence[]> => {
+	const merged: UserPresence[] = [];
 
-	if (await cache.has(uniqueName)) {
-		return (await cache.get(uniqueName)) as UserPresence[];
+	for (let i = 0; i < friends.length; i += MAX_BATCH_SIZE) {
+		const batch = friends.slice(i, i + MAX_BATCH_SIZE);
+		const presence = await fetchApi(postPresenceUsers, {
+			body: { userIds: batch },
+		});
+
+		const { userPresences } = presence;
+		if (onPage) {
+			onPage(userPresences);
+		}
+
+		merged.push(...userPresences);
 	}
-
-	const presence = await fetchApi(postPresenceUsers, {
-		body: { userIds: friends },
-	});
-
-	const { userPresences } = presence;
-
-	const merged = userPresences.map((user) => {
-		return { ...user, lastOnline: "1970-01-01T00:00:00Z" };
-	});
-
-	await cache.set(uniqueName, merged, {
-		seconds: PRESENCE_UPDATE_INTERVAL,
-	});
 
 	console.log("presence merge", merged);
 	return merged;

@@ -4,6 +4,13 @@ import { defineConfig } from "wxt";
 export default defineConfig({
 	extensionApi: "chrome",
 	modules: ["@wxt-dev/module-react"],
+	react: {
+		vite: {
+			babel: {
+				plugins: [["babel-plugin-react-compiler"]],
+			},
+		},
+	},
 	css: {
 		preprocessorOptions: {
 			less: {

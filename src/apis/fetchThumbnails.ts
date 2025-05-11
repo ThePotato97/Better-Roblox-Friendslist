@@ -1,12 +1,5 @@
 import { ExtractParams, fetchApiSplit } from "rozod";
-import cache from "webext-storage-cache/legacy.js";
 import { postBatch as thumbnailsBatch } from "rozod/lib/endpoints/thumbnailsv1";
-import { z } from "zod";
-import {
-	batchGetCache,
-	batchHasFilterCache,
-	batchSetCache,
-} from "./batchCache";
 import { getThumbnailRequestId, Thumbnail } from "../database/FriendsDB";
 
 type thumbnailsResponse = ExtractParams<typeof thumbnailsBatch>;
@@ -15,13 +8,11 @@ export type ThumbnailType = NonNullable<
 	thumbnailsResponse["body"]
 >[number]["type"];
 
-//const thumbnailsCache = new Map<string, string>();
-
 export const fetchThumbnails = async function (
 	ids: number[],
 	thumbnailType: ThumbnailType,
 	size: string,
-): Promise<Omit<Thumbnail, "lastUpdated">[]> {
+): Promise<Map<number, Omit<Thumbnail, "lastUpdated">>> {
 	console.log("fetching", ids, thumbnailType, size);
 	const response = await fetchApiSplit(
 		thumbnailsBatch,
@@ -40,19 +31,18 @@ export const fetchThumbnails = async function (
 		{ body: 60 },
 	);
 	const thumbnails = response.flatMap((response) => response.data);
-	const formattedThumbnails = thumbnails.map((thumbnail) => {
-		const { requestId } = thumbnail;
-		const [id, type, size] = requestId.split(":");
-		const typeCasted = type as ThumbnailType;
-		const requestIdCasted = getThumbnailRequestId(Number(id), typeCasted, size);
-		return {
-			requestId: requestIdCasted,
-			type: typeCasted,
+
+	const map = new Map<number, Omit<Thumbnail, "lastUpdated">>();
+
+	for (const thumbnail of thumbnails) {
+		const [idStr, typeStr, sizeStr] = thumbnail.requestId.split(":");
+		const id = Number(idStr);
+		map.set(id, {
+			requestId: getThumbnailRequestId(id, typeStr as ThumbnailType, sizeStr),
+			type: typeStr as ThumbnailType,
 			imageUrl: thumbnail.imageUrl,
-		};
-	});
-	return formattedThumbnails;
+		});
+	}
+
+	return map;
 };
-function getRequestId(id: number, thumbnailType: string, size: string): any {
-	throw new Error("Function not implemented.");
-}

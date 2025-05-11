@@ -18,6 +18,16 @@
   &.icon-vote-popper {
     background-position: 0 -32px;
   }
+  
+  &.popper-open {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  &.popper-exit {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
 
 .count-label-popper {

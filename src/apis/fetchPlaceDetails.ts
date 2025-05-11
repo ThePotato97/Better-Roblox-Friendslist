@@ -4,13 +4,14 @@ import cache from "webext-storage-cache/legacy.js";
 import { z } from "zod";
 import { batchHasFilterCache, batchSetCache } from "./batchCache";
 
-export type gameMultiGetResponse = ExtractResponse<
-	typeof getGamesMultigetPlaceDetails
+export type gameMultiGetResponse = Omit<
+	ExtractResponse<typeof getGamesMultigetPlaceDetails>[0],
+	"fiatPurchaseData"
 >;
 
 export const fetchPlaceDetails = async (
 	ids: number[],
-): Promise<gameMultiGetResponse> => {
+): Promise<gameMultiGetResponse[]> => {
 	const responses = await fetchApiSplit(
 		getGamesMultigetPlaceDetails,
 		{ placeIds: ids },
@@ -19,5 +20,8 @@ export const fetchPlaceDetails = async (
 
 	const responseFlat = responses.flat();
 
-	return responseFlat;
+	// Remove `fiatPurchaseData` from each item
+	const cleaned = responseFlat.map(({ fiatPurchaseData, ...rest }) => rest);
+
+	return cleaned;
 };

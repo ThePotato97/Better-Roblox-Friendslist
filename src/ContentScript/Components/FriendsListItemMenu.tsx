@@ -102,7 +102,7 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
 	};
 
 	const placePriceDisplay = placePrice || 0;
-	const portalRoot = window.portalRoot;
+	const portalRoot = window.interactiveLayer;
 	console.log("Portal root:", portalRoot);
 	return (
 		<>
