@@ -1,40 +1,60 @@
-import eslintPluginUnicorn from "eslint-plugin-unicorn";
-import { includeIgnoreFile } from "@eslint/compat";
-import eslintPluginPrettier from 'eslint-plugin-prettier/recommended'
+import tseslint from "typescript-eslint";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
-import tseslint from "typescript-eslint";
+import reactCompiler from "eslint-plugin-react-compiler";
+import prettier from "eslint-plugin-prettier";
 import globals from "globals";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const gitignorePath = path.resolve(__dirname, ".gitignore");
-
 
 export default tseslint.config(
-	includeIgnoreFile(gitignorePath),
-	eslintPluginPrettier,
+	// 1. Base TypeScript rules
 	tseslint.configs.recommended,
-	// tseslint.configs.recommendedTypeChecked,
-	// tseslint.configs.stylisticTypeChecked,
-	//react.configs.recommended,
+
+	// 2. React & JSX
 	{
 		plugins: {
-			"unicorn": eslintPluginUnicorn,
-
+			react,
+			"react-hooks": reactHooks,
+			"react-compiler": reactCompiler,
 		},
 		languageOptions: {
-			globals: globals.builtin,
 			parserOptions: {
+				ecmaFeatures: { jsx: true },
 				projectService: true,
 				tsconfigRootDir: import.meta.dirname,
 			},
+			globals: {
+				...globals.browser,
+				...globals.node,
+			},
+		},
+		settings: {
+			react: {
+				version: "detect",
+			},
 		},
 		rules: {
-			"unicorn/better-regex": "error",
-
+			// React
+			"react/react-in-jsx-scope": "off", // React 17+
+			"react/jsx-uses-react": "off",     // React 17+
+			"react-hooks/rules-of-hooks": "error",
+			"react-hooks/exhaustive-deps": "warn",
 		},
 	},
+
+	// 3. Prettier integration (optional)
+	{
+		plugins: { prettier },
+		rules: {
+			"prettier/prettier": "warn",
+		},
+	},
+
+	// 4. Custom tweaks
+	{
+		rules: {
+			"@typescript-eslint/explicit-function-return-type": "off",
+			"@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+			"@typescript-eslint/no-explicit-any": "warn",
+		},
+	}
 );

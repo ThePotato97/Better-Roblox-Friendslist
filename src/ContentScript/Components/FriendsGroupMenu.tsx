@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ControlledMenu, MenuItem, useMenuState } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/core.css";
 
-const intToString = (value) => {
+const intToString = (value: number): string => {
   const suffixes = ["", "k", "m", "b", "t"];
   const suffixNum = Math.floor(("" + value).length / 3);
   let shortValue = parseFloat(
@@ -11,87 +11,86 @@ const intToString = (value) => {
     ),
   );
   if (shortValue % 1 !== 0) {
-    shortValue = shortValue.toFixed(1);
+    shortValue = parseFloat(shortValue.toFixed(1));
   }
   return shortValue + suffixes[suffixNum];
 };
 
-const getPlacePlaying = (universeId) => {
-  return new Promise((resolve) => {
-    fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`).then(
-      (response) => {
-        response.json().then((data) => {
-          const placeInfo = data.data?.[0];
-          if (placeInfo) {
-            const shortened = intToString(placeInfo.playing);
-            resolve(shortened);
-          }
-        });
-      },
-    );
-  });
+const getPlacePlaying = async (
+  universeId: number,
+): Promise<string | undefined> => {
+  const res = await fetch(
+    `https://games.roblox.com/v1/games?universeIds=${universeId}`,
+  );
+  const data = await res.json();
+  const placeInfo = data.data?.[0];
+  return placeInfo ? intToString(placeInfo.playing) : undefined;
 };
 
-const getPlaceVotes = (universeId) => {
-  return new Promise((resolve, reject) => {
-    fetch(
-      `https://games.roblox.com/v1/games/votes?universeIds=${universeId}`,
-    ).then((response) =>
-      response
-        .json()
-        .then((data) => {
-          const placeVotes = data.data?.[0];
-          if (placeVotes) {
-            const { upVotes, downVotes } = placeVotes;
-            const totalVotes = upVotes + downVotes;
-            const percentage = Math.round((upVotes / totalVotes) * 100);
-            resolve(percentage);
-          }
-        })
-        .catch((err) => {
-          reject(err);
-        }),
-    );
-  });
+const getPlaceVotes = async (
+  universeId: number,
+): Promise<number | undefined> => {
+  const res = await fetch(
+    `https://games.roblox.com/v1/games/votes?universeIds=${universeId}`,
+  );
+  const data = await res.json();
+  const placeVotes = data.data?.[0];
+  if (placeVotes) {
+    const { upVotes, downVotes } = placeVotes;
+    const total = upVotes + downVotes;
+    return total > 0 ? Math.round((upVotes / total) * 100) : undefined;
+  }
 };
 
-export default function FriendsGroupMenu(props) {
-  const { placeId, universeId } = props;
-  if (placeId) {
-    const { toggleMenu, ...menuProps } = useMenuState();
-    const [votes, setVotes] = useState([]);
-    const [playing, setPlaying] = useState([]);
-    const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+export default function FriendsGroupMenu(props: {
+  placeId?: number;
+  universeId?: number;
+  children: React.ReactNode;
+}) {
+  console.log("Menu Refresh");
+  const { placeId, universeId, children } = props;
 
-    useEffect(() => {
-      if (menuProps.state === "open" && universeId) {
-        getPlaceVotes(universeId).then((votes) => {
-          setVotes(votes);
-        });
-        getPlacePlaying(universeId).then((visits) => {
-          setPlaying(visits);
-        });
-      }
-    });
+  const { toggleMenu, ...menuProps } = useMenuState();
+  const [votes, setVotes] = useState<number | undefined>();
+  const [playing, setPlaying] = useState<string | undefined>();
+  const [anchorPoint, setAnchorPoint] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
-    const handleViewPlace = () => {
-      window.location = `/games/${placeId}`;
-    };
-    return (
-      <div
-        onContextMenu={(e) => {
-          e.preventDefault();
-          setAnchorPoint({ x: e.clientX, y: e.clientY });
-          toggleMenu(true);
-        }}
+  useEffect(() => {
+    if (menuProps.state === "open" && universeId) {
+      getPlaceVotes(universeId)
+        .then(setVotes)
+        .catch(() => setVotes(undefined));
+      getPlacePlaying(universeId)
+        .then(setPlaying)
+        .catch(() => setPlaying(undefined));
+    }
+  }, [menuProps.state, universeId]);
+
+  const handleViewPlace = () => {
+    if (placeId) {
+      window.location.href = `/games/${placeId}`;
+    }
+  };
+
+  return (
+    <div
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setAnchorPoint({ x: e.clientX, y: e.clientY });
+        toggleMenu(true);
+      }}
+    >
+      {children}
+
+      <ControlledMenu
+        {...menuProps}
+        anchorPoint={anchorPoint}
+        onClose={() => toggleMenu(false)}
       >
-        {props.children}
-
-        <ControlledMenu
-          {...menuProps}
-          anchorPoint={anchorPoint}
-          onClose={() => toggleMenu(false)}
-        >
+        {placeId && (
           <div>
             <div
               style={{
@@ -104,25 +103,21 @@ export default function FriendsGroupMenu(props) {
             />
             <div style={{ position: "absolute", bottom: "45px", left: "5px" }}>
               <span className="info-label icon-votes-gray" />
-              <span className="info-label vote-percentage-label">{`${votes || "??"}%`}</span>
+              <span className="info-label vote-percentage-label">
+                {votes ?? "??"}%
+              </span>
               <span className="info-label icon-playing-counts-gray" />
               <span className="info-label playing-counts-label">
-                {playing || "???"}
+                {playing ?? "???"}
               </span>
             </div>
           </div>
+        )}
 
-          <MenuItem
-            className="view-game-button"
-            style={{ align: "center" }}
-            onClick={handleViewPlace}
-          >
-            View Game
-          </MenuItem>
-        </ControlledMenu>
-      </div>
-    );
-  } else {
-    return props.children;
-  }
+        <MenuItem className="view-game-button" onClick={handleViewPlace}>
+          View Game
+        </MenuItem>
+      </ControlledMenu>
+    </div>
+  );
 }

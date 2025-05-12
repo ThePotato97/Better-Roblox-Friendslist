@@ -4,7 +4,7 @@ import cache from "webext-storage-cache/legacy.js";
 import { z } from "zod";
 
 type getGamesPlaceidPrivateServersResponse = z.infer<
-	(typeof getGamesPlaceidPrivateServers)["response"]
+  (typeof getGamesPlaceidPrivateServers)["response"]
 >;
 
 const API_NAME = "gGPPS";
@@ -12,41 +12,41 @@ const API_NAME = "gGPPS";
 const unqiueNameGenerator = (id: number) => `${API_NAME}-${id}`;
 
 interface privateServers {
-	servers: getGamesPlaceidPrivateServersResponse["data"];
-	placeId: number;
+  servers: getGamesPlaceidPrivateServersResponse["data"];
+  placeId: number;
 }
 
 export default async function fetchPrivateServers(placeIds: number[]) {
-	const privateServers = await Promise.all(
-		placeIds.map(async (placeId) => {
-			const unqiueId = unqiueNameGenerator(placeId);
-			const inCache = await cache.has(unqiueId);
-			if (!inCache) {
-				const privateServersResponses = await fetchApiPages(
-					getGamesPlaceidPrivateServers,
-					{
-						placeId,
-					},
-				);
-				const response = {
-					servers: privateServersResponses.flatMap((res) => res.data),
-					placeId: placeId,
-				};
-				await cache.set(unqiueId, response, {
-					minutes: 5,
-				});
-				return response;
-			} else {
-				const cached = (await cache.get(unqiueId)) as privateServers;
-				return { servers: cached.servers, placeId: cached.placeId };
-			}
-		}),
-	);
-	return privateServers.reduce(
-		(acc, { servers, placeId }) => {
-			acc[placeId] = servers;
-			return acc;
-		},
-		{} as Record<number, getGamesPlaceidPrivateServersResponse["data"]>,
-	);
+  const privateServers = await Promise.all(
+    placeIds.map(async (placeId) => {
+      const unqiueId = unqiueNameGenerator(placeId);
+      const inCache = await cache.has(unqiueId);
+      if (!inCache) {
+        const privateServersResponses = await fetchApiPages(
+          getGamesPlaceidPrivateServers,
+          {
+            placeId,
+          },
+        );
+        const response = {
+          servers: privateServersResponses.flatMap((res) => res.data),
+          placeId: placeId,
+        };
+        await cache.set(unqiueId, response, {
+          minutes: 5,
+        });
+        return response;
+      } else {
+        const cached = (await cache.get(unqiueId)) as privateServers;
+        return { servers: cached.servers, placeId: cached.placeId };
+      }
+    }),
+  );
+  return privateServers.reduce(
+    (acc, { servers, placeId }) => {
+      acc[placeId] = servers;
+      return acc;
+    },
+    {} as Record<number, getGamesPlaceidPrivateServersResponse["data"]>,
+  );
 }

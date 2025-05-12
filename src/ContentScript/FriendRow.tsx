@@ -40,14 +40,12 @@ export const FriendRow = ({
 
   const lastOnlineString = DateSince(lastOnlineObject);
   const getCurrentLocation = () => {
-
     switch (currentStatus) {
       case "offline":
         return `Last online ${lastOnlineString}`;
       case "online":
         return "Online";
       case "ingame":
-
         return gameGroups
           ? placeName || rootPlaceName
           : rootPlaceName || placeName || "In Game";
@@ -92,8 +90,9 @@ export const FriendRow = ({
     <Fade in>
       <div className="friendCategoryContainer friend-anim-enter-done">
         <div
-          className={`friend ${currentStatus} ${groupPosition && isInGroup ? groupPosition : null
-            } 
+          className={`friend ${currentStatus} ${
+            groupPosition && isInGroup ? groupPosition : null
+          } 
         friendStatusHover Panel Focusable`}
         >
           {isInGroup && <div className="SteamPlayerGroupLines" />}
@@ -110,14 +109,16 @@ export const FriendRow = ({
             </a>
           </div>
           <div
-            className={`labelHolder ${!richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
-              } ${currentStatus}`}
+            className={`labelHolder ${
+              !richPresenceEnabled ? "personanameandstatus_twoLine_2wZNn" : ""
+            } ${currentStatus}`}
           >
             <div
-              className={`personanameandstatus_statusAndName_9U-hi ${richPresenceEnabled
-                ? "personanameandstatus_threeLines_2pPym"
-                : ""
-                }`}
+              className={`personanameandstatus_statusAndName_9U-hi ${
+                richPresenceEnabled
+                  ? "personanameandstatus_threeLines_2pPym"
+                  : ""
+              }`}
             >
               <div className="personanameandstatus_playerName_1uxaf">
                 {displayName}

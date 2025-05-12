@@ -1,48 +1,52 @@
 import { atom, getDefaultStore } from "jotai";
 import { FriendsDB, Friend } from "../database/FriendsDB";
+import { db } from "../database/tables";
 
-export const friendsAtom = atom<Array<Friend>>([]);
+export type FriendAtom = Omit<Friend, "lastUpdated">;
+
+export const friendsAtom = atom<Array<FriendAtom>>([]);
 
 friendsAtom.onMount = (set) => {
-	FriendsDB().then(async (db) => {
-		const data = await db.getAll("friends");
-		set(data);
-	});
+  FriendsDB().then(async (db) => {
+    const data = await db.getAll("friends");
+    const stripped = data.map(({ lastUpdated: _lastUpdated, ...rest }) => rest);
+
+    set(stripped);
+  });
 };
 
 export async function updateFriendsBatch(friendList: Array<number>) {
-	const database = await FriendsDB();
-	const store = getDefaultStore();
+  const database = await FriendsDB();
+  const store = getDefaultStore();
 
-	const existingFriendsArray: Friend[] = store.get(friendsAtom);
-	const existingMap = new Map<number, Friend>();
-	for (const friend of existingFriendsArray) {
-		existingMap.set(friend.userId, friend);
-	}
+  const existingFriendsArray = await database.getAll("friends");
 
-	const now = Date.now();
-	const mergedFriends: Friend[] = [];
+  const existingMap = new Map<number, Friend>();
+  for (const friend of existingFriendsArray) {
+    existingMap.set(friend.userId, friend);
+  }
 
-	const transaction = database.transaction("friends", "readwrite");
+  const now = Date.now();
+  const transaction = database.transaction("friends", "readwrite");
 
-	for (const newEntry of friendList) {
-		const existing = existingMap.get(newEntry);
+  for (const newEntry of friendList) {
+    const existing = existingMap.get(newEntry);
 
-		const merged: Friend = {
-			...existing,
-			userId: newEntry,
-			lastUpdated: now,
-		};
+    const merged: Friend = {
+      ...existing,
+      userId: newEntry,
+      lastUpdated: now,
+    };
 
-		mergedFriends.push(merged);
-		transaction.store.put(merged); // IDB handles upserts
-		existingMap.set(merged.userId, merged); // Keep map in sync
-	}
+    transaction.store.put(merged);
+    existingMap.set(merged.userId, merged);
+  }
 
-	await transaction.done;
+  await transaction.done;
+  // Strip `lastUpdated` before storing in atom
+  const finalFriends = Array.from(existingMap.values()).map(
+    ({ lastUpdated: _lastUpdated, ...rest }) => rest,
+  );
 
-	// Create a merged array for atom (preserving others if not updated)
-	const finalFriends = Array.from(existingMap.values());
-
-	store.set(friendsAtom, finalFriends);
+  store.set(friendsAtom, finalFriends);
 }

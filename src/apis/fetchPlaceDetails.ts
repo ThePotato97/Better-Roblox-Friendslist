@@ -5,23 +5,23 @@ import { z } from "zod";
 import { batchHasFilterCache, batchSetCache } from "./batchCache";
 
 export type gameMultiGetResponse = Omit<
-	ExtractResponse<typeof getGamesMultigetPlaceDetails>[0],
-	"fiatPurchaseData"
+  ExtractResponse<typeof getGamesMultigetPlaceDetails>[0],
+  "fiatPurchaseData"
 >;
 
 export const fetchPlaceDetails = async (
-	ids: number[],
+  ids: number[],
 ): Promise<gameMultiGetResponse[]> => {
-	const responses = await fetchApiSplit(
-		getGamesMultigetPlaceDetails,
-		{ placeIds: ids },
-		{ placeIds: 60 },
-	);
+  const responses = await fetchApiSplit(
+    getGamesMultigetPlaceDetails,
+    { placeIds: ids },
+    { placeIds: 60 },
+  );
 
-	const responseFlat = responses.flat();
+  const responseFlat = responses.flat();
 
-	// Remove `fiatPurchaseData` from each item
-	const cleaned = responseFlat.map(({ fiatPurchaseData, ...rest }) => rest);
+  // Remove `fiatPurchaseData` from each item
+  const cleaned = responseFlat.map(({ fiatPurchaseData, ...rest }) => rest);
 
-	return cleaned;
+  return cleaned;
 };
