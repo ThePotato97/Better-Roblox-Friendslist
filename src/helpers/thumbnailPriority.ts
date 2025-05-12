@@ -2,6 +2,7 @@ import { getDefaultStore } from "jotai";
 import { ThumbnailType } from "../apis";
 import {
   FriendsDB,
+  Presence,
   PresenceType,
   getThumbnailRequestId,
 } from "../database/FriendsDB";
@@ -49,59 +50,57 @@ export const getThumbnailsToLoad = async () => {
 
   const allPresences = [...inGame, ...inStudio, ...online, ...offline];
 
-  push(
-    generateStructured(
-      inGame.map((p) => p.userId).filter((id) => id !== null),
-      "AvatarHeadShot",
-      "150x150",
-    ),
-  );
-  push(
-    generateStructured(
-      inGame.map((p) => p.rootPlaceId).filter((id) => id !== null),
-      "PlaceIcon",
-      "150x150",
-    ),
-  );
+  const priorityList = [
+    {
+      type: "AvatarHeadShot",
+      size: "150x150",
+      ids: inGame,
+    },
+    {
+      type: "PlaceIcon",
+      size: "150x150",
+      ids: inGame,
+    },
+    {
+      type: "AvatarHeadShot",
+      size: "150x150",
+      ids: inStudio,
+    },
+    {
+      type: "PlaceIcon",
+      size: "150x150",
+      ids: inStudio,
+    },
+    {
+      type: "AvatarHeadShot",
+      size: "150x150",
+      ids: online,
+    },
+    {
+      type: "GameThumbnail",
+      size: "768x432",
+      ids: allPresences,
+    },
+    {
+      type: "AvatarHeadShot",
+      size: "150x150",
+      ids: offline,
+    },
+  ] satisfies Array<{
+    type: ThumbnailType;
+    size: string;
+    ids: Presence[];
+  }>;
 
-  push(
-    generateStructured(
-      inStudio.map((p) => p.userId),
-      "AvatarHeadShot",
-      "150x150",
-    ),
-  );
-  push(
-    generateStructured(
-      inStudio.map((p) => p.rootPlaceId).filter((id) => id !== null),
-      "PlaceIcon",
-      "150x150",
-    ),
-  );
-
-  push(
-    generateStructured(
-      online.map((p) => p.userId),
-      "AvatarHeadShot",
-      "150x150",
-    ),
-  );
-
-  push(
-    generateStructured(
-      allPresences.map((p) => p.placeId).filter((id) => id !== null),
-      "GameThumbnail",
-      "768x432",
-    ),
-  );
-
-  push(
-    generateStructured(
-      offline.map((p) => p.userId),
-      "AvatarHeadShot",
-      "150x150",
-    ),
-  );
+  for (const { type, size, ids } of priorityList) {
+    push(
+      generateStructured(
+        ids.map((p) => p.userId).filter((id) => id !== null),
+        type,
+        size,
+      ),
+    );
+  }
 
   return result;
 };
