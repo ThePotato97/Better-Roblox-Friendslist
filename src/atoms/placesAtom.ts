@@ -4,19 +4,19 @@ import { FriendsDB, Place } from "../database/FriendsDB";
 export type PlaceAtom = Omit<Place, "lastUpdated">;
 
 export const placesAtom = atom<Record<number, PlaceAtom>>({});
+placesAtom.debugLabel = "placesAtom";
+const store = getDefaultStore();
 
-placesAtom.onMount = (set) => {
-  FriendsDB().then(async (db) => {
-    const places = await db.getAll("places");
-    const map: Record<number, PlaceAtom> = Object.fromEntries(
-      places.map(({ lastUpdated: _lastUpdated, ...rest }) => [
-        rest.placeId,
-        rest,
-      ]),
-    );
-    set(map);
-  });
-};
+store.sub(placesAtom, () => {});
+
+export const placesHydratedAtom = atom(null, async (get, set) => {
+  const db = await FriendsDB();
+  const places = await db.getAll("places");
+  const map: Record<number, PlaceAtom> = Object.fromEntries(
+    places.map(({ lastUpdated: _, ...rest }) => [rest.placeId, rest]),
+  );
+  set(placesAtom, map);
+});
 
 export async function updatePlacesBatch(
   placesList: Omit<Place, "lastUpdated">[],
@@ -39,7 +39,7 @@ export async function updatePlacesBatch(
   await transaction.done;
 
   // Merge once into atom
-  const store = getDefaultStore();
+
   store.set(placesAtom, (existingPresence) => ({
     ...existingPresence,
     ...updatedMap,

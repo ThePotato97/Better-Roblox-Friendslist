@@ -4,9 +4,7 @@ import { GamePopper } from "./GamePopper";
 import FriendsGroupMenu from "./FriendsGroupMenu";
 
 import { useAtomValue } from "jotai";
-import { selectAtom } from "jotai/utils";
-import { placesAtom } from "@/src/atoms";
-import { createPlaceDetailsSelector } from "@/src/atoms/placeSelectors";
+import { placeDetailsFamily } from "@/src/atoms";
 
 interface FriendsGroupProps {
   defaultGroupState: boolean;
@@ -14,35 +12,46 @@ interface FriendsGroupProps {
   groupSize: number;
   extraClasses?: string;
   placeId?: number;
-  groupName: string;
+  groupName?: string;
   children?: React.ReactNode;
+  onClick?: (enabled: boolean) => void;
 }
 
 const MemoizedCollapse = memo(Collapse);
 MemoizedCollapse.displayName = "MemoizedCollapse";
 
-export function FriendsGroup(props: FriendsGroupProps) {
-  const [showGroup, setShowGroup] = useState(props.defaultGroupState);
+export function FriendsGroup({
+  groupSize,
+  extraClasses,
+  placeId,
+  groupName,
+  defaultGroupState,
+  indexName,
+  onClick,
+}: FriendsGroupProps) {
+  const [showGroup, setShowGroup] = useState(defaultGroupState);
 
   const handleToggleGroup = () => {
-    if (props.indexName) {
+    if (indexName) {
       const groupStates = JSON.parse(
         localStorage.getItem("groupStates") ?? "{}",
       );
-      groupStates[props.indexName] = !showGroup;
+      groupStates[indexName] = !showGroup;
       localStorage.setItem("groupStates", JSON.stringify(groupStates));
     }
-    setShowGroup((prevState) => !prevState);
+    setShowGroup((prevState) => {
+      onClick?.(!prevState);
+      return !prevState;
+    });
   };
 
-  const { groupSize, extraClasses, placeId, groupName } = props;
-  const placeDetailsAtom = useMemo(
-    () => createPlaceDetailsSelector(placeId),
-    [placeId],
-  );
-  const placeDetails = useAtomValue(placeDetailsAtom);
+  const placeDetails = useAtomValue(placeDetailsFamily(placeId));
 
-  const { universeId, description, builder, name } = placeDetails ?? {};
+  const { universeId, description, builder, name } = placeDetails ?? {
+    name: "Loading...",
+    description: "Loading...",
+    builder: "Loading...",
+  };
 
   return (
     <div className={`DropTarget friendGroup ${extraClasses ?? ""}`}>
@@ -110,9 +119,9 @@ export function FriendsGroup(props: FriendsGroupProps) {
           </div>
         </div>
       </FriendsGroupMenu>
-      <MemoizedCollapse unmountOnExit in={showGroup}>
+      {/* <MemoizedCollapse unmountOnExit in={showGroup}>
         <div className="groupList">{props.children}</div>
-      </MemoizedCollapse>
+      </MemoizedCollapse> */}
     </div>
   );
 }

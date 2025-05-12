@@ -12,6 +12,7 @@ export default defineConfig({
   react: {
     vite: {
       babel: {
+        presets: [["jotai/babel/preset"]],
         plugins: [["babel-plugin-react-compiler"]],
       },
     },
@@ -32,12 +33,12 @@ export default defineConfig({
   manifest: {
     host_permissions: ["https://*.roblox.com/*"],
     permissions: ["storage"],
-    content_security_policy: {
-      extension_pages:
-        "script-src 'self' 'wasm-unsafe-eval' http://localhost:3000 http://localhost:8097; object-src 'self';",
-      sandbox:
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000 http://localhost:8097; sandbox allow-scripts allow-forms allow-popups allow-modals; child-src 'self';",
-    },
+    // content_security_policy: {
+    //   extension_pages:
+    //     "script-src 'self' 'wasm-unsafe-eval' http://localhost:3000 http://localhost:8097; object-src 'self';",
+    //   sandbox:
+    //     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000 http://localhost:8097; sandbox allow-scripts allow-forms allow-popups allow-modals; child-src 'self';",
+    // },
     web_accessible_resources: [
       {
         resources: ["iframe.html", "inject-world.js"],

@@ -30,6 +30,7 @@ export interface Profiles {
   displayName: string;
   combinedName: string;
   username: string;
+  lastUpdated: number;
 }
 
 export interface Place {
@@ -102,6 +103,13 @@ export interface FriendsDBSchema extends DBSchema {
       "by-type": ThumbnailType;
     };
   };
+  profiles: {
+    key: number;
+    value: Profiles;
+    indexes: {
+      "by-lastUpdated": number;
+    };
+  };
 }
 
 export const FriendsDB = async () => {
@@ -135,6 +143,12 @@ export const FriendsDB = async () => {
       });
       thumbnailsStore.createIndex("by-lastUpdated", "lastUpdated");
       thumbnailsStore.createIndex("by-type", "type");
+
+      // Profiles store
+      const profilesStore = db.createObjectStore("profiles", {
+        keyPath: "userId",
+      });
+      profilesStore.createIndex("by-lastUpdated", "lastUpdated");
     },
   });
 };

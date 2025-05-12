@@ -5,32 +5,36 @@ import {
   fetchPresence,
   fetchThumbnailsStructured,
 } from "../apis";
+
 import {
+  friendIdsSelector,
+  getMissingPlacesDetails,
+  updateProfilesBatch,
+  getMissingPresence,
+  presencePlaceIdsAtom,
   updateFriendsBatch,
   updatePlacesBatch,
   updatePresenceBatch,
   updateThumbnailsBatch,
 } from "../atoms";
-import { friendIdsSelector } from "../atoms/friendsSelectors";
-import {
-  getMissingPresence,
-  presencePlaceIdsAtom,
-} from "../atoms/presenceSelector";
-import { getMissingPlacesDetails } from "../atoms/placeSelectors";
+
 import { getThumbnailsToLoad } from "../helpers/thumbnailPriority";
+import { getProfilesToLoad } from "../helpers/profilePriority";
+import { fetchProfiles } from "../apis/fetchProfiles";
+import { fetchUserInfo } from "../apis/fetchCurrentUserInfo";
 
 export const useLoadData = () => {
   // 1) initial + polling for friends
   useEffect(() => {
     async function reload() {
-      //   const userInfo = await fetchUserInfo();
+      const userInfo = await fetchUserInfo();
       console.log("fetching friends");
-      await fetchFriends(109176680, (friends) => {
+      await fetchFriends(userInfo.id, (friends) => {
         updateFriendsBatch(friends);
       });
     }
     reload();
-    const handle = setInterval(reload, 5 * 1000);
+    const handle = setInterval(reload, 20 * 1000);
     return () => clearInterval(handle);
   }, []);
 
@@ -39,7 +43,7 @@ export const useLoadData = () => {
   useEffect(() => {
     const loadThumbnails = async () => {
       const toLoad = await getThumbnailsToLoad();
-      console.log("loading", toLoad);
+      if (toLoad.length === 0) return;
       const thumbnails = await fetchThumbnailsStructured(toLoad);
       updateThumbnailsBatch(thumbnails);
     };
@@ -49,6 +53,20 @@ export const useLoadData = () => {
   }, []);
 
   const userIds = useAtomValue(friendIdsSelector);
+
+  // fetch profiles
+  useEffect(() => {
+    const updateProfiles = async () => {
+      const toLoad = await getProfilesToLoad();
+      console.log("profiles to load", toLoad);
+      if (toLoad.length === 0) return;
+      const profiles = await fetchProfiles(toLoad);
+      updateProfilesBatch(profiles);
+    };
+    updateProfiles();
+    const handle = setInterval(updateProfiles, 2 * 1000);
+    return () => clearInterval(handle);
+  }, []);
 
   // fetch presence
   useEffect(() => {
@@ -61,7 +79,9 @@ export const useLoadData = () => {
         });
       }
     };
-    updatePresence();
+    updatePresence(); // initial
+    const handle = setInterval(updatePresence, 2 * 1000);
+    return () => clearInterval(handle);
   }, [userIds]);
 
   const presencePlaceIds = useAtomValue(presencePlaceIdsAtom);
@@ -74,6 +94,13 @@ export const useLoadData = () => {
       if (places.length > 0) {
         const placeDetails = await fetchPlaceDetails(places);
         updatePlacesBatch(placeDetails);
+
+        const rootPlaceIds = placeDetails.map((p) => p.universeRootPlaceId);
+        const missingRootPlaces = getMissingPlacesDetails(rootPlaceIds);
+        if (missingRootPlaces.length > 0) {
+          const rootPlaceDetails = await fetchPlaceDetails(missingRootPlaces);
+          updatePlacesBatch(rootPlaceDetails);
+        }
       }
     };
     updatePlaces();

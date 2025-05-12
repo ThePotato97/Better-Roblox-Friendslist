@@ -1,14 +1,17 @@
-import { useState, useEffect, useContext, memo } from "react";
+import { useState, useEffect, memo } from "react";
 
 import { createPortal } from "react-dom";
 
 import { usePopper } from "react-popper";
-import { ThumbnailContext } from "../Context/Thumbnails";
-import { getThumbnailRequestId } from "@/src/database/FriendsDB";
 import { useAtomValue } from "jotai";
-import { placesAtom, thumbnailsAtom } from "@/src/atoms";
+
 import { selectAtom } from "jotai/utils";
-import { createThumbnailSelector } from "@/src/atoms/thumbnailsSelectors";
+import {
+  createThumbnailSelector,
+  placeDetailsFamily,
+  placesAtom,
+  thumbnailFamily,
+} from "@/src/atoms";
 
 const intToString = (value) => {
   const suffixes = ["", "k", "m", "b", "t"];
@@ -96,27 +99,39 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
   const [popperReady, setPopperReady] = useState(false);
   const [rootElement, setRootElement] = useState<HTMLElement>();
 
-  const placeDetailsAtom = useMemo(
-    () => createPlaceDetailsAtom(placeId),
-    [placeId],
-  );
-  const placeDetails = useAtomValue(placeDetailsAtom);
+  const placeDetails = useAtomValue(placeDetailsFamily(placeId));
 
-  const { universeId, description, builder } = placeDetails || {};
+  const { universeId, builder, universeRootPlaceId } = placeDetails || {};
 
-  const placeIconAtom = useMemo(
-    () => createThumbnailSelector(placeId, "PlaceIcon", "150x150"),
-    [placeId],
+  const rootPlaceDetails = useAtomValue(
+    placeDetailsFamily(universeRootPlaceId),
   );
 
-  const gameThumbnailAtom = useMemo(
-    () => createThumbnailSelector(placeId, "GameThumbnail", "768x432"),
-    [placeId],
+  const { description } = rootPlaceDetails || {};
+
+  const placeIconValue = useAtomValue(
+    thumbnailFamily(
+      universeRootPlaceId
+        ? {
+            id: universeRootPlaceId,
+            type: "PlaceIcon",
+            size: "150x150",
+          }
+        : undefined,
+    ),
   );
 
-  const gameThumbnailValue = useAtomValue(gameThumbnailAtom);
-
-  const placeIconValue = useAtomValue(placeIconAtom);
+  const gameThumbnailValue = useAtomValue(
+    thumbnailFamily(
+      universeRootPlaceId
+        ? {
+            id: universeRootPlaceId,
+            type: "GameThumbnail",
+            size: "768x432",
+          }
+        : undefined,
+    ),
+  );
 
   useEffect(() => {
     const root = (window as any).portalRoot ?? document.body;

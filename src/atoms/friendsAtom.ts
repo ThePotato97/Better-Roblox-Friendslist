@@ -1,52 +1,45 @@
 import { atom, getDefaultStore } from "jotai";
 import { FriendsDB, Friend } from "../database/FriendsDB";
-import { db } from "../database/tables";
+
+const store = getDefaultStore();
 
 export type FriendAtom = Omit<Friend, "lastUpdated">;
 
 export const friendsAtom = atom<Array<FriendAtom>>([]);
 
-friendsAtom.onMount = (set) => {
-  FriendsDB().then(async (db) => {
-    const data = await db.getAll("friends");
-    const stripped = data.map(({ lastUpdated: _lastUpdated, ...rest }) => rest);
+export const friendsHydratedAtom = atom(null, async (get, set) => {
+  const db = await FriendsDB();
+  const data = await db.getAll("friends");
+  const stripped: FriendAtom[] = data.map(
+    ({ lastUpdated: _lastUpdated, ...rest }) => rest,
+  );
+  set(friendsAtom, stripped);
+});
 
-    set(stripped);
-  });
-};
+export async function updateFriendsBatch(friendIds: number[]) {
+  const db = await FriendsDB();
+  const existing = await db.getAll("friends");
 
-export async function updateFriendsBatch(friendList: Array<number>) {
-  const database = await FriendsDB();
-  const store = getDefaultStore();
-
-  const existingFriendsArray = await database.getAll("friends");
-
-  const existingMap = new Map<number, Friend>();
-  for (const friend of existingFriendsArray) {
-    existingMap.set(friend.userId, friend);
-  }
+  const map = new Map<number, Friend>();
+  for (const f of existing) map.set(f.userId, f);
 
   const now = Date.now();
-  const transaction = database.transaction("friends", "readwrite");
+  const tx = db.transaction("friends", "readwrite");
 
-  for (const newEntry of friendList) {
-    const existing = existingMap.get(newEntry);
-
+  for (const userId of friendIds) {
     const merged: Friend = {
-      ...existing,
-      userId: newEntry,
+      userId,
       lastUpdated: now,
     };
-
-    transaction.store.put(merged);
-    existingMap.set(merged.userId, merged);
+    tx.store.put(merged);
+    map.set(userId, merged);
   }
 
-  await transaction.done;
-  // Strip `lastUpdated` before storing in atom
-  const finalFriends = Array.from(existingMap.values()).map(
+  await tx.done;
+
+  const stripped = Array.from(map.values()).map(
     ({ lastUpdated: _lastUpdated, ...rest }) => rest,
   );
 
-  store.set(friendsAtom, finalFriends);
+  store.set(friendsAtom, stripped);
 }

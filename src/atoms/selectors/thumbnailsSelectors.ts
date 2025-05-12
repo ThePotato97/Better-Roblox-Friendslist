@@ -1,8 +1,8 @@
 import { Atom, atom, getDefaultStore } from "jotai";
-import { getThumbnailRequestId } from "../database/FriendsDB";
-import { thumbnailsAtom } from "./thumbnailsAtom";
-import { ThumbnailType } from "../apis";
-import { selectAtom } from "jotai/utils";
+import { getThumbnailRequestId } from "../../database/FriendsDB";
+import { thumbnailsAtom } from "../thumbnailsAtom";
+import { ThumbnailType } from "../../apis";
+import { atomFamily, selectAtom } from "jotai/utils";
 
 import { placesPlaceIds } from "./placeSelectors";
 import { friendIdsSelector } from "./friendsSelectors";
@@ -55,18 +55,17 @@ export const createThumbnailSelector = (
     (t) => t[getThumbnailRequestId(userId, type, size)],
   );
 
-export const missingAvatarThumbnailsIdsSelector =
-  createThumbnailMissingSelector(
-    friendIdsSelector,
-    "AvatarHeadShot",
-    "150x150",
-  );
+interface ThumbnailKey {
+  id: number;
+  type: ThumbnailType;
+  size: string;
+}
 
-export const missingGameThumbnailsIdsSelector = createThumbnailMissingSelector(
-  placesPlaceIds,
-  "GameThumbnail",
-  "768x432",
+export const thumbnailFamily = atomFamily((key: ThumbnailKey | undefined) =>
+  selectAtom(thumbnailsAtom, (t) => {
+    if (!key) return undefined;
+    const { id, type, size } = key;
+    const requestId = getThumbnailRequestId(id, type, size);
+    return t[requestId];
+  }),
 );
-
-export const missingPlaceIconThumbnailsIdsSelector =
-  createThumbnailMissingSelector(placesPlaceIds, "PlaceIcon", "150x150");

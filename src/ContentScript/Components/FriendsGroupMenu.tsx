@@ -47,7 +47,6 @@ export default function FriendsGroupMenu(props: {
   universeId?: number;
   children: React.ReactNode;
 }) {
-  console.log("Menu Refresh");
   const { placeId, universeId, children } = props;
 
   const { toggleMenu, ...menuProps } = useMenuState();

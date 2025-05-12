@@ -3,25 +3,33 @@ import { getDefaultStore } from "jotai";
 import { FriendsDB, Presence, PresenceType } from "../database/FriendsDB";
 import { PresenceTypes } from "../global";
 
+const store = getDefaultStore();
+
 export const presenceAtom = atom<Record<number, Presence>>({});
 
-presenceAtom.onMount = (set) => {
-  FriendsDB().then(async (db) => {
-    const now = Date.now();
-    const ttl = 5 * 60 * 1000;
-    const all = await db.getAll("presences");
+store.sub(presenceAtom, () => {
+  console.log("Presence subbed");
+});
 
-    const map: Record<number, Presence> = {};
-    for (const p of all) {
-      if (now - p.lastUpdated <= ttl) {
-        map[p.userId] = p;
-      } else {
-        await db.delete("presences", p.userId); // optional TTL prune
-      }
+const TTL = 5 * 60 * 1000;
+
+export const presenceHydratedAtom = atom(null, async (get, set) => {
+  const now = Date.now();
+
+  const db = await FriendsDB();
+
+  const all = await db.getAll("presences");
+
+  const map: Record<number, Presence> = {};
+  for (const p of all) {
+    if (now - p.lastUpdated <= TTL) {
+      map[p.userId] = p;
+    } else {
+      await db.delete("presences", p.userId); // TTL prune
     }
-    set(map);
-  });
-};
+  }
+  set(presenceAtom, map);
+});
 
 export async function updatePresenceBatch(
   presenceList: Omit<Omit<Presence, "lastUpdated">, "lastOnline">[],
@@ -41,11 +49,11 @@ export async function updatePresenceBatch(
     // decide whether to refresh lastOnline
     const old = existingMap[entry.userId];
     const lastOnline =
-      entry.userPresenceType === PresenceType.Online ? now : old?.lastOnline;
+      entry.userPresenceType !== PresenceType.Offline ? now : old?.lastOnline;
 
     const stamped: Presence = {
       ...entry,
-      lastOnline,
+      lastOnline: lastOnline,
       lastUpdated: now,
     };
 

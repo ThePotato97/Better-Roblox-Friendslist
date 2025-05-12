@@ -4,10 +4,12 @@ import { friendsAtom, presenceAtom } from ".";
 import { Friend } from "../database/FriendsDB";
 import { PresenceTypes } from "../global";
 
+type FriendWithGroupPosition = Friend & { groupPosition?: string };
+
 export interface FriendGroup {
   id: number;
   isGameGroup: boolean;
-  friends: Friend[];
+  friends: FriendWithGroupPosition[];
 }
 
 function atomWithCompareDerived<Value>(
@@ -121,16 +123,49 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
 
   const gameGroups: FriendGroup[] = Object.values(buckets)
     .filter((group) => group.isGameGroup)
-    .map((group) => ({
-      ...group,
-      // Optional: sort friends within game groups if order isn't semantic
-      // and can change due to processing order.
-      // friends: sortFriendsById(group.friends)
-      // If the order they are added to buckets[bucketKey].friends is stable,
-      // and allFriends is stable, this might not be needed.
-      // However, explicit sort guarantees it. For now, let's assume
-      // the order derived from allFriends is sufficient.
-    }));
+    .map((group) => {
+      const sorted = [...group.friends].sort((a, b) => {
+        const aGameId = presenceMap[a.userId]?.gameId;
+        const bGameId = presenceMap[b.userId]?.gameId;
+        const gameCmp = aGameId.localeCompare(bGameId);
+
+        if (gameCmp !== 0) return gameCmp;
+        return a.userId - b.userId;
+      });
+      const annotated: FriendWithGroupPosition[] = [];
+      for (let i = 0; i < sorted.length; i++) {
+        const current = sorted[i];
+
+        const currentGameId = presenceMap[current.userId]?.gameId;
+
+        const prev = sorted[i - 1];
+        const next = sorted[i + 1];
+        const prevGameId = presenceMap[prev?.userId]?.gameId;
+        const nextGameId = presenceMap[next?.userId]?.gameId;
+        const inGroup =
+          prevGameId === currentGameId || nextGameId === currentGameId;
+        if (!inGroup) {
+          annotated.push(current); // solo in server → no tag
+          continue;
+        }
+        const isStart = currentGameId !== prevGameId;
+        const isEnd = currentGameId !== nextGameId;
+
+        let groupPosition: "firstInGroup" | "inGroup" | "lastInGroup";
+        if (isStart) {
+          groupPosition = "firstInGroup";
+        } else if (isEnd) {
+          groupPosition = "lastInGroup";
+        } else {
+          groupPosition = "inGroup";
+        }
+        annotated.push({ ...current, groupPosition });
+      }
+      return {
+        ...group,
+        friends: annotated,
+      };
+    });
 
   const inGameFriends =
     buckets[`status-${PresenceTypes.IN_GAME}`]?.friends || [];
@@ -212,3 +247,5 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
 
   return result;
 }, isEqual); // Use the deep equality check here
+
+atomWithCompareDerived.debugLabel = "groupsAtom";

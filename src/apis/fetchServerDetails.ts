@@ -1,5 +1,5 @@
 import { JoinStatusCodes } from "../global.ts";
-import { fetchApi } from "rozod";
+import { ExtractResponse, fetchApi } from "rozod";
 import cache from "webext-storage-cache/legacy.js";
 import { postJoinGameInstance } from "rozod/lib/endpoints/gamejoinv1";
 import { z } from "zod";
@@ -9,9 +9,7 @@ interface fetchServerDetailsInput {
   gameId: string;
 }
 
-type fetchServerDetailsResponse = z.infer<
-  (typeof postJoinGameInstance)["response"]
->;
+type fetchServerDetailsResponse = ExtractResponse<typeof postJoinGameInstance>;
 
 //const serverDetailsCache: Record<string, fetchServerDetailsResponse> = {};
 
@@ -19,7 +17,7 @@ const API_NAME = "fSD";
 
 const uniqueNameGenerator = (id: string) => `${API_NAME}-${id}`;
 
-export const fetchServerDetails = async (placeId, gameId) => {
+export const fetchServerDetails = async (placeId: number, gameId: string) => {
   const uniqueId = uniqueNameGenerator(gameId);
   const inCache = await cache.has(uniqueId);
   const serverDetailsResponse = inCache
@@ -29,10 +27,14 @@ export const fetchServerDetails = async (placeId, gameId) => {
           placeId: placeId,
           gameJoinAttemptId: gameId,
           gamerTag: "",
-          isPartyLeader: false,
+          cId: "",
           isPlayTogetherGame: false,
+          isImmersiveAdsTeleport: false,
           browserTrackerId: 0,
           isTeleport: false,
+          isQueueAllowedOverride: false,
+          partyId: "",
+          joinOrigin: "",
           channelName: "",
           gameId: gameId,
         },

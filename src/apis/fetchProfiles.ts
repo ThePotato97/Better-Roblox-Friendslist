@@ -32,5 +32,10 @@ export const fetchProfiles = async (userIds: number[]) => {
     },
   });
 
-  return response.profileDetails;
+  return response.profileDetails.map(({ userId, names }) => ({
+    userId,
+    displayName: names.combinedName,
+    combinedName: names.combinedName,
+    username: names.username,
+  }));
 };

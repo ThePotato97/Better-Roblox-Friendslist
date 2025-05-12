@@ -1,7 +1,6 @@
 import { fetchThumbnails, ThumbnailType } from "../apis";
-import { updateThumbnailsBatch } from "../atoms";
-import { getMissingThumbnails } from "../atoms/thumbnailsSelectors";
-import { Friend, Thumbnail } from "../database/FriendsDB";
+import { getMissingThumbnails, updateThumbnailsBatch } from "../atoms";
+import { Thumbnail } from "../database/FriendsDB";
 import { InFlightBatcher } from "../helpers/InFlightBatcher";
 
 export function useThumbnailStream(

@@ -1,7 +1,7 @@
 import { atom, getDefaultStore } from "jotai";
 
-import { placesAtom } from "./";
-import { selectAtom } from "jotai/utils";
+import { placesAtom } from "..";
+import { atomFamily, selectAtom } from "jotai/utils";
 
 const store = getDefaultStore();
 
@@ -22,5 +22,12 @@ export const placesPlaceIds = selectAtom(placesAtom, (places) =>
     .sort((a, b) => a - b),
 );
 
-export const createPlaceDetailsSelector = (placeId: number | undefined) =>
-  selectAtom(placesAtom, (places) => (placeId ? places[placeId] : undefined));
+export const placeDetailsFamily = atomFamily((placeId: number | undefined) =>
+  selectAtom(placesAtom, (places) => {
+    // Touch something to ensure subscription
+    void places;
+
+    if (placeId === undefined) return undefined;
+    return places[placeId];
+  }),
+);

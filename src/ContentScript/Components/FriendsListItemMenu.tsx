@@ -1,7 +1,7 @@
 import React from "react";
 import { Menu, MenuItem } from "@mui/material";
-import { contextMenuAtom } from "@/src/atoms/contextMenu";
-import { useAtom, useAtomValue } from "jotai";
+import { contextMenuAtom } from "@/src/atoms";
+import { useAtom } from "jotai";
 
 const joinGame = (content: {
   action: string;
@@ -102,7 +102,7 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
   };
 
   const placePriceDisplay = placePrice || 0;
-  const portalRoot = window.interactiveLayer;
+  const portalRoot = (window as any).interactiveLayer;
   console.log("Portal root:", portalRoot);
   return (
     <>

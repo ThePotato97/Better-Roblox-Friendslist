@@ -1,18 +1,20 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, Fragment } from "react";
 import ReactDOM from "react-dom";
 import {
   FriendsListContainer,
   FriendsListItem,
   FriendsGroup,
 } from "./Components/index.ts";
+import { GroupedVirtuoso } from "react-virtuoso";
 import { Button, Collapse, Paper, Slide } from "@mui/material";
 import extensionIcon from "../48.png";
 import { FriendInfo } from "pages/Background";
 import { PresenceTypes } from "../global.ts";
 import FriendsListItemMenu from "./Components/FriendsListItemMenu.tsx";
-import { useAtomValue } from "jotai";
-import { groupsAtom } from "../atoms/index.ts";
+import { getDefaultStore, useAtomValue } from "jotai";
+import { groupsAtom } from "../atoms";
 import { useLoadData } from "../hooks/useLoadData.ts";
+import { useAtomsDevtools } from "jotai-devtools";
 
 const groupInfo: Record<
   number,
@@ -55,6 +57,22 @@ const groupInfo: Record<
   },
 };
 
+const PresenceTypesLookup: Record<number, string> = {
+  0: "offline",
+  1: "online",
+  2: "ingame",
+  3: "studio",
+  4: "invisible",
+};
+
+interface NullRendererProps {
+  children: React.ReactNode;
+}
+
+const NullRenderer = (props: NullRendererProps) => {
+  return props.children;
+};
+
 function getGroupPosition(total: number, position: number) {
   if (position === 0) {
     return "firstInGroup";
@@ -71,8 +89,9 @@ const MemoizedSlide = memo(Slide);
 MemoizedSlide.displayName = "MemoizedSlide";
 export const FriendList = memo(() => {
   console.log("rendering main");
+
   useLoadData();
-  const groups = useAtomValue(groupsAtom);
+  const groupsFromAtom = useAtomValue(groupsAtom);
 
   const [isListVisible, setListVisible] = useState<boolean>(
     JSON.parse(sessionStorage.getItem("showFriendsList") ?? "true"),
@@ -120,46 +139,50 @@ export const FriendList = memo(() => {
     friends: FriendInfo[];
     isInGroup: boolean;
   }
-  const MemoizedFriendItems = memo(
-    function MemoizedFriendItems({
-      friends,
-      isInGroup,
-    }: MemoizedFriendItemsProps) {
-      return (
-        <>
-          {friends.map((friend, index) => {
-            const groupPosition =
-              index === 0
-                ? "firstInGroup"
-                : index === friends.length - 1
-                  ? "lastInGroup"
-                  : "inGroup";
 
-            return (
-              <FriendsListItem
-                key={friend.userId}
-                userId={friend.userId}
-                username={friend.username}
-                displayName={friend.displayName}
-                isInGroup={isInGroup}
-                groupPosition={groupPosition}
-              />
-            );
-          })}
-        </>
-      );
-    },
-    (prev, next) =>
-      prev.isInGroup === next.isInGroup &&
-      prev.friends.length === next.friends.length &&
-      prev.friends.every((f, i) => f.userId === next.friends[i].userId),
+  const [expandedGroupIds, setExpandedGroupIds] = useState<
+    Record<string | number, boolean>
+  >(() => {
+    const initial: Record<string | number, boolean> = {};
+    groupsFromAtom.forEach((g) => {
+      initial[g.id] = groupInfo[g.id]?.defaultGroupState ?? true;
+    });
+    return initial;
+  });
+
+  const handleToggleGroup = (enabled: boolean, groupId: string | number) => {
+    setExpandedGroupIds((prev) => ({
+      ...prev,
+      [groupId]: enabled,
+    }));
+  };
+
+  console.log("groupsFromAtom", groupsFromAtom);
+
+  // ONLY compute how many items each group has; no cloning
+  const groupCounts = useMemo(
+    () =>
+      groupsFromAtom.map((g) =>
+        expandedGroupIds[g.id] ? g.friends.length : 0,
+      ),
+    [expandedGroupIds, groupsFromAtom],
   );
+
+  const flatGroup = useMemo(
+    () =>
+      groupsFromAtom
+        .filter((g) => expandedGroupIds[g.id])
+        .flatMap((g) => g.friends),
+    [expandedGroupIds, groupsFromAtom],
+  );
+  console.log("groupCounts", groupCounts);
   return (
     <>
       <FriendsListItemMenu />
       <MemoizedSlide in={isExtensionActive} direction={"up"} appear>
         <Paper
           sx={{
+            fontFamily: "'Motiva Sans', Arial, Helvetica, sans-serif",
             userSelect: "none",
             position: "fixed",
             bottom: 0,
@@ -182,24 +205,113 @@ export const FriendList = memo(() => {
           </Button>
           <MemoizedCollapse unmountOnExit in={isListVisible}>
             <FriendsListContainer>
-              {groups.length > 0 &&
-                groups.map(({ id, friends, isGameGroup }) => {
-                  return (
-                    <FriendsGroup
-                      key={id}
-                      groupSize={friends.length}
-                      groupName={isGameGroup ? undefined : groupInfo[id]?.name}
-                      placeId={isGameGroup ? id : undefined}
-                      defaultGroupState={groupInfo[id]?.defaultGroupState}
-                      extraClasses={groupInfo[id]?.extraClasses || "gameGroup"}
-                    >
-                      <MemoizedFriendItems
-                        friends={friends}
-                        isInGroup={!!isGameGroup}
-                      />
-                    </FriendsGroup>
-                  );
-                })}
+              {groupsFromAtom.length > 0 && (
+                <GroupedVirtuoso
+                  components={{
+                    TopItemList: NullRenderer,
+                  }}
+                  style={{ height: "100%", width: "100%" }} // Example dimensions
+                  groupCounts={groupCounts}
+                  groupContent={(index) => {
+                    const group = groupsFromAtom[index];
+                    const count = groupCounts[index];
+                    if (!group) return null;
+                    // Render your FriendsGroupHeader here
+                    // Pass it group data, isExpanded, and onToggle
+
+                    const test = (
+                      <div>
+                        {group.isGameGroup
+                          ? `Game: ${index} Count: ${count} ${group.id}`
+                          : `Game: ${index} Count: ${count} ${groupInfo[group.id]?.name}`}
+                        <span> ({group.friends.length}) </span>
+                        {expandedGroupIds[group.id] ? " [-]" : " [+]"}
+                      </div>
+                    );
+
+                    // return test;
+
+                    return (
+                      <FriendsGroup
+                        key={group.id}
+                        groupSize={group.friends.length}
+                        groupName={
+                          group.isGameGroup
+                            ? undefined
+                            : groupInfo[group.id]?.name
+                        }
+                        placeId={group.isGameGroup ? group.id : undefined}
+                        defaultGroupState={
+                          groupInfo[group.id]?.defaultGroupState
+                        }
+                        indexName={
+                          group.isGameGroup
+                            ? `group_state_${group.id} : undefined}`
+                            : undefined
+                        }
+                        extraClasses={
+                          groupInfo[group.id]?.extraClasses || "gameGroup"
+                        }
+                        onClick={(enabled) =>
+                          handleToggleGroup(enabled, group.id)
+                        }
+                      ></FriendsGroup>
+                    );
+                  }}
+                  itemContent={(itemIndex, groupIndex) => {
+                    const group = groupsFromAtom[groupIndex];
+                    let friend = flatGroup[itemIndex]; // Or use friendDataAccessor
+                    if (!friend) {
+                      console.log(
+                        "No friend found at index",
+                        itemIndex,
+                        group,
+                        friend,
+                      );
+                    }
+                    friend = friend ?? {
+                      username: `No friend found at index ${groupIndex}/${itemIndex}`,
+                    };
+                    const groupTypeSpecificClass = group.isGameGroup
+                      ? groupInfo[group.id]?.extraClasses ||
+                        "gameGroup OtherGamesGroup"
+                      : groupInfo[group.id]?.extraClasses || "";
+
+                    let PADDING_LEFT_FOR_ITEM_WRAPPER = "12px"; // Default from .friendGroup .friend
+                    if (group.isGameGroup) {
+                      PADDING_LEFT_FOR_ITEM_WRAPPER = "44px";
+                    }
+
+                    const friendStatusClass =
+                      PresenceTypesLookup[group.id] ?? "ingame";
+
+                    const itemRowClasses = `virtual-friend-item-row friend ${groupTypeSpecificClass} ${friendStatusClass}`;
+
+                    const itemInlineStyles: React.CSSProperties = {
+                      minHeight: "38px",
+                      display: "flex",
+                      paddingTop: "2px",
+                      paddingBottom: "2px",
+                      paddingLeft: PADDING_LEFT_FOR_ITEM_WRAPPER, // Apply calculated left padding
+                      paddingRight: "0", // From original rule
+                      marginTop: "2px",
+                      marginBottom: "2px",
+                    };
+
+                    return (
+                      <div className={itemRowClasses} style={itemInlineStyles}>
+                        <FriendsListItem
+                          key={friend.userId}
+                          userId={friend.userId}
+                          username={friend.username}
+                          isInGroup={!!group.isGameGroup}
+                          groupPosition={friend.groupPosition}
+                        />
+                      </div>
+                    );
+                  }}
+                />
+              )}
             </FriendsListContainer>
           </MemoizedCollapse>
         </Paper>

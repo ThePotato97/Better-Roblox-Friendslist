@@ -1,22 +1,21 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useState } from "react";
 import DateSince from "../DateSince";
 import { GamePopper } from "./GamePopper";
-import { Fade, Skeleton } from "@mui/material";
-import { selectAtom } from "jotai/utils";
-import { FriendInfo } from "pages/Background";
+import { Skeleton } from "@mui/material";
+
 import unknownGameImage from "../../unknowngame.png";
 import { JoinStatusCodes } from "../../global";
-import { fetchServerDetails } from "../../apis";
-import { ThumbnailContext } from "../Context/Thumbnails";
 import { useAtomValue, useSetAtom } from "jotai";
-import FriendsListItemMenu from "./FriendsListItemMenu";
-import { contextMenuAtom } from "@/src/atoms/contextMenu";
-import { thumbnailsAtom } from "@/src/atoms/thumbnailsAtom";
-import { getThumbnailRequestId, PresenceType } from "@/src/database/FriendsDB";
-import { placesAtom, presenceAtom } from "@/src/atoms";
-import { createThumbnailSelector } from "@/src/atoms/thumbnailsSelectors";
-import { createPresenceSelector } from "@/src/atoms/presenceSelector";
-import { createPlaceDetailsSelector } from "@/src/atoms/placeSelectors";
+
+import { PresenceType } from "@/src/database/FriendsDB";
+
+import {
+  createPresenceSelector,
+  contextMenuAtom,
+  placeDetailsFamily,
+  profileDetailsFamily,
+  thumbnailFamily,
+} from "@/src/atoms";
 
 const PresenceTypesLookup = {
   0: "offline",
@@ -28,27 +27,25 @@ const PresenceTypesLookup = {
 
 interface FriendsListItemProps {
   userId: number;
-  username: string;
   isInGroup: boolean;
-  displayName: string;
   groupPosition: string;
 }
 
 export const FriendsListItem = memo(function FriendsListItem({
   userId,
-  username,
+
   isInGroup,
   groupPosition,
-  displayName,
 }: FriendsListItemProps) {
   const setContextMenu = useSetAtom(contextMenuAtom);
 
-  const headShotAtom = useMemo(
-    () => createThumbnailSelector(userId, "AvatarHeadShot", "150x150"),
-    [userId],
-  );
+  const profile = useAtomValue(profileDetailsFamily(userId));
 
-  const userHeadshotDetails = useAtomValue(headShotAtom);
+  const { combinedName, username } = profile ?? {};
+
+  const userHeadshotDetails = useAtomValue(
+    thumbnailFamily({ id: userId, type: "AvatarHeadShot", size: "150x150" }),
+  );
 
   const userHeadshot = userHeadshotDetails?.imageUrl;
 
@@ -57,13 +54,13 @@ export const FriendsListItem = memo(function FriendsListItem({
     [userId],
   );
 
-  const userPresence = useAtomValue(userPresenceAtom);
+  const userPresence = useAtomValue(userPresenceAtom) ?? {};
 
-  const placeDetailsAtom = useMemo(
-    () => createPlaceDetailsSelector(userPresence?.placeId),
-    [userPresence?.placeId],
+  const placeDetails = useAtomValue(placeDetailsFamily(userPresence?.placeId));
+
+  const rootPlaceDetails = useAtomValue(
+    placeDetailsFamily(placeDetails?.universeRootPlaceId),
   );
-  const placeDetails = useAtomValue(placeDetailsAtom);
 
   const [serverDetails, setServerDetails] = useState<
     Exclude<FriendInfo["serverDetails"], null>[""]
@@ -98,13 +95,9 @@ export const FriendsListItem = memo(function FriendsListItem({
   const { userPresenceType, lastOnline, placeId, gameId, rootPlaceId } =
     userPresence || {};
 
-  const {
-    name: placeName,
-    price: placePrice,
-    universeId,
-    sourceName: rootPlaceName,
-    sourceDescription: rootPlaceDescription,
-  } = placeDetails ?? {};
+  const { name: rootPlaceName } = rootPlaceDetails ?? {};
+
+  const { name: placeName, price: placePrice } = placeDetails ?? {};
 
   const { status } = serverDetails;
 
@@ -173,7 +166,11 @@ export const FriendsListItem = memo(function FriendsListItem({
   };
 
   return (
-    <div id="friends-list-item-menu" onContextMenu={handleContextMenu}>
+    <div
+      id="friends-list-item-menu"
+      onContextMenu={handleContextMenu}
+      style={{ width: "100%", boxSizing: "border-box" }}
+    >
       <div className="friendCategoryContainer friend-anim-enter-done">
         <div
           className={`friend ${PresenceTypesLookup[userPresenceType]} ${groupPosition && isInGroup ? groupPosition : null} 
@@ -185,7 +182,10 @@ export const FriendsListItem = memo(function FriendsListItem({
             userPresenceType === PresenceType.InStudio) &&
           !isInGroup ? (
             <a href={`https://www.roblox.com/games/${placeId}`} target="_top">
-              <GamePopper placeId={placeId} isInGroup={isInGroup} />
+              <GamePopper
+                placeId={placeDetails?.universeRootPlaceId}
+                isInGroup={isInGroup}
+              />
             </a>
           ) : (userPresenceType === PresenceType.InGame ||
               userPresenceType === PresenceType.InStudio) &&
@@ -243,8 +243,8 @@ export const FriendsListItem = memo(function FriendsListItem({
               }`}
             >
               <div className="personanameandstatus_playerName_1uxaf">
-                {displayName}
-                {username !== null && username !== displayName ? (
+                {combinedName}
+                {username !== null && username !== combinedName ? (
                   <span className="personanameandstatus_playerNickname_3-32P">{`(@${username})`}</span>
                 ) : null}
               </div>

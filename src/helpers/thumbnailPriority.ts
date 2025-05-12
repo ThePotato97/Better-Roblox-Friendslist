@@ -1,13 +1,18 @@
+import { getDefaultStore } from "jotai";
 import { ThumbnailType } from "../apis";
 import {
   FriendsDB,
   PresenceType,
   getThumbnailRequestId,
 } from "../database/FriendsDB";
+import { thumbnailsAtom } from "../atoms";
+
+const defaultStore = getDefaultStore();
 
 export const getThumbnailsToLoad = async () => {
   const db = await FriendsDB();
-  const existing = await db.getAll("thumbnails");
+  const existing = defaultStore.get(thumbnailsAtom);
+
   const hasThumb = new Set(Object.keys(existing));
 
   const tx = db.transaction("presences", "readonly");
@@ -53,7 +58,7 @@ export const getThumbnailsToLoad = async () => {
   );
   push(
     generateStructured(
-      inGame.map((p) => p.placeId).filter((id) => id !== null),
+      inGame.map((p) => p.rootPlaceId).filter((id) => id !== null),
       "PlaceIcon",
       "150x150",
     ),
@@ -68,7 +73,7 @@ export const getThumbnailsToLoad = async () => {
   );
   push(
     generateStructured(
-      inStudio.map((p) => p.placeId).filter((id) => id !== null),
+      inStudio.map((p) => p.rootPlaceId).filter((id) => id !== null),
       "PlaceIcon",
       "150x150",
     ),

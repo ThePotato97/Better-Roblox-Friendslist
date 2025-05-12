@@ -1,9 +1,11 @@
 import { atom, getDefaultStore } from "jotai";
 import { isEqual } from "lodash";
-import { presenceAtom } from "./";
+import { presenceAtom } from "..";
 import { selectAtom } from "jotai/utils";
 
 const store = getDefaultStore();
+
+const TTL = 2 * 60 * 1000;
 
 export const getMissingPresence = (ids: number[]): number[] => {
   const filteredIds = ids.filter((id) => id !== null);
@@ -13,7 +15,8 @@ export const getMissingPresence = (ids: number[]): number[] => {
 
   return uniqueIds.filter((id) => {
     const presence = presenceState[id];
-    return !presence;
+
+    return !presence || presence?.lastUpdated + TTL < Date.now();
   });
 };
 

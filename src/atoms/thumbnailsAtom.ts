@@ -9,19 +9,19 @@ export const thumbnailsAtom = atom<Record<ThumbnailRequestId, ThumbnailAtom>>(
   {},
 );
 
-thumbnailsAtom.onMount = (set) => {
-  FriendsDB().then(async (db) => {
-    const thumbnails = await db.getAll("thumbnails");
-    const map: Record<ThumbnailRequestId, ThumbnailAtom> = Object.fromEntries(
-      thumbnails.map(({ lastUpdated: _lastUpdated, ...rest }) => [
-        rest.requestId,
-        rest,
-      ]),
-    );
-    set(map);
-  });
-};
+export const thumbnailsHydratedAtom = atom(null, async (_get, set) => {
+  const db = await FriendsDB();
+  const thumbnails = await db.getAll("thumbnails");
 
+  const map: Record<ThumbnailRequestId, ThumbnailAtom> = Object.fromEntries(
+    thumbnails.map(({ lastUpdated: _lastUpdated, ...rest }) => [
+      rest.requestId,
+      rest,
+    ]),
+  );
+
+  set(thumbnailsAtom, map);
+});
 export async function updateThumbnailsBatch(
   thumbnailsList: Array<ThumbnailAtom>,
 ) {

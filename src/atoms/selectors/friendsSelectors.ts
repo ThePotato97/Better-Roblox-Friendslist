@@ -1,5 +1,5 @@
 import { isEqual } from "lodash";
-import { friendsAtom } from "./friendsAtom";
+import { friendsAtom } from "..";
 import { selectAtom } from "jotai/utils";
 
 export const friendIdsSelector = selectAtom(
