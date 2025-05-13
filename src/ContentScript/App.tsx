@@ -66,7 +66,7 @@ const PresenceTypesLookup: Record<number, string> = {
 };
 
 interface NullRendererProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const NullRenderer = (props: NullRendererProps) => {
@@ -168,6 +168,23 @@ export const FriendList = memo(() => {
     [expandedGroupIds, groupsFromAtom],
   );
 
+  const flatGroupKeys = useMemo(() => {
+    const keys: (string | number)[] = [];
+
+    for (const group of groupsFromAtom) {
+      keys.push(`group-${group.id}`);
+
+      // Expanded friends' keys
+      if (expandedGroupIds[group.id]) {
+        for (const friend of group.friends) {
+          keys.push(`friend-${friend.userId}`);
+        }
+      }
+    }
+
+    return keys;
+  }, [groupsFromAtom, expandedGroupIds]);
+  console.log("render");
   return (
     <>
       <FriendsListItemMenu />
@@ -199,6 +216,10 @@ export const FriendList = memo(() => {
             <FriendsListContainer>
               {groupsFromAtom.length > 0 && (
                 <GroupedVirtuoso
+                  computeItemKey={(itemIndex) => {
+                    const groupKey = flatGroupKeys[itemIndex];
+                    return groupKey ?? itemIndex;
+                  }}
                   components={{
                     TopItemList: NullRenderer,
                   }}
@@ -206,22 +227,8 @@ export const FriendList = memo(() => {
                   groupCounts={groupCounts}
                   groupContent={(index) => {
                     const group = groupsFromAtom[index];
-                    const count = groupCounts[index];
+
                     if (!group) return null;
-                    // Render your FriendsGroupHeader here
-                    // Pass it group data, isExpanded, and onToggle
-
-                    const test = (
-                      <div>
-                        {group.isGameGroup
-                          ? `Game: ${index} Count: ${count} ${group.id}`
-                          : `Game: ${index} Count: ${count} ${groupInfo[group.id]?.name}`}
-                        <span> ({group.friends.length}) </span>
-                        {expandedGroupIds[group.id] ? " [-]" : " [+]"}
-                      </div>
-                    );
-
-                    // return test;
 
                     return (
                       <FriendsGroup
@@ -252,7 +259,7 @@ export const FriendList = memo(() => {
                   }}
                   itemContent={(itemIndex, groupIndex) => {
                     const group = groupsFromAtom[groupIndex];
-                    let friend = flatGroup[itemIndex]; // Or use friendDataAccessor
+                    let friend = flatGroup[itemIndex];
 
                     friend = friend ?? {
                       username: `No friend found at index ${groupIndex}/${itemIndex}`,
@@ -284,7 +291,11 @@ export const FriendList = memo(() => {
                     };
 
                     return (
-                      <div className={itemRowClasses} style={itemInlineStyles}>
+                      <div
+                        key={friend.userId}
+                        className={itemRowClasses}
+                        style={itemInlineStyles}
+                      >
                         <FriendsListItem
                           key={friend.userId}
                           userId={friend.userId}

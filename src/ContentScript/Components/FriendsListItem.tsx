@@ -209,20 +209,11 @@ export const FriendsListItem = memo(function FriendsListItem({
                   position: "relative",
                 }}
               >
-                {!userHeadshot && (
-                  <Skeleton
-                    variant="rectangular"
-                    animation="wave"
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  />
-                )}
                 <img
-                  src={userHeadshot ?? ""}
+                  src={
+                    userHeadshot ||
+                    "https://t7.rbxcdn.com/180DAY-a17918617b20ac9c39b305241f23e58a"
+                  }
                   alt=""
                   draggable="false"
                   style={{
@@ -230,7 +221,6 @@ export const FriendsListItem = memo(function FriendsListItem({
                     height: "100%",
                     objectFit: "cover",
                     display: "block",
-                    visibility: userHeadshot ? "visible" : "hidden",
                   }}
                 />
               </div>

@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 import { usePopper } from "react-popper";
 import { useAtomValue } from "jotai";
-
+import unknownGameImage from "../../unknowngame.png";
 import { selectAtom } from "jotai/utils";
 import {
   createThumbnailSelector,
@@ -190,7 +190,7 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className="groupIcon"
-            src={placeIcon}
+            src={placeIcon ?? unknownGameImage}
             alt=""
           />
         </div>
@@ -201,7 +201,11 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
           className="FriendInGameIcon"
           ref={setReferenceElement}
         >
-          <img className="gameIcon" src={placeIcon} alt="" />
+          <img
+            className="gameIcon"
+            src={placeIcon ?? unknownGameImage}
+            alt=""
+          />
         </div>
       )}
       {showPopper && rootElement
