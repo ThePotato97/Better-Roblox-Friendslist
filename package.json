@@ -2,7 +2,7 @@
   "name": "better-roblox-friendslist",
   "description": "a better roblox friends list",
   "private": true,
-  "version": "4.0.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
