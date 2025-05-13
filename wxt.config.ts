@@ -2,8 +2,7 @@ import { defineConfig } from "wxt";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
-  extensionApi: "chrome",
-  modules: ["@wxt-dev/module-react"],
+  modules: ["@wxt-dev/module-react", "@wxt-dev/auto-icons"],
   dev: {
     server: {
       port: 3000,
@@ -30,7 +29,8 @@ export default defineConfig({
       },
     },
   },
-  manifest: {
+  manifest: () => ({
+    name: "Better Roblox Friendslist",
     host_permissions: ["https://*.roblox.com/*"],
     permissions: ["storage"],
     // content_security_policy: {
@@ -41,9 +41,11 @@ export default defineConfig({
     // },
     web_accessible_resources: [
       {
-        resources: ["iframe.html", "inject-world.js"],
+        resources: import.meta.env.DEV
+          ? ["inject-world.js"]
+          : ["inject-world.js"],
         matches: ["https://www.roblox.com/*"],
       },
     ],
-  },
+  }),
 });

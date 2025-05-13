@@ -1,15 +1,16 @@
 import { atom } from "jotai";
 import { getDefaultStore } from "jotai";
-import { FriendsDB, Presence, PresenceType } from "../database/FriendsDB";
+import {
+  FriendsDB,
+  Presence,
+  PresenceType,
+  ttlConfig,
+} from "../database/FriendsDB";
 import { PresenceTypes } from "../global";
 
 const store = getDefaultStore();
 
 export const presenceAtom = atom<Record<number, Presence>>({});
-
-store.sub(presenceAtom, () => {
-  console.log("Presence subbed");
-});
 
 const TTL = 5 * 60 * 1000;
 
@@ -22,10 +23,10 @@ export const presenceHydratedAtom = atom(null, async (get, set) => {
 
   const map: Record<number, Presence> = {};
   for (const p of all) {
-    if (now - p.lastUpdated <= TTL) {
+    if (now - p.lastUpdated <= ttlConfig.presences.prune) {
       map[p.userId] = p;
     } else {
-      await db.delete("presences", p.userId); // TTL prune
+      await db.delete("presences", p.userId);
     }
   }
   set(presenceAtom, map);

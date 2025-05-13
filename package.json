@@ -1,8 +1,8 @@
 {
-  "name": "wxt-react-starter",
-  "description": "manifest.json description",
+  "name": "better-roblox-friendslist",
+  "description": "a better roblox friends list",
   "private": true,
-  "version": "0.0.0",
+  "version": "4.0.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
@@ -50,6 +50,7 @@
     "@types/chrome": "^0.0.280",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@wxt-dev/auto-icons": "^1.0.2",
     "@wxt-dev/module-react": "^1.1.2",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",

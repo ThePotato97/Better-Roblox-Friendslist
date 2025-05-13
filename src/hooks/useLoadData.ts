@@ -12,29 +12,34 @@ import {
   updateProfilesBatch,
   getMissingPresence,
   presencePlaceIdsAtom,
-  updateFriendsBatch,
   updatePlacesBatch,
   updatePresenceBatch,
   updateThumbnailsBatch,
+  streamFriendsPartial,
+  overwriteFriends,
 } from "../atoms";
 
 import { getThumbnailsToLoad } from "../helpers/thumbnailPriority";
 import { getProfilesToLoad } from "../helpers/profilePriority";
 import { fetchProfiles } from "../apis/fetchProfiles";
 import { fetchUserInfo } from "../apis/fetchCurrentUserInfo";
+import { ttlConfig } from "../database/FriendsDB";
 
 export const useLoadData = () => {
   // 1) initial + polling for friends
   useEffect(() => {
     async function reload() {
       const userInfo = await fetchUserInfo();
-      console.log("fetching friends");
+
+      const friendsFetched: number[] = [];
       await fetchFriends(userInfo.id, (friends) => {
-        updateFriendsBatch(friends);
+        streamFriendsPartial(friends);
+        friendsFetched.push(...friends);
       });
+      overwriteFriends(friendsFetched);
     }
     reload();
-    const handle = setInterval(reload, 20 * 1000);
+    const handle = setInterval(reload, ttlConfig.friends.refresh);
     return () => clearInterval(handle);
   }, []);
 
@@ -58,7 +63,6 @@ export const useLoadData = () => {
   useEffect(() => {
     const updateProfiles = async () => {
       const toLoad = await getProfilesToLoad();
-      console.log("profiles to load", toLoad);
       if (toLoad.length === 0) return;
       const profiles = await fetchProfiles(toLoad);
       updateProfilesBatch(profiles);
@@ -71,7 +75,6 @@ export const useLoadData = () => {
   // fetch presence
   useEffect(() => {
     const updatePresence = async () => {
-      console.log("fetching presence");
       const missingPresence = getMissingPresence(userIds);
       if (missingPresence.length > 0) {
         fetchPresence(missingPresence, (newPresence) => {

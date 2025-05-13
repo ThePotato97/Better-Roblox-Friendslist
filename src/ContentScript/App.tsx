@@ -7,7 +7,7 @@ import {
 } from "./Components/index.ts";
 import { GroupedVirtuoso } from "react-virtuoso";
 import { Button, Collapse, Paper, Slide } from "@mui/material";
-import extensionIcon from "../48.png";
+import extensionIcon from "../Icon48x.png";
 import { FriendInfo } from "pages/Background";
 import { PresenceTypes } from "../global.ts";
 import FriendsListItemMenu from "./Components/FriendsListItemMenu.tsx";
@@ -88,8 +88,6 @@ MemoizedCollapse.displayName = "MemoizedCollapse";
 const MemoizedSlide = memo(Slide);
 MemoizedSlide.displayName = "MemoizedSlide";
 export const FriendList = memo(() => {
-  console.log("rendering main");
-
   useLoadData();
   const groupsFromAtom = useAtomValue(groupsAtom);
 
@@ -135,10 +133,6 @@ export const FriendList = memo(() => {
       friendsListElement.style.display = !isExtensionActive ? "none" : "block";
     }
   };
-  interface MemoizedFriendItemsProps {
-    friends: FriendInfo[];
-    isInGroup: boolean;
-  }
 
   const [expandedGroupIds, setExpandedGroupIds] = useState<
     Record<string | number, boolean>
@@ -157,8 +151,6 @@ export const FriendList = memo(() => {
     }));
   };
 
-  console.log("groupsFromAtom", groupsFromAtom);
-
   // ONLY compute how many items each group has; no cloning
   const groupCounts = useMemo(
     () =>
@@ -175,7 +167,7 @@ export const FriendList = memo(() => {
         .flatMap((g) => g.friends),
     [expandedGroupIds, groupsFromAtom],
   );
-  console.log("groupCounts", groupCounts);
+
   return (
     <>
       <FriendsListItemMenu />
@@ -261,14 +253,7 @@ export const FriendList = memo(() => {
                   itemContent={(itemIndex, groupIndex) => {
                     const group = groupsFromAtom[groupIndex];
                     let friend = flatGroup[itemIndex]; // Or use friendDataAccessor
-                    if (!friend) {
-                      console.log(
-                        "No friend found at index",
-                        itemIndex,
-                        group,
-                        friend,
-                      );
-                    }
+
                     friend = friend ?? {
                       username: `No friend found at index ${groupIndex}/${itemIndex}`,
                     };

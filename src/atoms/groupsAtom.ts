@@ -38,22 +38,14 @@ function atomWithCompareDerived<Value>(
   });
 }
 
-// Helper to ensure stable sorting of friends if their order doesn't semantically change the group
-// This might be overkill if isEqual handles array order differences appropriately for your needs,
-// but explicit sorting ensures consistent internal structure before isEqual is even called.
-// For this specific case, the existing sorts within the groups are more important.
-const sortFriendsById = (friends: Friend[]): Friend[] => {
-  return [...friends].sort((a, b) => Number(a.userId) - Number(b.userId));
-};
-
 export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
   const friendsMap = get(friendsAtom);
   const presenceMap = get(presenceAtom);
 
   // Stable sort for allFriends initially to ensure consistent processing order
   // if friendsMap iteration order isn't guaranteed (Object.values might not be).
-  const allFriends = Object.values(friendsMap).sort((a, b) => {
-    return Number(a.userId) - Number(b.userId);
+  const allFriends = Array.from(friendsMap.values()).sort((a, b) => {
+    return a.userId - b.userId;
   });
 
   // The username sort can also be stable if usernames are unique and don't change often

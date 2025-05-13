@@ -108,7 +108,11 @@ export const FriendsListItem = memo(function FriendsListItem({
   const getCurrentLocation = () => {
     switch (userPresenceType) {
       case PresenceType.Offline:
-        return `Last seen ${lastOnline === null ? "??? ago" : lastOnlineString}`;
+        if (!!lastOnline) {
+          return `Last seen ${lastOnlineString}`;
+        } else {
+          return "Not seen online";
+        }
       case PresenceType.Online:
         return "Online";
       case PresenceType.InGame:
@@ -294,6 +298,26 @@ export const FriendsListItem = memo(function FriendsListItem({
             <div className="personanameandstatus_richPresenceContainer_21cNf">
               <div className="personanameandstatus_gameName_qvibF personanameandstatus_richPresenceLabel_3Q6g1 no-drag">
                 {getCurrentLocation()}
+                {userPresenceType === PresenceType.Offline && !lastOnline ? (
+                  <span
+                    title="We can only show “Last seen” after this user has been spotted online."
+                    style={{
+                      display: "inline-block",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "50%",
+                      border: "1px solid currentColor",
+                      fontSize: "12px",
+                      lineHeight: "16px",
+                      textAlign: "center",
+                      marginLeft: "4px",
+                      cursor: "help",
+                      userSelect: "none",
+                    }}
+                  >
+                    ?
+                  </span>
+                ) : null}
               </div>
               {richPresenceEnabled ? (
                 <div className="personanameandstatus_richPresenceLabel_3Q6g1 no-drag">

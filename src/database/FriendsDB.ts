@@ -1,5 +1,6 @@
 import { DBSchema, openDB } from "idb";
 import { ThumbnailType } from "../apis";
+import { time } from "../helpers/timeHelper";
 
 export enum PresenceType {
   Offline = 0,
@@ -69,7 +70,36 @@ export function getThumbnailRequestId(
   return `${id}:${thumbnailType}:${size}`;
 }
 
-export interface FriendsDBSchema extends DBSchema {
+export const ttlConfig = {
+  friends: {
+    refresh: time.minutes(5),
+    prune: time.minutes(10),
+  },
+  presences: {
+    refresh: time.seconds(30),
+    prune: time.days(1),
+  },
+  places: {
+    refresh: time.hours(1),
+    prune: time.days(1),
+  },
+  thumbnails: {
+    refresh: time.minutes(1),
+    prune: time.days(1),
+  },
+  profiles: {
+    refresh: time.hours(1),
+    prune: time.days(1),
+  },
+} satisfies Record<
+  keyof FriendsDBSchemaLiteral,
+  {
+    refresh: number;
+    prune: number;
+  }
+>;
+
+export interface FriendsDBSchemaLiteral {
   friends: {
     key: number;
     value: Friend;
@@ -111,6 +141,8 @@ export interface FriendsDBSchema extends DBSchema {
     };
   };
 }
+
+export interface FriendsDBSchema extends FriendsDBSchemaLiteral, DBSchema {}
 
 export const FriendsDB = async () => {
   return openDB<FriendsDBSchema>("friends", 1, {

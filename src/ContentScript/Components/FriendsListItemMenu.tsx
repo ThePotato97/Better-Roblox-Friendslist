@@ -36,7 +36,7 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
   const [contextMenu, setContextMenu] = useAtom(contextMenuAtom);
 
   const menuRef = useRef<HTMLDivElement>(null);
-  console.log("Menu ref:", menuRef);
+
   useEffect(() => {
     const menuRoot = menuRef.current?.parentElement;
     if (menuRoot) {
@@ -103,7 +103,7 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
 
   const placePriceDisplay = placePrice || 0;
   const portalRoot = (window as any).interactiveLayer;
-  console.log("Portal root:", portalRoot);
+
   return (
     <>
       <div id="friends-list-item-menu">

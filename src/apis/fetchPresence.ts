@@ -33,7 +33,5 @@ export const fetchPresence = async (
 
     merged.push(...userPresences);
   }
-
-  console.log("presence merge", merged);
   return merged;
 };

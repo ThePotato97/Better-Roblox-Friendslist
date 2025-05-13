@@ -4,7 +4,6 @@ import { selectAtom } from "jotai/utils";
 
 export const friendIdsSelector = selectAtom(
   friendsAtom,
-  (friends) =>
-    friends.map((f) => f.userId).sort((a, b) => Number(a) - Number(b)),
+  (friends) => Array.from(friends.keys()).sort((a, b) => a - b),
   isEqual,
 );

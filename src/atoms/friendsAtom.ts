@@ -5,16 +5,67 @@ const store = getDefaultStore();
 
 export type FriendAtom = Omit<Friend, "lastUpdated">;
 
-export const friendsAtom = atom<Array<FriendAtom>>([]);
+export type FriendAtomMap = Map<number, FriendAtom>;
 
-export const friendsHydratedAtom = atom(null, async (get, set) => {
+export const friendsAtom = atom<FriendAtomMap>(new Map());
+
+export const friendsHydratedAtom = atom(null, async (_get, set) => {
   const db = await FriendsDB();
   const data = await db.getAll("friends");
-  const stripped: FriendAtom[] = data.map(
-    ({ lastUpdated: _lastUpdated, ...rest }) => rest,
-  );
-  set(friendsAtom, stripped);
+
+  const map = new Map<number, FriendAtom>();
+  for (const { lastUpdated: _lastUpdated, ...friend } of data) {
+    map.set(friend.userId, friend);
+  }
+
+  set(friendsAtom, map);
 });
+
+export const convertToFriendAtom = (friends: number[]): FriendAtom[] =>
+  friends.map((userId) => ({ userId }));
+
+export async function streamFriendsPartial(friends: number[]) {
+  const partial = convertToFriendAtom(friends);
+  const db = await FriendsDB();
+  const tx = db.transaction("friends", "readwrite");
+
+  const now = Date.now();
+  for (const friend of partial) {
+    tx.store.put({ ...friend, lastUpdated: now });
+  }
+
+  await tx.done;
+
+  store.set(friendsAtom, (prev) => {
+    const next = new Map(prev);
+    for (const friend of partial) {
+      next.set(friend.userId, friend);
+    }
+    return next;
+  });
+}
+
+export async function overwriteFriends(friends: number[]) {
+  const allFriends = convertToFriendAtom(friends);
+  const db = await FriendsDB();
+  const tx = db.transaction("friends", "readwrite");
+
+  await tx.store.clear();
+
+  const now = Date.now();
+  for (const friend of allFriends) {
+    tx.store.put({ ...friend, lastUpdated: now });
+  }
+
+  await tx.done;
+
+  const map = new Map<number, FriendAtom>();
+  for (const friend of allFriends) {
+    map.set(friend.userId, friend);
+  }
+
+  store.set(friendsAtom, map);
+}
 
 export async function updateFriendsBatch(friendIds: number[]) {
   const db = await FriendsDB();

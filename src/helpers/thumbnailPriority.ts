@@ -93,13 +93,23 @@ export const getThumbnailsToLoad = async () => {
   }>;
 
   for (const { type, size, ids } of priorityList) {
-    push(
-      generateStructured(
-        ids.map((p) => p.userId).filter((id) => id !== null),
-        type,
-        size,
-      ),
-    );
+    if (type === "AvatarHeadShot") {
+      push(
+        generateStructured(
+          ids.map((p) => p.userId).filter(Boolean),
+          type,
+          size,
+        ),
+      );
+    } else if (type === "PlaceIcon" || type === "GameThumbnail") {
+      push(
+        generateStructured(
+          ids.map((p) => p.rootPlaceId).filter(Boolean),
+          type,
+          size,
+        ),
+      );
+    }
   }
 
   return result;
