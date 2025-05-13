@@ -109,13 +109,25 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
 
   const { description } = rootPlaceDetails || {};
 
-  const placeIconValue = useAtomValue(
+  const placeIconValueBig = useAtomValue(
     thumbnailFamily(
       universeRootPlaceId
         ? {
             id: universeRootPlaceId,
             type: "PlaceIcon",
             size: "150x150",
+          }
+        : undefined,
+    ),
+  );
+
+  const placeIconValueSmall = useAtomValue(
+    thumbnailFamily(
+      universeRootPlaceId
+        ? {
+            id: universeRootPlaceId,
+            type: "PlaceIcon",
+            size: "50x50",
           }
         : undefined,
     ),
@@ -180,8 +192,9 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
   const handleMouseLeave = () => {
     setPopperState(false);
   };
-  const placeIcon = placeIconValue?.imageUrl;
+  const placeIconBig = placeIconValueBig?.imageUrl;
   const placeThumbnail = gameThumbnailValue?.imageUrl;
+  const placeIconSmall = placeIconValueSmall?.imageUrl;
   return (
     <>
       {isInGroup ? (
@@ -190,7 +203,7 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className="groupIcon"
-            src={placeIcon ?? unknownGameImage}
+            src={placeIconSmall ?? unknownGameImage}
             alt=""
           />
         </div>
@@ -203,7 +216,7 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
         >
           <img
             className="gameIcon"
-            src={placeIcon ?? unknownGameImage}
+            src={placeIconSmall ?? unknownGameImage}
             alt=""
           />
         </div>
@@ -268,11 +281,11 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
                 <div className="icon-container-popper">
                   <div
                     className="icon-container-popper icon-background-popper"
-                    style={{ backgroundImage: `url(${placeIcon})` }}
+                    style={{ backgroundImage: `url(${placeIconBig})` }}
                   />
                   <div
                     className="icon-container-popper icon-foreground-popper"
-                    style={{ backgroundImage: `url(${placeIcon})` }}
+                    style={{ backgroundImage: `url(${placeIconBig})` }}
                   />
                 </div>
                 <div

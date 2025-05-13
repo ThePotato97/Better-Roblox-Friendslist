@@ -53,22 +53,22 @@ export const getThumbnailsToLoad = async () => {
   const priorityList = [
     {
       type: "AvatarHeadShot",
-      size: "150x150",
+      size: "48x48",
       ids: inGame,
     },
     {
       type: "PlaceIcon",
-      size: "150x150",
+      size: "50x50",
       ids: inGame,
     },
     {
       type: "AvatarHeadShot",
-      size: "150x150",
+      size: "48x48",
       ids: inStudio,
     },
     {
       type: "PlaceIcon",
-      size: "150x150",
+      size: "50x50",
       ids: inStudio,
     },
     {
@@ -82,8 +82,13 @@ export const getThumbnailsToLoad = async () => {
       ids: allPresences,
     },
     {
-      type: "AvatarHeadShot",
+      type: "PlaceIcon",
       size: "150x150",
+      ids: allPresences,
+    },
+    {
+      type: "AvatarHeadShot",
+      size: "48x48",
       ids: offline,
     },
   ] satisfies Array<{

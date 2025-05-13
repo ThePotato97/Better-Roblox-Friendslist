@@ -44,7 +44,7 @@ export const FriendsListItem = memo(function FriendsListItem({
   const { combinedName, username } = profile ?? {};
 
   const userHeadshotDetails = useAtomValue(
-    thumbnailFamily({ id: userId, type: "AvatarHeadShot", size: "150x150" }),
+    thumbnailFamily({ id: userId, type: "AvatarHeadShot", size: "48x48" }),
   );
 
   const userHeadshot = userHeadshotDetails?.imageUrl;
@@ -204,6 +204,7 @@ export const FriendsListItem = memo(function FriendsListItem({
               <div
                 className="steamavatar_avatar_f2laR avatar"
                 style={{
+                  aspectRatio: "1 / 1",
                   width: "100%",
                   height: "100%",
                   position: "relative",
@@ -215,6 +216,7 @@ export const FriendsListItem = memo(function FriendsListItem({
                     "https://t7.rbxcdn.com/180DAY-a17918617b20ac9c39b305241f23e58a"
                   }
                   alt=""
+                  loading="lazy"
                   draggable="false"
                   style={{
                     width: "100%",
