@@ -9,7 +9,9 @@ interface fetchServerDetailsInput {
   gameId: string;
 }
 
-type fetchServerDetailsResponse = ExtractResponse<typeof postJoinGameInstance>;
+export type fetchServerDetailsResponse = ExtractResponse<
+  typeof postJoinGameInstance
+>;
 
 //const serverDetailsCache: Record<string, fetchServerDetailsResponse> = {};
 

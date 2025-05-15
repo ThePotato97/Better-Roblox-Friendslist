@@ -1,10 +1,10 @@
 import { atom, Getter } from "jotai";
 import { isEqual } from "lodash";
-import { friendsAtom, presenceAtom } from ".";
+import { FriendAtom, friendsAtom, presenceAtom } from ".";
 import { Friend } from "../database/FriendsDB";
 import { PresenceTypes } from "../global";
 
-type FriendWithGroupPosition = Friend & { groupPosition?: string };
+type FriendWithGroupPosition = FriendAtom & { groupPosition?: string };
 
 export interface FriendGroup {
   id: number;
@@ -168,21 +168,13 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
       // Sort a copy
       const aPresence = presenceMap[a.userId];
       const bPresence = presenceMap[b.userId];
-      const aHasPlace = aPresence?.rootPlaceId != null;
-      const bHasPlace = bPresence?.rootPlaceId != null;
+      const aPlace = aPresence?.rootPlaceId;
+      const bPlace = bPresence?.rootPlaceId;
       // Sort by game name if available, then by place ID presence
-      if (
-        aHasPlace &&
-        bHasPlace &&
-        aPresence?.lastLocation &&
-        bPresence?.lastLocation
-      ) {
-        const gameNameCompare = aPresence.lastLocation.localeCompare(
-          bPresence.lastLocation,
-        );
-        if (gameNameCompare !== 0) return gameNameCompare;
+      if (aPlace && bPlace) {
+        return aPlace - bPlace;
       }
-      return Number(bHasPlace) - Number(aHasPlace); // true (has place) first
+      return a.userId - b.userId;
     }),
   };
 
@@ -195,21 +187,13 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
       // Sort a copy
       const aPresence = presenceMap[a.userId];
       const bPresence = presenceMap[b.userId];
-      const aHasPlace = aPresence?.rootPlaceId != null;
-      const bHasPlace = bPresence?.rootPlaceId != null;
+      const aPlace = aPresence?.rootPlaceId;
+      const bPlace = bPresence?.rootPlaceId;
       // Sort by game/place name if available, then by place ID presence
-      if (
-        aHasPlace &&
-        bHasPlace &&
-        aPresence?.lastLocation &&
-        bPresence?.lastLocation
-      ) {
-        const gameNameCompare = aPresence.lastLocation.localeCompare(
-          bPresence.lastLocation,
-        );
-        if (gameNameCompare !== 0) return gameNameCompare;
+      if (aPlace && bPlace) {
+        return aPlace - bPlace;
       }
-      return Number(bHasPlace) - Number(aHasPlace); // true (has place) first
+      return a.userId - b.userId;
     }),
   };
 
@@ -239,5 +223,3 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
 
   return result;
 }, isEqual); // Use the deep equality check here
-
-atomWithCompareDerived.debugLabel = "groupsAtom";

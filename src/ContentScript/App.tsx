@@ -184,7 +184,6 @@ export const FriendList = memo(() => {
 
     return keys;
   }, [groupsFromAtom, expandedGroupIds]);
-  console.log("render");
   return (
     <>
       <FriendsListItemMenu />
