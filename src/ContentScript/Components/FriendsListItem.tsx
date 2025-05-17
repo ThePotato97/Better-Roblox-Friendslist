@@ -4,7 +4,7 @@ import { GamePopper } from "./GamePopper";
 import { Skeleton } from "@mui/material";
 
 import unknownGameImage from "../../unknowngame.png";
-import { JoinStatusCodes } from "../../global";
+import { JoinResultReason } from "../../global";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { PresenceType } from "@/src/database/FriendsDB";
@@ -132,8 +132,8 @@ export const FriendsListItem = memo(function FriendsListItem({
     switch (userPresenceType) {
       case PresenceType.InGame:
         if (
-          status === JoinStatusCodes.OK ||
-          status === JoinStatusCodes.SERVER_FULL
+          status === JoinResultReason.OK ||
+          status === JoinResultReason.SERVER_FULL
         ) {
           return true;
         } else {
@@ -185,7 +185,18 @@ export const FriendsListItem = memo(function FriendsListItem({
           (userPresenceType === PresenceType.InGame ||
             userPresenceType === PresenceType.InStudio) &&
           !isInGroup ? (
-            <a href={`https://www.roblox.com/games/${placeId}`} target="_top">
+            <a
+              href={`https://www.roblox.com/games/${placeId}`}
+              target="_top"
+              onClick={(e) => {
+                if (chrome.tabs) {
+                  e.preventDefault();
+                  chrome.tabs.update({
+                    url: `https://www.roblox.com/games/${placeId}`,
+                  });
+                }
+              }}
+            >
               <GamePopper
                 placeId={placeDetails?.universeRootPlaceId}
                 isInGroup={isInGroup}
@@ -200,7 +211,19 @@ export const FriendsListItem = memo(function FriendsListItem({
           ) : null}
           <div className="steamavatar_avatarHolder_1G7LI avatarHolder no-drag Medium">
             <div className="steamavatar_avatarStatus_1Pwr6 avatarStatus" />
-            <a href={`/users/${userId}/profile`}>
+            <a
+              href={`https://www.roblox.com/users/${userId}/profile`}
+              target="_top"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (chrome.tabs) {
+                  e.preventDefault();
+                  chrome.tabs.update({
+                    url: `https://www.roblox.com/users/${userId}/profile`,
+                  });
+                }
+              }}
+            >
               <div
                 className="steamavatar_avatar_f2laR avatar"
                 style={{

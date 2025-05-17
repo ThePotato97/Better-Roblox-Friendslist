@@ -73,7 +73,7 @@ export const getThumbnailsToLoad = async () => {
     },
     {
       type: "AvatarHeadShot",
-      size: "150x150",
+      size: "48x48",
       ids: online,
     },
     {

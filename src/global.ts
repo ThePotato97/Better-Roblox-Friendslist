@@ -56,7 +56,7 @@ function isRestrictedServer(
 export enum JoinResultReason {
   OK,
   SERVER_ERROR,
-  IN_QUEUE,
+  SERVER_FULL,
   UNAUTHORIZED_PRIVATE,
   UNAUTHORIZED_RESERVED,
   UNAUTHORIZED_GAME,
@@ -96,7 +96,8 @@ export function getJoinStatusReason(
       }
 
     case JoinServerStatusCode.InQueue:
-      return JoinResultReason.IN_QUEUE;
+    case JoinServerStatusCode.ServerFull:
+      return JoinResultReason.SERVER_FULL;
 
     case JoinServerStatusCode.UserBanned:
       return JoinResultReason.USER_BANNED;
@@ -105,6 +106,6 @@ export function getJoinStatusReason(
       if (joinData.statusData?.creatorExperienceBan) {
         return JoinResultReason.USER_BANNED;
       }
-      return JoinResultReason.CANT_JOIN;
+      return JoinResultReason.OK;
   }
 }

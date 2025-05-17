@@ -1,6 +1,21 @@
 .game-popper-container {
-  z-index: 9999;
+  /* never exceed 390px, never exceed viewport minus a 16px margin on each side */
+  width: min(390px, calc(100vw - 32px));
+  /* keep it square */
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #2C2C2C;
+  border-radius: 5px;
 }
+
+/* all your inner content just fills the container */
+.game-popper-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;           /* or whatever layout you already use */
+  flex-direction: column;
+}
+
 
 .icon-popper {
   display: inline-block;

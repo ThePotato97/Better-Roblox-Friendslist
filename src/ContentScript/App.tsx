@@ -6,7 +6,7 @@ import {
   FriendsGroup,
 } from "./Components/index.ts";
 import { GroupedVirtuoso } from "react-virtuoso";
-import { Button, Collapse, Paper, Slide } from "@mui/material";
+import { Box, Button, Collapse, Paper, Slide } from "@mui/material";
 import extensionIcon from "../Icon48x.png";
 import { FriendInfo } from "pages/Background";
 import { PresenceTypes } from "../global.ts";
@@ -83,19 +83,23 @@ function getGroupPosition(total: number, position: number) {
   return "inGroup";
 }
 
+interface FriendListProps {
+  framed: boolean;
+}
+
 const MemoizedCollapse = memo(Collapse);
 MemoizedCollapse.displayName = "MemoizedCollapse";
 const MemoizedSlide = memo(Slide);
 MemoizedSlide.displayName = "MemoizedSlide";
-export const FriendList = memo(() => {
+export const FriendList = memo(({ framed }: FriendListProps) => {
   useLoadData();
   const groupsFromAtom = useAtomValue(groupsAtom);
 
   const [isListVisible, setListVisible] = useState<boolean>(
-    JSON.parse(sessionStorage.getItem("showFriendsList") ?? "true"),
+    JSON.parse(localStorage.getItem("showFriendsList") ?? "true"),
   );
   const [isExtensionActive, setExtensionActive] = useState<boolean>(
-    JSON.parse(sessionStorage.getItem("showFriendsExtension") ?? "true"),
+    JSON.parse(localStorage.getItem("showFriendsExtension") ?? "true"),
   );
 
   // const friendIds = useMemo(() => {
@@ -119,13 +123,14 @@ export const FriendList = memo(() => {
 
   const handleToggleFriendsList = () => {
     setListVisible(!isListVisible);
-    sessionStorage.setItem("showFriendsList", JSON.stringify(!isListVisible));
+    localStorage.setItem("showFriendsList", JSON.stringify(!isListVisible));
   };
 
   const handleToggleExtension = () => {
+    chrome.runtime.sendMessage({ type: "open_side_panel" });
     const friendsListElement = document.querySelector("#chat-container")!;
     setExtensionActive(!isExtensionActive);
-    sessionStorage.setItem(
+    localStorage.setItem(
       "showFriendsExtension",
       JSON.stringify(!isExtensionActive),
     );
@@ -143,13 +148,6 @@ export const FriendList = memo(() => {
     });
     return initial;
   });
-
-  const handleToggleGroup = (enabled: boolean, groupId: string | number) => {
-    setExpandedGroupIds((prev) => ({
-      ...prev,
-      [groupId]: enabled,
-    }));
-  };
 
   // ONLY compute how many items each group has; no cloning
   const groupCounts = useMemo(
@@ -172,7 +170,7 @@ export const FriendList = memo(() => {
     const keys: (string | number)[] = [];
 
     for (const group of groupsFromAtom) {
-      keys.push(`group-${group.id}`);
+      keys.push(`group-${group.id}-${group.isGameGroup}`);
 
       // Expanded friends' keys
       if (expandedGroupIds[group.id]) {
@@ -184,6 +182,143 @@ export const FriendList = memo(() => {
 
     return keys;
   }, [groupsFromAtom, expandedGroupIds]);
+
+  const handleToggleGroup = useCallback(
+    (groupId: string | number, enabled: boolean) => {
+      setExpandedGroupIds((prev) => ({
+        ...prev,
+        [groupId]: enabled,
+      }));
+    },
+    [setExpandedGroupIds],
+  );
+
+  const friendsListContainer = useMemo(() => {
+    return (
+      <>
+        {groupsFromAtom.length > 0 && (
+          <GroupedVirtuoso
+            computeItemKey={(itemIndex) => {
+              const groupKey = flatGroupKeys[itemIndex];
+              return groupKey ?? itemIndex;
+            }}
+            components={{
+              TopItemList: NullRenderer,
+            }}
+            style={{ height: "100%", width: "100%" }} // Example dimensions
+            groupCounts={groupCounts}
+            groupContent={(index) => {
+              const group = groupsFromAtom[index];
+
+              if (!group) return null;
+
+              return (
+                <FriendsGroup
+                  key={group.id}
+                  groupSize={group.friends.length}
+                  groupName={
+                    group.isGameGroup ? undefined : groupInfo[group.id]?.name
+                  }
+                  groupId={group.id}
+                  onToggleGroup={handleToggleGroup}
+                  placeId={group.isGameGroup ? group.id : undefined}
+                  defaultGroupState={groupInfo[group.id]?.defaultGroupState}
+                  indexName={
+                    group.isGameGroup
+                      ? `group_state_${group.id} : undefined}`
+                      : undefined
+                  }
+                  extraClasses={
+                    groupInfo[group.id]?.extraClasses || "gameGroup"
+                  }
+                />
+              );
+            }}
+            itemContent={(itemIndex, groupIndex) => {
+              const group = groupsFromAtom[groupIndex];
+              let friend = flatGroup[itemIndex];
+
+              friend = friend ?? {
+                username: `No friend found at index ${groupIndex}/${itemIndex}`,
+              };
+              const groupTypeSpecificClass = group.isGameGroup
+                ? groupInfo[group.id]?.extraClasses ||
+                  "gameGroup OtherGamesGroup"
+                : groupInfo[group.id]?.extraClasses || "";
+
+              let PADDING_LEFT_FOR_ITEM_WRAPPER = "12px"; // Default from .friendGroup .friend
+              if (group.isGameGroup) {
+                PADDING_LEFT_FOR_ITEM_WRAPPER = "44px";
+              }
+
+              const friendStatusClass =
+                PresenceTypesLookup[group.id] ?? "ingame";
+
+              const itemRowClasses = `virtual-friend-item-row friend ${groupTypeSpecificClass} ${friendStatusClass}`;
+
+              const itemInlineStyles: React.CSSProperties = {
+                minHeight: "38px",
+                display: "flex",
+                paddingTop: "2px",
+                paddingBottom: "2px",
+                paddingLeft: PADDING_LEFT_FOR_ITEM_WRAPPER, // Apply calculated left padding
+                paddingRight: "0", // From original rule
+                marginTop: "2px",
+                marginBottom: "2px",
+              };
+
+              return (
+                <div
+                  key={friend.userId}
+                  className={itemRowClasses}
+                  style={itemInlineStyles}
+                >
+                  <FriendsListItem
+                    key={friend.userId}
+                    userId={friend.userId}
+                    username={friend.username}
+                    isInGroup={!!group.isGameGroup}
+                    groupPosition={friend.groupPosition}
+                  />
+                </div>
+              );
+            }}
+          />
+        )}
+      </>
+    );
+  }, [
+    groupsFromAtom,
+    groupCounts,
+    flatGroupKeys,
+    handleToggleGroup,
+    flatGroup,
+  ]);
+
+  if (framed !== true)
+    return (
+      <>
+        <FriendsListItemMenu />
+        <Paper
+          sx={{
+            fontFamily: "'Motiva Sans', Arial, Helvetica, sans-serif",
+            userSelect: "none",
+            position: "fixed",
+            bottom: 0,
+            right: 0,
+            height: "100%",
+            width: "100%",
+            zIndex: 1299,
+            display: "flex",
+            flexDirection: "column-reverse", // <-- yes, this stays here
+            pointerEvents: "auto",
+          }}
+        >
+          {friendsListContainer}
+        </Paper>
+      </>
+    );
+
   return (
     <>
       <FriendsListItemMenu />
@@ -198,7 +333,7 @@ export const FriendList = memo(() => {
             width: "400px",
             zIndex: 1299,
             display: "flex",
-            flexDirection: "column-reverse", // <-- yes, this stays here
+            flexDirection: "column", // <-- yes, this stays here
             pointerEvents: "auto",
           }}
         >
@@ -211,103 +346,25 @@ export const FriendList = memo(() => {
           >
             <div>Friends List</div>
           </Button>
-          <MemoizedCollapse unmountOnExit in={isListVisible}>
-            <FriendsListContainer>
-              {groupsFromAtom.length > 0 && (
-                <GroupedVirtuoso
-                  computeItemKey={(itemIndex) => {
-                    const groupKey = flatGroupKeys[itemIndex];
-                    return groupKey ?? itemIndex;
-                  }}
-                  components={{
-                    TopItemList: NullRenderer,
-                  }}
-                  style={{ height: "100%", width: "100%" }} // Example dimensions
-                  groupCounts={groupCounts}
-                  groupContent={(index) => {
-                    const group = groupsFromAtom[index];
-
-                    if (!group) return null;
-
-                    return (
-                      <FriendsGroup
-                        key={group.id}
-                        groupSize={group.friends.length}
-                        groupName={
-                          group.isGameGroup
-                            ? undefined
-                            : groupInfo[group.id]?.name
-                        }
-                        placeId={group.isGameGroup ? group.id : undefined}
-                        defaultGroupState={
-                          groupInfo[group.id]?.defaultGroupState
-                        }
-                        indexName={
-                          group.isGameGroup
-                            ? `group_state_${group.id} : undefined}`
-                            : undefined
-                        }
-                        extraClasses={
-                          groupInfo[group.id]?.extraClasses || "gameGroup"
-                        }
-                        onClick={(enabled) =>
-                          handleToggleGroup(enabled, group.id)
-                        }
-                      ></FriendsGroup>
-                    );
-                  }}
-                  itemContent={(itemIndex, groupIndex) => {
-                    const group = groupsFromAtom[groupIndex];
-                    let friend = flatGroup[itemIndex];
-
-                    friend = friend ?? {
-                      username: `No friend found at index ${groupIndex}/${itemIndex}`,
-                    };
-                    const groupTypeSpecificClass = group.isGameGroup
-                      ? groupInfo[group.id]?.extraClasses ||
-                        "gameGroup OtherGamesGroup"
-                      : groupInfo[group.id]?.extraClasses || "";
-
-                    let PADDING_LEFT_FOR_ITEM_WRAPPER = "12px"; // Default from .friendGroup .friend
-                    if (group.isGameGroup) {
-                      PADDING_LEFT_FOR_ITEM_WRAPPER = "44px";
-                    }
-
-                    const friendStatusClass =
-                      PresenceTypesLookup[group.id] ?? "ingame";
-
-                    const itemRowClasses = `virtual-friend-item-row friend ${groupTypeSpecificClass} ${friendStatusClass}`;
-
-                    const itemInlineStyles: React.CSSProperties = {
-                      minHeight: "38px",
-                      display: "flex",
-                      paddingTop: "2px",
-                      paddingBottom: "2px",
-                      paddingLeft: PADDING_LEFT_FOR_ITEM_WRAPPER, // Apply calculated left padding
-                      paddingRight: "0", // From original rule
-                      marginTop: "2px",
-                      marginBottom: "2px",
-                    };
-
-                    return (
-                      <div
-                        key={friend.userId}
-                        className={itemRowClasses}
-                        style={itemInlineStyles}
-                      >
-                        <FriendsListItem
-                          key={friend.userId}
-                          userId={friend.userId}
-                          username={friend.username}
-                          isInGroup={!!group.isGameGroup}
-                          groupPosition={friend.groupPosition}
-                        />
-                      </div>
-                    );
-                  }}
-                />
-              )}
-            </FriendsListContainer>
+          <MemoizedCollapse
+            in={isListVisible}
+            unmountOnExit
+            collapsedSize={0}
+            sx={{
+              display: "flex",
+              flex: 1,
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                height: "80vh", // only here, so Collapse can animate
+                width: "100%",
+                overflowY: "auto", // scroll your list
+              }}
+            >
+              {friendsListContainer}
+            </Box>
           </MemoizedCollapse>
         </Paper>
       </MemoizedSlide>

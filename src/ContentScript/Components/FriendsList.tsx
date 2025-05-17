@@ -9,7 +9,7 @@ export const FriendsListContainer = (props: FriendsListProps) => {
   return (
     <Paper
       sx={{
-        height: "80vh",
+        height: "100%",
         overflow: "auto",
       }}
     >

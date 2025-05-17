@@ -1,12 +1,16 @@
 import { FriendList } from "@/src/ContentScript/App";
 import { useHydrateAtoms } from "@/src/hooks/useHydrate";
 
-function Mount() {
+interface MountProps {
+  framed: boolean;
+}
+
+function Mount(props: MountProps) {
   useHydrateAtoms();
 
   return (
     <>
-      <FriendList />
+      <FriendList framed={props.framed} />
     </>
   );
 }

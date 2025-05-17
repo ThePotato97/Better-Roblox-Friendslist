@@ -3,39 +3,43 @@ import { Menu, MenuItem } from "@mui/material";
 import { contextMenuAtom } from "@/src/atoms";
 import { useAtom } from "jotai";
 
-const joinGame = (content: {
-  action: string;
-  rootPlaceId: number;
-  placeId: number;
-  gameId?: string;
-  userId?: number;
-}) => {
-  const isFirefox = typeof InstallTrigger !== "undefined";
-  if (isFirefox) {
-    content = cloneInto(content, document.defaultView);
+const joinGameFriend = (userId: number) => {
+  if (chrome.tabs) {
+    chrome.tabs.update({ url: `roblox://experiences/start?userId=${userId}` });
+  } else {
+    window.location.href = `roblox://experiences/start?userId=${userId}`;
   }
-  const event = new CustomEvent("RecieveContent", { detail: content });
+};
 
-  window.dispatchEvent(event);
+const joinGame = (placeId: number) => {
+  if (chrome.tabs) {
+    chrome.tabs.update({
+      url: `roblox://experiences/start?placeId=${placeId}`,
+    });
+  } else {
+    window.location.href = `roblox://experiences/start?placeId=${placeId}`;
+  }
 };
 
 interface FriendsListItemMenuProps {
-  menuProps: { state: "open" | "closed" };
-  userId: number;
-  placeId: number;
-  rootPlaceId: number;
-  purchaseRequired: boolean;
-  placePrice: number;
-  isPresencePrivate: boolean;
-  isPlayEnabled: boolean;
-  children: React.ReactNode;
-  gameId: string;
+  children?: React.ReactNode;
 }
 
 const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
   const [contextMenu, setContextMenu] = useAtom(contextMenuAtom);
 
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [open, setOpen] = useState(false);
+
+  const menuSnapshot = useRef(contextMenu);
+
+  useEffect(() => {
+    if (contextMenu) {
+      menuSnapshot.current = contextMenu;
+      setOpen(true);
+    }
+  }, [contextMenu]);
 
   useEffect(() => {
     const menuRoot = menuRef.current?.parentElement;
@@ -49,51 +53,54 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
       console.warn("Menu ref not attached yet.");
     }
   }, []);
-
-  const gameId = contextMenu?.gameId;
-  const rootPlaceId = contextMenu?.rootPlaceId;
-  const purchaseRequired = contextMenu?.purchaseRequired;
-  const placePrice = contextMenu?.placePrice;
-  const isPresencePrivate = contextMenu?.isPresencePrivate;
-  const userId = contextMenu?.userId;
-  const placeId = contextMenu?.placeId;
+  const {
+    gameId,
+    rootPlaceId,
+    placeId,
+    userId,
+    purchaseRequired,
+    placePrice,
+    isPresencePrivate,
+    mouseX,
+    mouseY,
+  } = menuSnapshot.current || {};
 
   const handleOpenProfile = () => {
-    window.location.href = `https://www.roblox.com/users/${userId}/profile`;
+    if (chrome.tabs) {
+      chrome.tabs.update({
+        url: `https://www.roblox.com/users/${userId}/profile`,
+      });
+    } else {
+      window.location.href = `https://www.roblox.com/users/${userId}/profile`;
+    }
   };
 
   const handleJoinFriend = () => {
     if (purchaseRequired) {
-      window.location.href = `https://www.roblox.com/games/${placeId}`;
+      chrome.tabs.update({ url: `https://www.roblox.com/games/${placeId}` });
       return;
     }
 
     if (!gameId || !rootPlaceId || !placeId || !userId) return;
 
-    joinGame({
-      action: "joinGame",
-      rootPlaceId: rootPlaceId,
-      placeId: placeId,
-      gameId: gameId,
-      userId: userId,
-    });
+    joinGameFriend(userId);
   };
 
   const handleJoinGame = () => {
     if (!gameId || !rootPlaceId || !placeId || !userId) return;
     if (purchaseRequired) {
-      window.location = `https://www.roblox.com/games/${placeId}`;
+      window.location.href = `https://www.roblox.com/games/${placeId}`;
       return;
     }
-    joinGame({
-      action: "joinGame",
-      rootPlaceId: rootPlaceId,
-      placeId: placeId,
-    });
+    joinGame(userId);
   };
   const closingRef = useRef(false);
 
   const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleExited = () => {
     closingRef.current = true;
     setContextMenu(null);
     setTimeout(() => {
@@ -111,7 +118,12 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
         <Menu
           ref={menuRef}
           container={portalRoot}
-          open={contextMenu !== null}
+          open={open}
+          slotProps={{
+            transition: {
+              onExited: handleExited,
+            },
+          }}
           onClose={handleClose}
           anchorReference="anchorPosition"
           onContextMenu={(e) => {
@@ -120,15 +132,15 @@ const FriendsListItemMenu = ({ children }: FriendsListItemMenuProps) => {
           }}
           disableScrollLock={true}
           anchorPosition={
-            contextMenu !== null
-              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            contextMenu !== null && mouseX !== undefined && mouseY !== undefined
+              ? { top: mouseY, left: mouseX }
               : undefined
           }
         >
           <MenuItem onClick={handleOpenProfile}>View Profile</MenuItem>
           {!isPresencePrivate && (
             <MenuItem onClick={handleJoinFriend}>
-              {purchaseRequired ? (
+              {purchaseRequired !== undefined && purchaseRequired ? (
                 <span className="icon icon-robux-white-16x16" />
               ) : null}
               {purchaseRequired ? placePriceDisplay : "Join Friend"}

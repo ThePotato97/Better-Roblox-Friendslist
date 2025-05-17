@@ -27,8 +27,8 @@ const intToString = (value) => {
   return shortValue + suffixes[suffixNum];
 };
 
-const cacheConcurrent = {};
-const getPlacePlaying = (universeId) => {
+const cacheConcurrent: Record<number, string> = {};
+const getPlacePlaying = (universeId: number): Promise<string> => {
   if (cacheConcurrent[universeId]) {
     return Promise.resolve(cacheConcurrent[universeId]);
   }
@@ -50,8 +50,8 @@ const getPlacePlaying = (universeId) => {
   });
 };
 
-const cacheVotes = {};
-const getPlaceVotes = (universeId) => {
+const cacheVotes: Record<number, number> = {};
+const getPlaceVotes = (universeId: number): Promise<string> => {
   if (cacheVotes[universeId]) {
     return Promise.resolve(cacheVotes[universeId]);
   }
@@ -68,7 +68,7 @@ const getPlaceVotes = (universeId) => {
             const totalVotes = upVotes + downVotes;
             const percentage = Math.round((upVotes / totalVotes) * 100);
             cacheVotes[universeId] = percentage;
-            resolve(percentage);
+            resolve(`${percentage}`);
           }
         })
         .catch((err) => {
@@ -87,8 +87,9 @@ const createPlaceDetailsAtom = (placeId: number | undefined) =>
   selectAtom(placesAtom, (places) => (placeId ? places[placeId] : undefined));
 
 export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
-  const [votes, setVotes] = useState("???");
-  const [playing, setPlaying] = useState("???");
+  const [votes, setVotes] = useState<string>("???");
+  const [playing, setPlaying] = useState<string>("???");
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showPopper, setPopperState] = useState(false);
   const [referenceElement, setReferenceElement] =
     useState<HTMLDivElement | null>(null);
@@ -108,6 +109,58 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
   );
 
   const { description } = rootPlaceDetails || {};
+
+  const calculateResponsiveDimensions = () => {
+    // Base size - original dimensions we want to preserve whenever possible
+    const baseWidth = 390;
+    const baseHeight = 390;
+    const baseHeaderHeight = 217;
+    const baseFooterHeight = 60;
+
+    // Start with original size
+    let responsiveWidth = baseWidth;
+
+    // Only shrink when necessary to fit viewport (with some padding)
+    // We subtract 100px for some buffer space from the edge of the viewport
+    const availableWidth = windowWidth - 100;
+
+    // If available width is less than our base width, scale down proportionally
+    if (availableWidth < baseWidth) {
+      responsiveWidth = availableWidth;
+    }
+
+    // Scale everything else proportionally to maintain aspect ratio
+    const scale = responsiveWidth / baseWidth;
+    const responsiveHeight = baseHeight * scale;
+    const headerHeight = baseHeaderHeight * scale;
+    const footerHeight = baseFooterHeight * scale;
+
+    return {
+      width: responsiveWidth,
+      height: responsiveHeight,
+      headerHeight,
+      footerHeight,
+      scale,
+    };
+  };
+
+  const dimensions = calculateResponsiveDimensions();
+
+  useEffect(() => {
+    const root = (window as any).portalRoot ?? document.body;
+    if (!root) return;
+    setRootElement(root);
+
+    // Add resize event listener
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const placeIconValueBig = useAtomValue(
     thumbnailFamily(
@@ -159,6 +212,13 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
 
       modifiers: [
         {
+          name: "preventOverflow",
+          options: {
+            rootBoundary: "viewport",
+            padding: 8,
+          },
+        },
+        {
           name: "offset",
           options: {
             offset: [0, 20],
@@ -171,6 +231,7 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
   const handleMouseEnter = () => {
     console.log("handleMouseEnter");
     setPopperState(true);
+    if (!universeId) return;
     getPlaceVotes(universeId).then((votes) => {
       setVotes(votes);
     });
@@ -187,7 +248,7 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
         update().then(() => setPopperReady(true));
       });
     }
-  }, [showPopper]);
+  }, [showPopper, update]);
 
   const handleMouseLeave = () => {
     setPopperState(false);
@@ -221,6 +282,7 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
           />
         </div>
       )}
+
       {showPopper && rootElement
         ? createPortal(
             <div
@@ -229,6 +291,8 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
               style={{
                 ...styles.popper,
                 zIndex: 9999,
+                maxWidth: `${dimensions.width}px`,
+                maxHeight: `${dimensions.height}px`,
               }}
               {...attributes.popper}
             >
@@ -236,20 +300,23 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
                 className="game-popper-container"
                 style={{
                   overflow: "hidden",
-                  height: "390px",
-                  width: "390px",
+                  height: `${dimensions.height}px`,
+                  width: `${dimensions.width}px`,
                   background: "#2C2C2C",
                   borderRadius: "5px",
                 }}
               >
                 <div
                   className="game-popper-header"
-                  style={{ height: "217px", width: "390px" }}
+                  style={{
+                    height: `${dimensions.headerHeight}px`,
+                    width: `${dimensions.width}px`,
+                  }}
                 >
                   <div
                     style={{
-                      height: "217px",
-                      width: "390px",
+                      height: `${dimensions.headerHeight}px`,
+                      width: `${dimensions.width}px`,
                       backgroundImage: `linear-gradient(transparent, black), url('${placeThumbnail}')`,
                       backgroundSize: "cover",
                       backgroundRepeat: "no-repeat",
@@ -260,25 +327,43 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
                     style={{
                       color: "white",
                       position: "absolute",
-                      top: "165px",
-                      left: "10px",
+                      top: `${165 * dimensions.scale}px`,
+                      left: `${10 * dimensions.scale}px`,
+                      fontSize: `${14 * dimensions.scale}px`,
                     }}
                   >
                     {`By ${builder}`}
                   </div>
                   <div
-                    style={{ position: "absolute", top: "190px", left: "5px" }}
+                    style={{
+                      position: "absolute",
+                      top: `${190 * dimensions.scale}px`,
+                      left: `${5 * dimensions.scale}px`,
+                      fontSize: `${12 * dimensions.scale}px`,
+                    }}
                   >
-                    <span className="icon-popper icon-vote-popper" />
+                    <span
+                      className="icon-popper icon-vote-popper"
+                      style={{ transform: `scale(${dimensions.scale})` }}
+                    />
                     <span className="count-label-popper">{`${votes || "??"}%`}</span>
-                    <span className="icon-popper icon-playing-popper" />
+                    <span
+                      className="icon-popper icon-playing-popper"
+                      style={{ transform: `scale(${dimensions.scale})` }}
+                    />
                     <span className="count-label-popper">
                       {playing || "???"}
                     </span>
                   </div>
                 </div>
 
-                <div className="icon-container-popper">
+                <div
+                  className="icon-container-popper"
+                  style={{
+                    transform: `scale(${dimensions.scale})`,
+                    transformOrigin: "top left",
+                  }}
+                >
                   <div
                     className="icon-container-popper icon-background-popper"
                     style={{ backgroundImage: `url(${placeIconBig})` }}
@@ -288,16 +373,21 @@ export const GamePopper = memo(({ placeId, isInGroup }: GamePopperProps) => {
                     style={{ backgroundImage: `url(${placeIconBig})` }}
                   />
                 </div>
+
                 <div
                   className="game-popper-footer"
-                  style={{ height: "60px", width: "390px" }}
+                  style={{
+                    height: `${dimensions.footerHeight}px`,
+                    width: `${dimensions.width}px`,
+                  }}
                 >
                   <div>
                     <pre
                       style={{
                         color: "#C5C5C5",
                         overflow: "hidden",
-                        padding: "10px",
+                        padding: `${10 * dimensions.scale}px`,
+                        fontSize: `${12 * dimensions.scale}px`,
                       }}
                       className="game-description-popper"
                     >

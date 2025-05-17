@@ -1,6 +1,12 @@
 import { atom, Getter } from "jotai";
 import { isEqual } from "lodash";
-import { FriendAtom, friendsAtom, presenceAtom } from ".";
+import {
+  FriendAtom,
+  friendsAtom,
+  presenceAtom,
+  profileDetailsFamily,
+  profilesAtom,
+} from ".";
 import { Friend } from "../database/FriendsDB";
 import { PresenceTypes } from "../global";
 
@@ -41,6 +47,7 @@ function atomWithCompareDerived<Value>(
 export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
   const friendsMap = get(friendsAtom);
   const presenceMap = get(presenceAtom);
+  const profileMap = get(profilesAtom);
 
   // Stable sort for allFriends initially to ensure consistent processing order
   // if friendsMap iteration order isn't guaranteed (Object.values might not be).
@@ -80,7 +87,9 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
     // Check if rootPlaceId exists for multiplayer session check
     const rootPlaceId = presence.rootPlaceId;
     const isMultiPlayerSession =
-      rootPlaceId != null && sessionCounts[rootPlaceId] > 1;
+      rootPlaceId !== null &&
+      sessionCounts[rootPlaceId] > 1 &&
+      presence.gameId !== null;
 
     let bucketKey: string;
     let bucketId: number;
@@ -119,6 +128,9 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
       const sorted = [...group.friends].sort((a, b) => {
         const aGameId = presenceMap[a.userId]?.gameId;
         const bGameId = presenceMap[b.userId]?.gameId;
+
+        if (aGameId === null && bGameId === null) return 0;
+
         const gameCmp = aGameId.localeCompare(bGameId);
 
         if (gameCmp !== 0) return gameCmp;
@@ -165,16 +177,16 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
     id: PresenceTypes.IN_GAME,
     isGameGroup: false,
     friends: [...inGameFriends].sort((a, b) => {
-      // Sort a copy
-      const aPresence = presenceMap[a.userId];
-      const bPresence = presenceMap[b.userId];
-      const aPlace = aPresence?.rootPlaceId;
-      const bPlace = bPresence?.rootPlaceId;
-      // Sort by game name if available, then by place ID presence
-      if (aPlace && bPlace) {
-        return aPlace - bPlace;
-      }
-      return a.userId - b.userId;
+      const aHas = Boolean(presenceMap[a.userId]?.rootPlaceId);
+      const bHas = Boolean(presenceMap[b.userId]?.rootPlaceId);
+
+      // 1) group by presenceOfPlaceId
+      if (aHas !== bHas) return aHas ? -1 : 1;
+
+      // 2) both in same group → alphabetize
+      const aName = profileMap[a.userId]?.combinedName ?? "";
+      const bName = profileMap[b.userId]?.combinedName ?? "";
+      return aName.localeCompare(bName);
     }),
   };
 
@@ -184,16 +196,29 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
     id: PresenceTypes.IN_STUDIO,
     isGameGroup: false,
     friends: [...inStudioFriends].sort((a, b) => {
-      // Sort a copy
-      const aPresence = presenceMap[a.userId];
-      const bPresence = presenceMap[b.userId];
-      const aPlace = aPresence?.rootPlaceId;
-      const bPlace = bPresence?.rootPlaceId;
-      // Sort by game/place name if available, then by place ID presence
-      if (aPlace && bPlace) {
-        return aPlace - bPlace;
-      }
-      return a.userId - b.userId;
+      const aHas = Boolean(presenceMap[a.userId]?.rootPlaceId);
+      const bHas = Boolean(presenceMap[b.userId]?.rootPlaceId);
+
+      // 1) group by presenceOfPlaceId
+      if (aHas !== bHas) return aHas ? -1 : 1;
+
+      // 2) both in same group → alphabetize
+      const aName = profileMap[a.userId]?.combinedName ?? "";
+      const bName = profileMap[b.userId]?.combinedName ?? "";
+      return aName.localeCompare(bName);
+    }),
+  };
+
+  const onlineFriends =
+    buckets[`status-${PresenceTypes.ONLINE}`]?.friends || [];
+  const onlineGroup: FriendGroup = {
+    id: PresenceTypes.ONLINE,
+    isGameGroup: false,
+    friends: [...onlineFriends].sort((a, b) => {
+      // 2) both in same group → alphabetize
+      const aName = profileMap[a.userId]?.combinedName ?? "";
+      const bName = profileMap[b.userId]?.combinedName ?? "";
+      return aName.localeCompare(bName);
     }),
   };
 
@@ -214,7 +239,13 @@ export const groupsAtom = atomWithCompareDerived<FriendGroup[]>((get) => {
   };
 
   // 4) Return in desired order
-  const result = [...gameGroups, inGameGroup, inStudioGroup, offlineGroup];
+  const result = [
+    ...gameGroups,
+    inGameGroup,
+    inStudioGroup,
+    onlineGroup,
+    offlineGroup,
+  ];
 
   // Optional: Sort gameGroups themselves by some stable criteria if their order can change
   // e.g., by game name or ID.

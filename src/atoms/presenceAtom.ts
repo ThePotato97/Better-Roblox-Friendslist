@@ -10,7 +10,9 @@ import { PresenceTypes } from "../global";
 
 const store = getDefaultStore();
 
-export const presenceAtom = atom<Record<number, Presence>>({});
+type PresenceAtom = Omit<Presence, "lastUpdated">;
+
+export const presenceAtom = atom<Record<number, PresenceAtom>>({});
 
 const TTL = 5 * 60 * 1000;
 
@@ -21,7 +23,7 @@ export const presenceHydratedAtom = atom(null, async (get, set) => {
 
   const all = await db.getAll("presences");
 
-  const map: Record<number, Presence> = {};
+  const map: Record<number, PresenceAtom> = {};
   for (const p of all) {
     if (now - p.lastUpdated <= ttlConfig.presences.prune) {
       map[p.userId] = p;

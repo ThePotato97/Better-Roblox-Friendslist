@@ -39,6 +39,8 @@ export default defineConfig({
     //   sandbox:
     //     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000 http://localhost:8097; sandbox allow-scripts allow-forms allow-popups allow-modals; child-src 'self';",
     // },
+    action: {},
+    page_action: {},
     web_accessible_resources: [
       {
         resources: import.meta.env.DEV

@@ -65,7 +65,7 @@ export default defineContentScript({
         root.render(
           <CacheProvider value={cache}>
             <ThemeProvider theme={theme}>
-              <App />
+              <App framed={true} />
             </ThemeProvider>
           </CacheProvider>,
         );

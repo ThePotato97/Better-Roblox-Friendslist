@@ -1,4 +1,4 @@
-import { JoinStatusCodes } from "../global.ts";
+import { JoinResultReason } from "../global.ts";
 import { ExtractResponse, fetchApi } from "rozod";
 import cache from "webext-storage-cache/legacy.js";
 import { postJoinGameInstance } from "rozod/lib/endpoints/gamejoinv1";
@@ -43,8 +43,8 @@ export const fetchServerDetails = async (placeId: number, gameId: string) => {
       });
   const { status } = serverDetailsResponse;
   if (
-    status === JoinStatusCodes.OK ||
-    status === JoinStatusCodes.UNAUTHORIZED
+    status === JoinResultReason.OK ||
+    status === JoinResultReason.UNAUTHORIZED_OTHER
   ) {
     await cache.set(uniqueId, serverDetailsResponse, {
       minutes: 5,
