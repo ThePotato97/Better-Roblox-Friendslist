@@ -321,7 +321,7 @@ export const FriendList = memo(({ framed }: FriendListProps) => {
 
   return (
     <>
-      <FriendsListItemMenu />
+      {/* <FriendsListItemMenu />
       <MemoizedSlide in={isExtensionActive} direction={"up"} appear>
         <Paper
           sx={{
@@ -367,7 +367,7 @@ export const FriendList = memo(({ framed }: FriendListProps) => {
             </Box>
           </MemoizedCollapse>
         </Paper>
-      </MemoizedSlide>
+      </MemoizedSlide> */}
 
       {document.querySelector("#navbar-stream")
         ? ReactDOM.createPortal(
@@ -393,7 +393,7 @@ export const FriendList = memo(({ framed }: FriendListProps) => {
                   style={{
                     backgroundImage: `url(${extensionIcon})`,
                     cursor: "pointer",
-                    filter: !isExtensionActive ? "grayscale(100%)" : "none",
+                    filter: "none",
                     backgroundRepeat: "no-repeat",
                     backgroundSize: "cover",
                     width: "100%",
