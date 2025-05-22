@@ -53,7 +53,7 @@ const getPlacePlaying = (universeId: number): Promise<string> => {
 const cacheVotes: Record<number, number> = {};
 const getPlaceVotes = (universeId: number): Promise<string> => {
   if (cacheVotes[universeId]) {
-    return Promise.resolve(cacheVotes[universeId]);
+    return Promise.resolve(String(cacheVotes[universeId]));
   }
   return new Promise((resolve, reject) => {
     fetch(
@@ -66,9 +66,15 @@ const getPlaceVotes = (universeId: number): Promise<string> => {
           if (placeVotes) {
             const { upVotes, downVotes } = placeVotes;
             const totalVotes = upVotes + downVotes;
+            if (totalVotes === 0) {
+              cacheVotes[universeId] = 0;
+              return resolve("0");
+            }
             const percentage = Math.round((upVotes / totalVotes) * 100);
             cacheVotes[universeId] = percentage;
-            resolve(`${percentage}`);
+            return resolve(`${percentage}`);
+          } else {
+            return resolve("N/A");
           }
         })
         .catch((err) => {
